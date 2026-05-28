@@ -1,6 +1,10 @@
 "use client";
 
-import { useWindowManager, windowIdOf } from "@react-ui-os/core";
+import {
+  useNotifications,
+  useWindowManager,
+  windowIdOf,
+} from "@react-ui-os/core";
 import type { App } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import {
@@ -85,10 +89,12 @@ function DockTile({
     minimizeWindow,
     restoreWindow,
   } = useWindowManager();
+  const { unreadByApp } = useNotifications();
   const id = windowIdOf({ kind: "app", appId: app.id });
   const win = windows.find((w) => w.id === id);
   const isFocused = focusedWindow?.id === id;
   const isMinimized = win?.state === "minimized";
+  const badgeCount = unreadByApp[app.id] ?? 0;
 
   const handleClick = () => {
     if (!win) {
@@ -189,6 +195,32 @@ function DockTile({
             transition: `opacity ${String(theme.motion.dockHoverDurationMs)}ms ease`,
           }}
         />
+      )}
+      {badgeCount > 0 && (
+        <span
+          aria-label={`${String(badgeCount)} unread notifications`}
+          style={{
+            position: "absolute",
+            top: -4,
+            right: -4,
+            minWidth: 18,
+            height: 18,
+            padding: "0 5px",
+            borderRadius: 9,
+            background: "#ef4444",
+            color: "#fff",
+            fontSize: 10,
+            fontWeight: 700,
+            fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 0 0 2px rgba(0,0,0,0.55)",
+            lineHeight: 1,
+          }}
+        >
+          {badgeCount > 99 ? "99+" : String(badgeCount)}
+        </span>
       )}
     </button>
   );

@@ -20,3 +20,4 @@ export type {
 export * from "./window-manager";
 export * from "./storage";
 export * from "./settings";
+export * from "./notifications";

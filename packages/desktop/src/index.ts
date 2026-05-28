@@ -9,7 +9,12 @@ export { WindowLayer } from "./WindowLayer";
 export { Window } from "./Window";
 export { Spotlight } from "./Spotlight";
 export { KeyboardShortcuts } from "./keyboard-shortcuts";
-export { SPOTLIGHT_OPEN_EVENT } from "./events";
+export { NotificationToasts } from "./NotificationToasts";
+export { NotificationCenter } from "./NotificationCenter";
+export {
+  SPOTLIGHT_OPEN_EVENT,
+  NOTIFICATION_CENTER_TOGGLE_EVENT,
+} from "./events";
 export {
   registerSpotlightSource,
   listSpotlightSources,

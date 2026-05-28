@@ -1,12 +1,15 @@
 import { useEffect, useMemo } from "react";
 import type { OsTheme } from "@react-ui-os/core";
 import { Desktop } from "@react-ui-os/desktop";
-import { useWindowManager } from "@react-ui-os/core";
+import { notify, useWindowManager } from "@react-ui-os/core";
 import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
 import { createSaasTheme } from "@react-ui-os/theme-saas";
 import { docsApps } from "./apps";
-import { SPOTLIGHT_OPEN_EVENT } from "@react-ui-os/desktop";
+import {
+  NOTIFICATION_CENTER_TOGGLE_EVENT,
+  SPOTLIGHT_OPEN_EVENT,
+} from "@react-ui-os/desktop";
 import { DocsSpotlightSource } from "./DocsSpotlightSource";
 
 type ThemeChoice = "mintables" | "saas" | "default";
@@ -33,6 +36,9 @@ function readThemeChoice(): ThemeChoice {
  *   menubar      Opens Hello so the menu bar shows a focused name.
  *   recents      Pre-seeds a few Recents entries and opens the folder
  *                so the FileExplorer is populated.
+ *   notifications  Fires four representative toasts so the reader sees
+ *                  the stack + dock badges + menu-bar dot at once.
+ *   notification-center  Same toasts, then opens the Center sheet.
  */
 function DemoActivator() {
   const { openWindow } = useWindowManager();
@@ -59,6 +65,43 @@ function DemoActivator() {
           openWindow({ kind: "app", appId: "notes" });
           openWindow({ kind: "app", appId: "calculator" });
           break;
+        case "notifications":
+        case "notification-center": {
+          notify({
+            title: "Build finished",
+            body: "Deploy succeeded in 1m 42s.",
+            appId: "hello",
+            level: "success",
+            actions: [
+              { label: "View", onClick: () => {}, primary: true },
+              { label: "Dismiss", onClick: () => {} },
+            ],
+          });
+          notify({
+            title: "Sync paused",
+            body: "Pending changes will resume when you're back online.",
+            appId: "notes",
+            level: "warn",
+          });
+          notify({
+            title: "New message",
+            body: "Alex sent you a draft to review.",
+            appId: "calculator",
+          });
+          notify({
+            title: "Disk almost full",
+            body: "You have 200 MB free on your primary volume.",
+            level: "error",
+          });
+          if (demo === "notification-center") {
+            window.setTimeout(() => {
+              window.dispatchEvent(
+                new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT),
+              );
+            }, 400);
+          }
+          break;
+        }
         case "recents": {
           const now = Date.now();
           const items = [

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useWindowManager } from "@react-ui-os/core";
+import { useNotifications, useWindowManager } from "@react-ui-os/core";
 import { useApp, useTheme } from "./desktop-context";
+import { NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { MENU_BAR_HEIGHT } from "./util/layout";
 
@@ -72,12 +73,13 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
           </span>
         )}
       </div>
-      <SystemClock color={theme.palette.textSecondary} />
+      <SystemClock color={theme.palette.textSecondary} accent={theme.palette.accent} />
     </header>
   );
 }
 
-function SystemClock({ color }: { color: string }) {
+function SystemClock({ color, accent }: { color: string; accent: string }) {
+  const { unreadCount } = useNotifications();
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -104,8 +106,52 @@ function SystemClock({ color }: { color: string }) {
   });
 
   return (
-    <span style={{ color, fontVariantNumeric: "tabular-nums" }}>
+    <button
+      type="button"
+      onClick={() => {
+        window.dispatchEvent(new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT));
+      }}
+      aria-label={
+        unreadCount > 0
+          ? `${String(unreadCount)} unread notifications. Open Notification Center.`
+          : "Open Notification Center"
+      }
+      style={{
+        appearance: "none",
+        background: "transparent",
+        border: 0,
+        color,
+        fontFamily: "inherit",
+        fontSize: 12,
+        padding: "3px 6px",
+        cursor: "pointer",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        borderRadius: 6,
+        position: "relative",
+        fontVariantNumeric: "tabular-nums",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+      }}
+    >
+      {unreadCount > 0 && (
+        <span
+          aria-hidden
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: accent,
+            boxShadow: `0 0 6px ${accent}aa`,
+          }}
+        />
+      )}
       {day} {time}
-    </span>
+    </button>
   );
 }

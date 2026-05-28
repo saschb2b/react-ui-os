@@ -1,4 +1,6 @@
+import type { CSSProperties } from "react";
 import type { App } from "@react-ui-os/core";
+import { notify } from "@react-ui-os/core";
 import { registerSystemWindow } from "@react-ui-os/desktop";
 import { useDesktopContext } from "@react-ui-os/desktop";
 import { addRecent, hasRecents } from "./recents";
@@ -14,6 +16,17 @@ registerSystemWindow("recents", {
   content: RecentsFolder,
   appearsAsDesktopIcon: (storage) => hasRecents(storage),
 });
+
+const demoButton: CSSProperties = {
+  border: "1px solid rgba(255,255,255,0.18)",
+  background: "rgba(255,255,255,0.06)",
+  color: "inherit",
+  borderRadius: 6,
+  padding: "5px 12px",
+  fontSize: 12,
+  fontFamily: "inherit",
+  cursor: "pointer",
+};
 
 function HelloContent({ focused }: { focused: boolean }) {
   const { storage } = useDesktopContext();
@@ -48,22 +61,24 @@ function HelloContent({ focused }: { focused: boolean }) {
               kind: kind ?? "txt",
             });
           }}
-          style={{
-            border: "1px solid rgba(255,255,255,0.18)",
-            background: "rgba(255,255,255,0.06)",
-            color: "inherit",
-            borderRadius: 6,
-            padding: "5px 12px",
-            fontSize: 12,
-            fontFamily: "inherit",
-            cursor: "pointer",
-          }}
+          style={demoButton}
         >
           + Add to Recents
         </button>
-        <span style={{ fontSize: 11, opacity: 0.6 }}>
-          A Recents folder will appear on the desktop.
-        </span>
+        <button
+          type="button"
+          onClick={() => {
+            notify({
+              title: "Hello!",
+              body: "This is a toast. Click the menu-bar clock to open the Notification Center.",
+              appId: "hello",
+              level: "success",
+            });
+          }}
+          style={demoButton}
+        >
+          + Fire a toast
+        </button>
       </div>
       <p style={{ margin: 0, fontSize: 12, opacity: 0.6 }}>
         Window focused: <strong>{focused ? "yes" : "no"}</strong>

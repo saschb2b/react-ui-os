@@ -10,6 +10,8 @@ import { WindowLayer } from "./WindowLayer";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
 import { Spotlight } from "./Spotlight";
 import { DesktopIcons } from "./DesktopIcons";
+import { NotificationToasts } from "./NotificationToasts";
+import { NotificationCenter } from "./NotificationCenter";
 
 export interface DesktopProps {
   apps: App[];
@@ -56,6 +58,8 @@ export function Desktop({
         <Dock />
         <KeyboardShortcuts />
         <Spotlight />
+        <NotificationToasts />
+        <NotificationCenter />
       </div>
       {children}
     </DesktopProvider>
