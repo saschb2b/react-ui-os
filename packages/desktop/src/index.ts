@@ -10,6 +10,15 @@ export { Window } from "./Window";
 export { Spotlight } from "./Spotlight";
 export { KeyboardShortcuts } from "./keyboard-shortcuts";
 export { SPOTLIGHT_OPEN_EVENT } from "./events";
+export {
+  registerSpotlightSource,
+  listSpotlightSources,
+  subscribeSpotlightSources,
+} from "./spotlight-sources";
+export type {
+  SpotlightSource,
+  SpotlightResult,
+} from "./spotlight-sources";
 export { Settings } from "./Settings";
 export { FileExplorer } from "./FileExplorer";
 export type {

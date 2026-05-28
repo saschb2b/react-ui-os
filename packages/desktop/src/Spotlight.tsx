@@ -6,8 +6,10 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
+  type ReactNode,
 } from "react";
 import type { App } from "@react-ui-os/core";
 import { useWindowManager } from "@react-ui-os/core";
@@ -18,17 +20,32 @@ import {
   resolveSystemWindowName,
   type SystemWindowDef,
 } from "./system-windows";
+import {
+  listSpotlightSources,
+  subscribeSpotlightSources,
+} from "./spotlight-sources";
 
 type Result =
-  | { kind: "app"; key: string; name: string; tagline?: string; accent?: string; app: App }
+  | { kind: "app"; key: string; name: string; tagline?: string; accent?: string; icon?: ReactNode; app: App }
   | {
       kind: "system";
       key: string;
       name: string;
       tagline?: string;
       accent?: string;
+      icon?: ReactNode;
       systemId: string;
       def: SystemWindowDef;
+    }
+  | {
+      kind: "external";
+      key: string;
+      name: string;
+      tagline?: string;
+      accent?: string;
+      icon?: ReactNode;
+      kindLabel?: string;
+      onActivate: () => void;
     };
 
 /**
@@ -120,7 +137,16 @@ export function Spotlight() {
     };
   }, [open]);
 
+  // Re-render Spotlight whenever a source registers / unregisters. The
+  // hook returns an opaque token; we only need its referential change.
+  const sourcesVersion = useSyncExternalStore(
+    subscribeSpotlightSources,
+    () => listSpotlightSources().length,
+    () => 0,
+  );
+
   const results = useMemo<Result[]>(() => {
+    void sourcesVersion;
     const appResults: Result[] = apps.map((app) => ({
       kind: "app",
       key: `app:${app.id}`,
@@ -132,24 +158,43 @@ export function Spotlight() {
     const systemResults: Result[] = listSystemWindows().map((sys) => ({
       kind: "system",
       key: `system:${sys.systemId}`,
-      // Spotlight surfaces the no-args version of a system window. Apps
-      // that want to expose per-instance entries (one per Component arg,
-      // say) will plug in via the upcoming spotlight-sources API.
       name: resolveSystemWindowName(sys),
       tagline: sys.tagline,
       accent: sys.accent,
       systemId: sys.systemId,
       def: sys,
     }));
-    const all = [...appResults, ...systemResults];
     const q = query.trim().toLowerCase();
-    if (!q) return all;
-    return all.filter((r) => {
+    // Sources receive the trimmed query; they decide how to filter their
+    // own data. Each result is tagged with the source id to avoid clashes.
+    const externalResults: Result[] = listSpotlightSources().flatMap(
+      (source, idx) => {
+        try {
+          return source(q).map((r) => ({
+            kind: "external" as const,
+            key: `external:${String(idx)}:${r.id}`,
+            name: r.name,
+            tagline: r.tagline,
+            accent: r.accent,
+            icon: r.icon,
+            kindLabel: r.kindLabel,
+            onActivate: r.onActivate,
+          }));
+        } catch {
+          // A misbehaving source should not bring down Spotlight.
+          return [];
+        }
+      },
+    );
+    const builtIn: Result[] = [...appResults, ...systemResults];
+    if (!q) return [...builtIn, ...externalResults];
+    const filteredBuiltIn = builtIn.filter((r) => {
       const name = r.name.toLowerCase();
       const tag = (r.tagline ?? "").toLowerCase();
       return name.includes(q) || tag.includes(q);
     });
-  }, [apps, query]);
+    return [...filteredBuiltIn, ...externalResults];
+  }, [apps, query, sourcesVersion]);
 
   useEffect(() => {
     setSelectedIndex((idx) => {
@@ -178,8 +223,10 @@ export function Spotlight() {
     (result: Result) => {
       if (result.kind === "app") {
         openWindow({ kind: "app", appId: result.app.id });
-      } else {
+      } else if (result.kind === "system") {
         openWindow({ kind: "system", systemId: result.systemId });
+      } else {
+        result.onActivate();
       }
       handleClose();
     },
@@ -368,8 +415,13 @@ function ResultRow({
   const theme = useTheme();
   const accent = result.accent ?? theme.palette.accent;
   const Icon = result.kind === "app" ? result.app.icon : undefined;
+  const externalIcon = result.kind === "external" ? result.icon : undefined;
   const kindLabel =
-    result.kind === "app" ? "App" : "System";
+    result.kind === "app"
+      ? "App"
+      : result.kind === "system"
+        ? "System"
+        : (result.kindLabel ?? "External");
 
   return (
     <div
@@ -410,6 +462,8 @@ function ResultRow({
       >
         {Icon ? (
           <Icon size={15} />
+        ) : externalIcon ? (
+          externalIcon
         ) : (
           <span style={{ fontWeight: 700, fontSize: 14 }}>
             {result.name.charAt(0).toUpperCase()}
