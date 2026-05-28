@@ -5,6 +5,8 @@ sidebar:
   order: 1
 ---
 
+import TypeTable from "~/components/TypeTable.astro";
+
 The library splits "the system" from "the look." The **window manager**, the **dock**, the **menu bar**, the **windowing rules**, the **keyboard shortcuts** — all of that is the skeleton. **Themes** are token bags that dress it.
 
 ## Two ways themes flex
@@ -18,19 +20,7 @@ Runtime themes are not full theme swaps. They are **overlays**: user prefs sit o
 
 ## `OsTheme` shape
 
-```ts
-interface OsTheme {
-  id: string;
-  name: string;
-  palette:   { background, surface, textPrimary, textSecondary, accent, border };
-  shape:     { windowRadius, dockTileRadius, small };
-  motion:    { windowOpenDurationMs, windowOpenEasing, dockHoverDurationMs, genieDurationMs, genieEasing };
-  blur:      { surface, spotlight };
-  wallpaper: { src?, parallax?, vignette? };
-  chrome:    { windowControls, dockPosition, menuBar };
-  customizable?: Record<string, CustomizableField>;
-}
-```
+<TypeTable name="OsTheme" hideDescription />
 
 Six token categories plus an optional **customizable** map. The library's components consume tokens via `useTheme()`.
 
@@ -47,13 +37,7 @@ Six token categories plus an optional **customizable** map. The library's compon
 
 ## `chrome` — the structural lever
 
-```ts
-chrome: {
-  windowControls: "traffic-lights" | "windows" | "minimal";
-  dockPosition:   "bottom" | "left" | "hidden";
-  menuBar:        "top" | "in-window" | "none";
-}
-```
+<TypeTable name="OsThemeChrome" hideDescription />
 
 This is the part that does not exist in component libraries. It is what lets a SaaS dashboard hide the wallpaper and put the dock on the left, and lets a maker tool keep the full macOS register. Same components, different stance.
 

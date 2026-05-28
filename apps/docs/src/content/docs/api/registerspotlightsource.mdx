@@ -5,6 +5,8 @@ sidebar:
   order: 5
 ---
 
+import TypeTable from "~/components/TypeTable.astro";
+
 `registerSpotlightSource` lets a feature contribute rows to [Spotlight](/components/spotlight/) without going through the app registry or the system-window registry. Use it for docs pages, bookmarks, recent files, search-as-you-type API results — anything where activating a row should run a callback rather than open a window.
 
 ## Import
@@ -20,23 +22,16 @@ import type {
 ## Signature
 
 ```ts
-function registerSpotlightSource(
-  id: string,
-  source: SpotlightSource,
-): () => void;
-
-type SpotlightSource = (query: string) => SpotlightResult[];
-
-interface SpotlightResult {
-  id: string;
-  name: string;
-  tagline?: string;
-  accent?: string;
-  icon?: ReactNode;
-  kindLabel?: string;
-  onActivate: () => void;
-}
+function registerSpotlightSource(id: string, source: SpotlightSource): () => void;
 ```
+
+### `SpotlightSource`
+
+<TypeTable name="SpotlightSource" />
+
+### `SpotlightResult`
+
+<TypeTable name="SpotlightResult" hideDescription />
 
 `id` is a stable key — registering twice with the same id replaces the previous source. That makes it safe to call from a component that re-mounts.
 

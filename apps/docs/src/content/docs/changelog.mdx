@@ -19,6 +19,7 @@ The library is pre-1.0. Treat every release as potentially breaking; the entries
 
 ### Docs
 
+- **Generated prop / field tables.** `apps/docs/scripts/extract-types.mjs` parses interface and type-alias declarations from each package's source with the TypeScript Compiler API and emits `apps/docs/src/data/types.json`. A new `<TypeTable name="..." />` Astro component renders the rows with the actual JSDoc comments, the optional flag, and a link back to the source file. Used today on `StorageAdapter`, `SpotlightResult`, `SpotlightSource`, `OsTheme`, and `OsThemeChrome`. Runs as part of `dev`, `build`, and `typecheck` so the JSON cannot drift from source.
 - Pivoted `apps/docs` to **Astro Starlight**. Standard left-nav, right TOC, search, theme toggle. Replaced the "docs are windows" prototype with proper component reference pages.
 - `<LivePreview>` Astro component embeds `/playground?demo=<key>` iframes in component pages so each one opens with the relevant feature focused.
 - Per-feature deep-link demos: `?demo=spotlight`, `?demo=settings`, `?demo=window`, `?demo=dock`, `?demo=menubar`, `?demo=recents`.
@@ -42,6 +43,6 @@ The full repo history lives at [github.com/saschb2b/react-ui-os/commits/main](ht
 
 ## Roadmap
 
-- Auto-generated props tables from TypeScript types (replace hand-written reference tables with the single source of truth).
+- Expand `<TypeTable>` coverage to every remaining hand-written field table (Settings, useWindowManager, useTheme, the `customizable` field variants).
 - A branded social card render to replace the wallpaper stand-in (title, logotype, accent stripe).
 - First `1.0.0` release once the API stops moving.

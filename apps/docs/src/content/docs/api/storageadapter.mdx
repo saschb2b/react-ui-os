@@ -5,6 +5,8 @@ sidebar:
   order: 4
 ---
 
+import TypeTable from "~/components/TypeTable.astro";
+
 The library owns persistence but lets the consumer swap the backend. The default adapter is `localStorage`-backed; pass your own to `<Desktop>` for server-side sync, cross-device storage, encrypted local stores, or to mock during tests.
 
 ## Import
@@ -15,14 +17,7 @@ import { createLocalStorageAdapter, type StorageAdapter } from "@react-ui-os/cor
 
 ## Interface
 
-```ts
-interface StorageAdapter {
-  get<T = unknown>(key: string): T | null;
-  set<T>(key: string, value: T): void;
-  remove(key: string): void;
-  subscribe(listener: (key: string) => void): () => void;
-}
-```
+<TypeTable name="StorageAdapter" hideDescription />
 
 The library passes **unprefixed** keys (`"settings:default"`, `"recents"`, etc.). It's the adapter's job to namespace them however it wants.
 

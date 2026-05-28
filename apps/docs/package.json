@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "extract-types": "node scripts/extract-types.mjs",
+    "dev": "node scripts/extract-types.mjs && astro dev",
+    "build": "node scripts/extract-types.mjs && astro build",
     "preview": "astro preview",
-    "typecheck": "astro check",
+    "typecheck": "node scripts/extract-types.mjs && astro check",
     "lint": "eslint src"
   },
   "dependencies": {

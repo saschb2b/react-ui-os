@@ -1,0 +1,505 @@
+{
+  "generatedAt": "2026-05-28T22:00:16.405Z",
+  "types": {
+    "App": {
+      "name": "App",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "description": "Public face of an app installed in the desktop.\n\nApps are the central registry: a single object describing one of these is\npicked up by the dock, the menu bar, Spotlight, keyboard shortcuts, and any\nother surface that knows how to look at the app list. Contributing to one\nplace contributes to all of them.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "description": "URL- and css-safe id. Used as the stable window id (`app:<id>`)."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "optional": false,
+          "description": "Human-readable name shown in the dock, menu bar, and Spotlight."
+        },
+        {
+          "name": "tagline",
+          "type": "string",
+          "optional": true,
+          "description": "Optional one-line subtitle for Spotlight and dock tooltips."
+        },
+        {
+          "name": "accent",
+          "type": "string",
+          "optional": true,
+          "description": "Accent color. Themes use it to tint the dock tile gradient, the window\ntop-edge highlight, and the menu-bar status dot when this app is focused.\nWhen absent, the theme's default accent is used."
+        },
+        {
+          "name": "icon",
+          "type": "ComponentType<{ size?: number }>",
+          "optional": true,
+          "description": "Lucide-style icon. Themes render a fallback letter when absent."
+        },
+        {
+          "name": "iconArt",
+          "type": "ComponentType<{ size?: number }>",
+          "optional": true,
+          "description": "Subject illustration painted inside the dock tile, on top of the accent\ngradient. Optional; themes fall back to `icon` or a letter."
+        },
+        {
+          "name": "defaultBounds",
+          "type": "{ w: number; h: number }",
+          "optional": true,
+          "description": "Default window bounds when first opened. Theme has the fallback."
+        },
+        {
+          "name": "content",
+          "type": "ComponentType<AppContentProps>",
+          "optional": false,
+          "description": "The window's body."
+        }
+      ]
+    },
+    "AppContentProps": {
+      "name": "AppContentProps",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "appId",
+          "type": "string",
+          "optional": false
+        },
+        {
+          "name": "focused",
+          "type": "boolean",
+          "optional": false,
+          "description": "True if this window is the currently focused one."
+        }
+      ]
+    },
+    "OsTheme": {
+      "name": "OsTheme",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "description": "Theme id for storage namespacing."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "optional": false,
+          "description": "Display name shown in dev tooling."
+        },
+        {
+          "name": "palette",
+          "type": "OsThemePalette",
+          "optional": false
+        },
+        {
+          "name": "shape",
+          "type": "OsThemeShape",
+          "optional": false
+        },
+        {
+          "name": "motion",
+          "type": "OsThemeMotion",
+          "optional": false
+        },
+        {
+          "name": "blur",
+          "type": "OsThemeBlur",
+          "optional": false
+        },
+        {
+          "name": "wallpaper",
+          "type": "OsThemeWallpaper",
+          "optional": false
+        },
+        {
+          "name": "chrome",
+          "type": "OsThemeChrome",
+          "optional": false
+        },
+        {
+          "name": "customizable",
+          "type": "Record<string, CustomizableField>",
+          "optional": true,
+          "description": "End-user tweakable subset of the theme. Keys are dotted paths into the\ntheme object (e.g. `\"palette.accent\"`, `\"shape.dockTileRadius\"`). The\nSettings system app reads this map and renders one field per entry; the\nlibrary persists the chosen value via the storage adapter and overlays\nit on top of the theme defaults to produce the effective theme.\n\nA theme that omits this field exposes no settings panel. A theme that\nsupplies ten entries gets a ten-field panel for free."
+        }
+      ]
+    },
+    "OsThemePalette": {
+      "name": "OsThemePalette",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "background",
+          "type": "string",
+          "optional": false,
+          "description": "Fallback background when no wallpaper is set."
+        },
+        {
+          "name": "surface",
+          "type": "string",
+          "optional": false,
+          "description": "Surface tint applied to menu bar, dock, and window chrome."
+        },
+        {
+          "name": "textPrimary",
+          "type": "string",
+          "optional": false,
+          "description": "Primary text color on surfaces."
+        },
+        {
+          "name": "textSecondary",
+          "type": "string",
+          "optional": false,
+          "description": "Secondary / muted text."
+        },
+        {
+          "name": "accent",
+          "type": "string",
+          "optional": false,
+          "description": "Default accent. Apps may override per-app."
+        },
+        {
+          "name": "border",
+          "type": "string",
+          "optional": false,
+          "description": "Border / hairline color."
+        }
+      ]
+    },
+    "OsThemeShape": {
+      "name": "OsThemeShape",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "windowRadius",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "dockTileRadius",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "small",
+          "type": "number",
+          "optional": false,
+          "description": "Small radius for pills, tooltips, menu-bar chips."
+        }
+      ]
+    },
+    "OsThemeMotion": {
+      "name": "OsThemeMotion",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "windowOpenDurationMs",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "windowOpenEasing",
+          "type": "string",
+          "optional": false
+        },
+        {
+          "name": "dockHoverDurationMs",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "genieDurationMs",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "genieEasing",
+          "type": "string",
+          "optional": false
+        }
+      ]
+    },
+    "OsThemeBlur": {
+      "name": "OsThemeBlur",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "surface",
+          "type": "string",
+          "optional": false,
+          "description": "Backdrop-filter applied to surface chrome (menu bar, dock)."
+        },
+        {
+          "name": "spotlight",
+          "type": "string",
+          "optional": false,
+          "description": "Backdrop-filter applied to Spotlight."
+        }
+      ]
+    },
+    "OsThemeWallpaper": {
+      "name": "OsThemeWallpaper",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "src",
+          "type": "string",
+          "optional": true,
+          "description": "Wallpaper image url. When absent, the palette background fills the desktop."
+        },
+        {
+          "name": "parallax",
+          "type": "boolean",
+          "optional": true,
+          "description": "Enables cursor-driven parallax."
+        },
+        {
+          "name": "vignette",
+          "type": "boolean",
+          "optional": true,
+          "description": "Adds a dark vignette over the wallpaper."
+        }
+      ]
+    },
+    "OsThemeChrome": {
+      "name": "OsThemeChrome",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "windowControls",
+          "type": "\"traffic-lights\" | \"windows\" | \"minimal\"",
+          "optional": false
+        },
+        {
+          "name": "dockPosition",
+          "type": "\"bottom\" | \"left\" | \"hidden\"",
+          "optional": false
+        },
+        {
+          "name": "menuBar",
+          "type": "\"top\" | \"in-window\" | \"none\"",
+          "optional": false
+        }
+      ]
+    },
+    "CustomizableField": {
+      "name": "CustomizableField",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "alias",
+      "aliasOf": "| ColorFromPaletteField\n  | ImagePickField\n  | RangeField\n  | SelectField\n  | ToggleField"
+    },
+    "ColorFromPaletteField": {
+      "name": "ColorFromPaletteField",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "kind",
+          "type": "\"color-from-palette\"",
+          "optional": false
+        },
+        {
+          "name": "options",
+          "type": "string[]",
+          "optional": false,
+          "description": "Hex / CSS color strings the user picks from."
+        }
+      ]
+    },
+    "RangeField": {
+      "name": "RangeField",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "kind",
+          "type": "\"range\"",
+          "optional": false
+        },
+        {
+          "name": "min",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "max",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "unit",
+          "type": "string",
+          "optional": true,
+          "description": "Optional unit suffix shown next to the numeric readout."
+        }
+      ]
+    },
+    "SelectField": {
+      "name": "SelectField",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "kind",
+          "type": "\"select\"",
+          "optional": false
+        },
+        {
+          "name": "options",
+          "type": "Array<{ value: string; label: string }>",
+          "optional": false
+        }
+      ]
+    },
+    "ToggleField": {
+      "name": "ToggleField",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "kind",
+          "type": "\"toggle\"",
+          "optional": false
+        }
+      ]
+    },
+    "ImagePickField": {
+      "name": "ImagePickField",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/types.ts",
+      "kind": "interface",
+      "fields": [
+        {
+          "name": "kind",
+          "type": "\"image-pick\"",
+          "optional": false
+        },
+        {
+          "name": "options",
+          "type": "Array<{ src: string; label: string }>",
+          "optional": false
+        }
+      ]
+    },
+    "StorageAdapter": {
+      "name": "StorageAdapter",
+      "package": "@react-ui-os/core",
+      "sourceFile": "packages/core/src/storage/types.ts",
+      "kind": "interface",
+      "description": "Abstract storage backend. The library ships a localStorage adapter and\naccepts custom ones for products that want server-side persistence or\ncross-device sync.",
+      "fields": [
+        {
+          "name": "get",
+          "type": "<T = unknown>(key: string) => T | null",
+          "optional": false
+        },
+        {
+          "name": "set",
+          "type": "<T>(key: string, value: T) => void",
+          "optional": false
+        },
+        {
+          "name": "remove",
+          "type": "(key: string) => void",
+          "optional": false
+        },
+        {
+          "name": "subscribe",
+          "type": "(listener: (key: string) => void) => () => void",
+          "optional": false,
+          "description": "Notify a listener whenever a stored value changes. Returns an unsubscribe\nfunction. Listeners receive the unprefixed key."
+        }
+      ]
+    },
+    "SpotlightResult": {
+      "name": "SpotlightResult",
+      "package": "@react-ui-os/desktop",
+      "sourceFile": "packages/desktop/src/spotlight-sources.ts",
+      "kind": "interface",
+      "description": "One result row contributed by a Spotlight source. Sources are how features\noutside the apps registry and the system-window registry surface in the\nCmd-K palette — recently opened docs pages, presets, downloads, bookmarks,\nor anything else the consumer wants to make findable.",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "description": "Stable id used as the React key and the dedup token."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "optional": false,
+          "description": "Visible row label."
+        },
+        {
+          "name": "tagline",
+          "type": "string",
+          "optional": true,
+          "description": "Optional one-line subtitle on the right."
+        },
+        {
+          "name": "accent",
+          "type": "string",
+          "optional": true,
+          "description": "Accent color tinting the row's tile gradient."
+        },
+        {
+          "name": "icon",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Optional icon node rendered inside the tile."
+        },
+        {
+          "name": "kindLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Source-side label such as \"Doc · Spotlight\", \"Preset · Tubes\"."
+        },
+        {
+          "name": "onActivate",
+          "type": "() => void",
+          "optional": false,
+          "description": "What to do when the row is activated (Enter or click)."
+        }
+      ]
+    },
+    "SpotlightSource": {
+      "name": "SpotlightSource",
+      "package": "@react-ui-os/desktop",
+      "sourceFile": "packages/desktop/src/spotlight-sources.ts",
+      "kind": "alias",
+      "description": "A Spotlight source returns the current set of results for a given query.\nReceives the raw query string (lowercased, trimmed) and returns the rows\nto merge into the Spotlight panel. Returning an empty array when the\nquery doesn't apply is the convention.",
+      "aliasOf": "(query: string) => SpotlightResult[]"
+    }
+  }
+}
