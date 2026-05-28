@@ -1,0 +1,69 @@
+---
+title: App switcher
+description: Cmd/Ctrl + Tab brings up a centered overlay of every running app. Hold the modifier and tab through; release to activate.
+sidebar:
+  order: 10
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+Hold `Cmd` (macOS) or `Ctrl` (Windows / Linux) and press `Tab`. A centered overlay appears with one large tile per running app. Keep the modifier held and press `Tab` again to step forward, `Shift+Tab` to step back. Release the modifier and the focused app comes to the front. `Esc` cancels without switching.
+
+<LivePreview src="?demo=dock" label="Hit Cmd+Tab inside the playground to switch between Hello, Notes, and Calculator" height="460px" />
+
+The order is most-recently-used. The first `Cmd+Tab` selects the second entry — the app you used just before the current one — so a quick tap-and-release switches to that app without thinking. Subsequent presses walk the rest of the list.
+
+## Behavior
+
+| Action                          | Effect                                                    |
+| ------------------------------- | --------------------------------------------------------- |
+| `Cmd/Ctrl + Tab` (first press)  | Open the switcher; select MRU app (second-most recent)    |
+| `Cmd/Ctrl + Shift + Tab`        | Same, but select the last entry                           |
+| Hold modifier + `Tab`           | Step forward through the list, wrapping                   |
+| Hold modifier + `Shift + Tab`   | Step backward                                             |
+| Release the modifier            | Bring the selected app's window to the front              |
+| `Esc`                           | Close without switching                                   |
+| Window blur                     | Close without switching                                   |
+
+Apps that have no open window are excluded — the switcher targets running apps, not the registry. To launch a non-running app from the keyboard, use `Cmd/Ctrl + 1..9` or `Cmd/Ctrl + K` (Spotlight).
+
+## How MRU order is derived
+
+Each window in the manager carries a `z` index that's bumped whenever it's focused. The switcher reads windows sorted by `z` descending and dedupes by `appId`, so the topmost stack of focuses is the implicit MRU order. No separate history is needed.
+
+```tsx
+import { useWindowManager } from "@react-ui-os/core";
+
+const { windows } = useWindowManager();
+const recentApps = [...windows]
+  .sort((a, b) => b.z - a.z)
+  .filter((w) => w.payload.kind === "app");
+```
+
+## Customizing or replacing
+
+The default `<AppSwitcher>` is mounted by `<Desktop>`. To swap it for your own, drop down to `<DesktopProvider>` and skip `<AppSwitcher>` — your replacement is just another component reading `useWindowManager()` and listening for the chord.
+
+```tsx
+<DesktopProvider apps={apps} theme={theme}>
+  <Wallpaper />
+  <MenuBar />
+  <WindowLayer />
+  <Dock />
+  <MyCustomSwitcher />
+  {/* ... */}
+</DesktopProvider>
+```
+
+## Accessibility
+
+- The overlay is `role="dialog" aria-label="Application switcher"`.
+- Each tile carries a `title` attribute so screen readers announce the app name even before activation.
+- Modifier-up commits the selection — keyboard-only users never have to reach for the mouse.
+- Form-field focus is preserved: text inputs never trigger the switcher accidentally.
+
+## See also
+
+- [Window](/components/window/) — what gets focused on activation.
+- [Spotlight](/components/spotlight/) — the launcher counterpart to the switcher.
+- [`useWindowManager`](/api/usewindowmanager/) — the API for reading running windows.
