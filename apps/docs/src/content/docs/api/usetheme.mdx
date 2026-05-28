@@ -1,0 +1,69 @@
+---
+title: useTheme
+description: Returns the active OsTheme — declared theme overlaid with user prefs. Reactive; re-renders consumers when prefs change.
+sidebar:
+  order: 2
+---
+
+`useTheme()` returns the **effective** theme: the consumer's declared theme overlaid with whatever user prefs the Settings panel has written. Components consume it to read accents, motion durations, blur strings, and chrome variants.
+
+## Import
+
+```tsx
+import { useTheme } from "@react-ui-os/desktop";
+```
+
+## Returns
+
+`OsTheme` (see [Themes overview](/themes/overview/) for the full token shape):
+
+```ts
+interface OsTheme {
+  id: string;
+  name: string;
+  palette: OsThemePalette;
+  shape: OsThemeShape;
+  motion: OsThemeMotion;
+  blur: OsThemeBlur;
+  wallpaper: OsThemeWallpaper;
+  chrome: OsThemeChrome;
+  customizable?: Record<string, CustomizableField>;
+}
+```
+
+## Reactivity
+
+`useTheme()` re-renders any consumer when:
+
+- The consumer passes a new `theme` prop to `<Desktop>` / `<DesktopProvider>`.
+- A user pref is written through `useSettings().setPref(...)` (or `resetPref` / `resetAll`).
+- An external write to the storage adapter touches the prefs key (cross-tab sync via the native `storage` event).
+
+## Example
+
+```tsx
+function AccentSwatch() {
+  const theme = useTheme();
+  return (
+    <span style={{ display: "inline-block", width: 12, height: 12, borderRadius: 6, background: theme.palette.accent }} />
+  );
+}
+```
+
+## Base vs effective
+
+If you specifically need the **base** theme (before user prefs are layered on) — say, to enumerate the original `customizable` options regardless of overrides — use `useBaseTheme()`:
+
+```tsx
+import { useBaseTheme } from "@react-ui-os/desktop";
+
+const base = useBaseTheme();
+console.log(Object.keys(base.customizable ?? {}));
+```
+
+Components almost always want `useTheme()`. `useBaseTheme()` is for inspector tooling.
+
+## See also
+
+- [`useSettings`](/api/usesettings/) — how the overrides are written.
+- [Customizable schema](/themes/customizable/) — what a theme exposes to the panel.

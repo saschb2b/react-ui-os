@@ -1,0 +1,61 @@
+---
+title: Spotlight
+description: A Cmd-K command palette that fuzzy-searches across registered apps and system windows. Activating any result reuses the same openWindow primitive a dock click uses.
+sidebar:
+  order: 5
+---
+
+`Spotlight` is the keyboard front door. It is self-contained: owns its own open/close state, listens for both Cmd-K and a custom event, and restores the previously focused element when it closes.
+
+## Import
+
+```tsx
+import { Spotlight, SPOTLIGHT_OPEN_EVENT } from "@react-ui-os/desktop";
+```
+
+## Props
+
+None. Drop the component anywhere inside `<DesktopProvider>` and it works. The default `<Desktop>` already mounts it.
+
+## Opening Spotlight
+
+| Trigger                                                         | Behavior                                                        |
+| --------------------------------------------------------------- | --------------------------------------------------------------- |
+| `Cmd-K` (macOS) / `Ctrl-K` (elsewhere)                           | Toggles the palette. Bails when typing in an input or textarea. |
+| `window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT))`    | Opens from any component without prop drilling.                 |
+| A custom button calling the above                                | Standard pattern for a "search" button in your own menu bar.    |
+
+## Result kinds
+
+| Kind     | Source                                                                                  |
+| -------- | --------------------------------------------------------------------------------------- |
+| App      | Every entry in the `apps` prop passed to `<Desktop>` / `<DesktopProvider>`.             |
+| System   | Every entry in the `systemWindows` registry (Settings by default, plus any you register). |
+
+Each row shows the app or system window's accent tile, name, and tagline. Activating an entry calls `openWindow(...)`, the same primitive a dock click uses. From "I typed three letters" to "the right window is on top" is one keystroke and one dispatch.
+
+## Keyboard
+
+| Key            | Effect                                                              |
+| -------------- | ------------------------------------------------------------------- |
+| ↑ / ↓          | Move selection. Wraps at the ends.                                  |
+| Enter          | Activate the selected result.                                       |
+| Escape         | Dismiss. Focus returns to whatever owned it before Spotlight opened. |
+| Cmd/Ctrl-K     | Dismiss (toggle off).                                               |
+
+## Adding your own results
+
+A future release exposes `registerSpotlightSource(...)` for arbitrary result kinds (docs pages, recent files, anything). For now, contribute via `registerSystemWindow(...)` — every registered system window automatically shows up as a Spotlight result.
+
+## Accessibility
+
+- Backdrop is `role="presentation"` with click-to-dismiss.
+- Panel is `role="dialog" aria-modal="true" aria-label="Spotlight"`.
+- Results list is `role="listbox" aria-label="Spotlight results"`.
+- Each row is `role="option" aria-selected="<bool>"`.
+- Focus restoration on close — never traps the user.
+
+## See also
+
+- [KeyboardShortcuts](/components/desktopicons/#see-also) registers the global Cmd-K binding.
+- [registerSystemWindow](/components/desktopicons/) — how to surface custom windows in Spotlight.

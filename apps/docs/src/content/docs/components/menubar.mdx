@@ -1,0 +1,57 @@
+---
+title: MenuBar
+description: System chrome at the top of the desktop. Brand label on the left, the focused app's name in the middle, a live system clock on the right.
+sidebar:
+  order: 4
+---
+
+`MenuBar` renders the top 28 px of the desktop. It is system chrome — application-specific actions belong inside the window, not here. Hidden when `theme.chrome.menuBar` is `"none"`.
+
+## Import
+
+```tsx
+import { MenuBar, MENU_BAR_HEIGHT } from "@react-ui-os/desktop";
+```
+
+## Props
+
+| Prop    | Type     | Default          | Description                                                       |
+| ------- | -------- | ---------------- | ----------------------------------------------------------------- |
+| `brand` | `string` | `"react-ui-os"`  | Label rendered on the far left of the bar in bold.                |
+
+## Composition
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│ brand · focused-app-name                          Thu Mar 5 13:42 │
+└──────────────────────────────────────────────────────────────┘
+```
+
+- **Left cluster:** the `brand` prop, followed by the focused app's `name` (or the focused system window's resolved name) separated by a thin border.
+- **Right cluster:** a live system clock formatted via `Intl.DateTimeFormat`. SSR-safe: renders nothing on first paint, then updates on mount.
+
+## What goes here
+
+✓ Brand label.
+✓ Focused application name.
+✓ System-level status: clock, online indicator, sync state.
+
+✗ App-specific actions, menus, or buttons. Those belong inside the window.
+
+## Configuration via theme
+
+| `theme.chrome.menuBar` | Behavior                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| `"top"`                | Renders the bar at the top of the viewport (default).                                      |
+| `"none"`               | Returns `null`. App identity then needs to surface inside the windows themselves.          |
+
+## Exports
+
+| Export             | Description                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------ |
+| `MENU_BAR_HEIGHT`  | Pixel height of the bar (28). Useful when laying out custom surfaces that must clear it.   |
+
+## See also
+
+- [Themes overview](/themes/overview/) covers the `chrome.menuBar` token.
+- [Window](/components/window/) reads `MENU_BAR_HEIGHT` to position its top edge.

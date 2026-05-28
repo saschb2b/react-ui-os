@@ -1,0 +1,69 @@
+---
+title: Dock
+description: The floating app dock. Horizontal pill at the bottom or vertical rail on the left, depending on the active theme's chrome.
+sidebar:
+  order: 3
+---
+
+The dock renders one tile per registered app. Clicking a tile toggles the app's window: open if not running, focus + restore if minimized or unfocused, otherwise minimize. Hidden when `theme.chrome.dockPosition` is `"hidden"`.
+
+## Import
+
+```tsx
+import { Dock, DOCK_HEIGHT, DOCK_WIDTH, getDockTileRect } from "@react-ui-os/desktop";
+```
+
+## Props
+
+None. The dock reads everything it needs from `useApps()` and `useTheme()`.
+
+## Position
+
+The dock honors `theme.chrome.dockPosition`:
+
+| Value      | Layout                                                                                  |
+| ---------- | --------------------------------------------------------------------------------------- |
+| `"bottom"` | Horizontal pill centered at the bottom edge with hover-lift on `translateY`.            |
+| `"left"`   | Vertical rail centered on the left edge with hover-lift on `translateX`.                |
+| `"hidden"` | Returns `null`. Apps are reachable via Spotlight, keyboard shortcuts, or `openWindow`.  |
+
+## Tile appearance
+
+Each tile renders the app's accent as a linear gradient with a top sheen. The library accepts three optional visual hooks per app:
+
+| Field            | Used by tile                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| `app.iconArt`    | A subject illustration painted on top of the gradient. Best for distinctive identities. |
+| `app.icon`       | A small Lucide-style icon component, fallback when `iconArt` is absent.                 |
+| `app.name`       | Initial letter shown if neither icon is provided.                                       |
+
+## Indicator dot
+
+A small dot under (bottom dock) or beside (left dock) the tile reflects state:
+
+- **Hidden** when the app is not open
+- **Dim** when open but unfocused (or minimized)
+- **Bright** (using `theme.palette.textPrimary`) when focused
+
+## Helper: `getDockTileRect`
+
+```tsx
+import { getDockTileRect } from "@react-ui-os/desktop";
+
+const rect = getDockTileRect("notes");
+// → DOMRect | null
+```
+
+Returns the live bounding rect of the named dock tile. Used internally by the minimize-genie animation; consumers can use it to align tooltips, badges, or "fly-to-dock" effects.
+
+## Exports
+
+| Export         | Description                                                                                                          |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `DOCK_HEIGHT`  | Footprint when docked at the bottom (default 76 px). Useful for `position: fixed` layouts that need to clear it.     |
+| `DOCK_WIDTH`   | Footprint when docked on the left. Same purpose.                                                                     |
+
+## See also
+
+- [MenuBar](/components/menubar/) sits on the opposite edge.
+- [Themes overview](/themes/overview/) explains `chrome.dockPosition`.

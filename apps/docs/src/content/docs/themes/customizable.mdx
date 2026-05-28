@@ -1,0 +1,95 @@
+---
+title: Customizable schema
+description: How a theme declares which of its tokens end users may tweak through Settings.
+sidebar:
+  order: 2
+---
+
+The `customizable` field on a theme is a map from **dotted theme paths** to **field descriptors**. The library renders one editor per entry inside the Settings system window, applies user overrides on top of the theme defaults, and persists them through the storage adapter.
+
+## The map
+
+```ts
+customizable: {
+  "palette.accent": {
+    kind: "color-from-palette",
+    label: "Accent",
+    options: ["#5cb6b9", "#7c66f5", "#a855f7", "#ec4899"],
+  },
+  "shape.windowRadius": {
+    kind: "range",
+    label: "Window radius",
+    min: 0,
+    max: 24,
+    step: 2,
+    unit: "px",
+  },
+  "chrome.dockPosition": {
+    kind: "select",
+    label: "Dock position",
+    options: [
+      { value: "bottom", label: "Bottom" },
+      { value: "left",   label: "Left" },
+      { value: "hidden", label: "Hidden" },
+    ],
+  },
+}
+```
+
+- **Keys are dotted paths** into `OsTheme`. The library walks them to write the override.
+- A theme that omits `customizable` (or sets it to `{}`) exposes no Settings panel.
+- Stale prefs (paths the theme later removed) are silently ignored.
+
+## Field kinds
+
+| Kind                  | Editor                                                                                  | Required fields                                            |
+| --------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `color-from-palette`  | A row of color swatches.                                                                | `options: string[]` (hex / CSS colors)                     |
+| `image-pick`          | A thumbnail grid.                                                                       | `options: Array<{ src: string; label: string }>`           |
+| `range`               | A slider with a tabular-numeric readout.                                                | `min`, `max`, `step`; optional `unit`                      |
+| `select`              | A segmented control.                                                                    | `options: Array<{ value: string; label: string }>`         |
+| `toggle`              | An iOS-style switch (`role="switch"`).                                                  | _(none)_                                                   |
+
+Every kind also accepts `label: string`, `description?: string`, and `section?: string`.
+
+## Grouping with `section`
+
+```ts
+"palette.accent":        { section: "Appearance", … },
+"shape.windowRadius":    { section: "Appearance", … },
+"motion.genieDurationMs":{ section: "Motion", … },
+"chrome.dockPosition":   { section: "Layout", … },
+```
+
+Fields sharing a `section` value render together with the section name as a small uppercase heading.
+
+## Effective tokens
+
+```text
+defaults  <  declared theme  <  user prefs
+```
+
+At runtime the active theme is `applyPrefs(baseTheme, prefs)`. The function walks each pref path, shallow-clones along the way, and writes the leaf — leaving everything else untouched. The library re-runs this on every pref change.
+
+## Reading what a theme exposes
+
+From any component:
+
+```tsx
+import { useSettings } from "@react-ui-os/desktop";
+
+const { schema } = useSettings();
+const fieldsByCategory = Object.entries(schema).map(([path, def]) => ({
+  path,
+  category: path.split(".")[0],
+  ...def,
+}));
+```
+
+The full hook surface is in [`useSettings`](/api/usesettings/).
+
+## See also
+
+- [Settings](/components/settings/) — the UI that renders the schema.
+- [`useSettings`](/api/usesettings/) — the read / write hook.
+- [Writing a theme](/themes/writing/) — declaring `customizable` in your own theme.

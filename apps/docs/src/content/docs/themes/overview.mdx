@@ -1,0 +1,85 @@
+---
+title: Overview
+description: The skeleton is one thing. The look is a theme. react-ui-os ships a neutral baseline plus a cinematic Mintables theme, and you can write your own.
+sidebar:
+  order: 1
+---
+
+The library splits "the system" from "the look." The **window manager**, the **dock**, the **menu bar**, the **windowing rules**, the **keyboard shortcuts** — all of that is the skeleton. **Themes** are token bags that dress it.
+
+## Two ways themes flex
+
+| Layer            | What changes                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| **Build-time**   | The consumer picks one theme at app boot. `<Desktop theme={mintables} />` vs. `<Desktop theme={defaultTheme} />`. |
+| **Runtime**      | The end user tweaks a bounded subset via the Settings panel. The theme declares which tokens are open. |
+
+Runtime themes are not full theme swaps. They are **overlays**: user prefs sit on top of the declared theme's defaults, and only the paths the theme listed under `customizable` are applied. Stale prefs (a token the theme later removed) are silently ignored.
+
+## `OsTheme` shape
+
+```ts
+interface OsTheme {
+  id: string;
+  name: string;
+  palette:   { background, surface, textPrimary, textSecondary, accent, border };
+  shape:     { windowRadius, dockTileRadius, small };
+  motion:    { windowOpenDurationMs, windowOpenEasing, dockHoverDurationMs, genieDurationMs, genieEasing };
+  blur:      { surface, spotlight };
+  wallpaper: { src?, parallax?, vignette? };
+  chrome:    { windowControls, dockPosition, menuBar };
+  customizable?: Record<string, CustomizableField>;
+}
+```
+
+Six token categories plus an optional **customizable** map. The library's components consume tokens via `useTheme()`.
+
+## What each category covers
+
+| Category    | Drives                                                                                                          |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
+| `palette`   | Surface colors, text colors, baseline accent, hairline borders. App accents override the baseline per-app.      |
+| `shape`     | Radii: `windowRadius` (large), `dockTileRadius` (squircle), `small` (pills, chips, tooltips).                    |
+| `motion`    | Durations in milliseconds and easings as CSS strings. Window open, dock hover, minimize genie.                  |
+| `blur`      | `backdrop-filter` strings for the menu bar / dock surface and for Spotlight separately.                          |
+| `wallpaper` | `src` (image URL), `parallax` (cursor-driven shift), `vignette` (dark radial overlay).                           |
+| `chrome`    | Structural variants: window control style, dock position, menu-bar placement.                                    |
+
+## `chrome` — the structural lever
+
+```ts
+chrome: {
+  windowControls: "traffic-lights" | "windows" | "minimal";
+  dockPosition:   "bottom" | "left" | "hidden";
+  menuBar:        "top" | "in-window" | "none";
+}
+```
+
+This is the part that does not exist in component libraries. It is what lets a SaaS dashboard hide the wallpaper and put the dock on the left, and lets a maker tool keep the full macOS register. Same components, different stance.
+
+## Themes that ship
+
+| Package                       | Stance                                                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `@react-ui-os/theme-default`  | Unbranded baseline. Dark, neutral palette, no wallpaper, full macOS chrome. Use when you want to feel the skeleton. |
+| `@react-ui-os/theme-mintables` | Cinematic frosted glass. Deep blur, teal accent, parallax + vignette wallpaper, traffic lights.                   |
+
+## Picking a theme
+
+```tsx
+import { defaultTheme } from "@react-ui-os/theme-default";
+import { createMintablesTheme } from "@react-ui-os/theme-mintables";
+
+// Build-time choice.
+const theme = process.env.NODE_ENV === "production"
+  ? createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" })
+  : defaultTheme;
+
+<Desktop apps={apps} theme={theme} />;
+```
+
+## See also
+
+- [Customizable schema](/themes/customizable/) — how a theme exposes runtime overrides to Settings.
+- [Writing a theme](/themes/writing/) — `createOsTheme` patterns.
+- [`useTheme`](/api/usetheme/) — reading tokens from a component.

@@ -1,0 +1,139 @@
+---
+title: FileExplorer
+description: Item-agnostic Finder-style browser. Multi-select, Shift-range, right-click context menu, F2 rename. Pass it your items, get the macOS interaction model.
+sidebar:
+  order: 7
+---
+
+`FileExplorer` is a generic primitive. Hosts pass an `items` array mapped to `ExplorerItem`, optional `actions`, an `onOpen`, and (for editable lists) an `onRename`. The explorer owns selection, view mode, sort, search, rename, and the right-click context menu.
+
+## Import
+
+```tsx
+import {
+  FileExplorer,
+  type ExplorerItem,
+  type ExplorerAction,
+  type ExplorerSidebarSection,
+} from "@react-ui-os/desktop";
+```
+
+## Usage
+
+```tsx
+const items: ExplorerItem[] = downloads.map((d) => ({
+  id: d.id,
+  name: d.filename,
+  kind: d.format,
+  timestamp: d.createdAt,
+  icon: <FileIcon />,
+}));
+
+<FileExplorer
+  items={items}
+  onOpen={(item) => reopen(item.id)}
+  onRename={(item, newName) => rename(item.id, newName)}
+  actions={[
+    {
+      id: "delete",
+      label: "Delete",
+      shortcut: "⌫",
+      danger: true,
+      onClick: (selected) => selected.forEach((s) => del(s.id)),
+    },
+  ]}
+/>
+```
+
+## Props
+
+| Prop          | Type                                       | Default         | Description                                                                       |
+| ------------- | ------------------------------------------ | --------------- | --------------------------------------------------------------------------------- |
+| `items`       | `T[]` (extends `ExplorerItem`)             | **required**    | The list to render. Order is preserved; sort + filter are applied on top.         |
+| `onOpen`      | `(item: T) => void`                        | `undefined`     | Called on Enter or double-click. Receives the single item.                        |
+| `onRename`    | `(item: T, newName: string) => void`       | `undefined`     | Enables F2 + context-menu Rename. Receives the new name after Enter or blur.      |
+| `actions`     | `ExplorerAction<T>[]`                      | `[]`            | Toolbar + context-menu actions. See [Actions](#actions) below.                    |
+| `sidebar`     | `ExplorerSidebarSection[]`                 | `undefined`     | Optional Finder-style left rail. Hidden when not provided.                        |
+| `emptyState`  | `ReactNode`                                | `"Nothing here yet."` | Shown when `items.length === 0`.                                              |
+| `defaultView` | `"icons"` \| `"list"`                      | `"icons"`       | Initial view mode. The toolbar toggle is always available.                        |
+
+## `ExplorerItem` shape
+
+```ts
+interface ExplorerItem {
+  id: string;
+  name: string;
+  kind?: string;        // "Kind" cell in list view + sort field
+  timestamp?: number;   // epoch ms — drives the Date column + sort
+  subtitle?: string;    // optional one-line subtitle in icon view
+  meta?: string;        // optional right-aligned metadata in list view
+  icon?: ReactNode;     // tile icon in grid view
+  iconSmall?: ReactNode; // compact icon in list view (defaults to `icon`)
+}
+```
+
+## Actions
+
+```ts
+interface ExplorerAction<T extends ExplorerItem = ExplorerItem> {
+  id: string;
+  label: string;
+  icon?: ReactNode;
+  onClick: (items: T[]) => void;
+  danger?: boolean;     // red label + divider in context menu
+  singleOnly?: boolean; // hidden when >1 items selected
+  shortcut?: string;    // keyboard hint in the context menu ("⌫", "F2")
+}
+```
+
+- `onClick` receives the full current selection. Actions are **bulk-safe** by default; mark single-item actions with `singleOnly: true`.
+- Actions with `id: "delete"` are auto-bound to the **Delete** / **Backspace** key.
+- `danger: true` rows render in red and sit below a divider in the context menu.
+
+## Sidebar
+
+```ts
+interface ExplorerSidebarSection {
+  label: string;
+  items: ExplorerSidebarItem[];
+}
+
+interface ExplorerSidebarItem {
+  id: string;
+  label: string;
+  icon?: ReactNode;
+  iconColor?: string;
+  active?: boolean;
+  onClick: () => void;
+}
+```
+
+Used to mirror Finder's "Favorites" rail. Hosts decide what activation does (route navigation, opening a different folder window, etc.).
+
+## Interaction model
+
+The interaction model matches macOS Finder; drift from this only with a good reason.
+
+| Gesture / key              | Effect                                                              |
+| -------------------------- | ------------------------------------------------------------------- |
+| Click an item              | Replaces the selection                                              |
+| Cmd / Ctrl + click         | Toggles the item in/out                                             |
+| Shift + click              | Range-selects from the anchor                                       |
+| Click on empty space       | Clears the selection                                                |
+| Double-click               | `onOpen(item)`                                                      |
+| Right-click on an item     | Promotes (if not already selected), opens item context menu         |
+| Right-click on empty space | Opens "View as" / "Sort by" context menu                            |
+| `Enter`                    | Opens the single selected item                                      |
+| `F2`                       | Begins rename (stem pre-selected; Enter / blur commits, Esc cancels) |
+| `Delete` / `Backspace`     | Invokes the action with `id: "delete"` if present                   |
+| `Cmd` / `Ctrl + A`         | Selects all filtered items                                          |
+| `Escape`                   | Clears selection, closes menus, cancels rename                      |
+
+## Self-healing selection
+
+When `items` changes (e.g. after a delete), the explorer drops any selected ids that no longer exist. Hosts don't need to manage that.
+
+## See also
+
+- The [Downloads folder pattern](/components/desktopicons/#state-earned-folders) in `DesktopIcons` uses FileExplorer inside a state-earned system window.
+- [Recents demo](/playground) in the playground.

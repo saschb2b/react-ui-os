@@ -1,0 +1,133 @@
+---
+title: Writing a theme
+description: Author an OsTheme from scratch. Tokens, factory functions, customizable schema, what assets ship and what doesn't.
+sidebar:
+  order: 3
+---
+
+A theme is plain data. There's no JSX, no React state, no build step beyond TypeScript. You author it as a typed object (or a function that returns one) and the library renders the desktop with it.
+
+## Shape
+
+```ts
+import type { OsTheme } from "@react-ui-os/core";
+
+export const myTheme: OsTheme = {
+  id: "my-theme",
+  name: "My theme",
+  palette: { … },
+  shape: { … },
+  motion: { … },
+  blur: { … },
+  wallpaper: { … },
+  chrome: { … },
+  customizable: { … },
+};
+```
+
+See [Themes overview](/themes/overview/) for what each category contains.
+
+## Factory functions
+
+Themes that need assets the consumer provides (a wallpaper image, a brand accent) should expose a **factory function**, not a static object. This keeps the theme package free of bundled binary assets and lets every consumer point at their own paths.
+
+```ts
+export interface MyThemeOptions {
+  wallpaperSrc?: string;
+  accent?: string;
+}
+
+export function createMyTheme(opts: MyThemeOptions = {}): OsTheme {
+  return {
+    id: "my-theme",
+    name: "My theme",
+    palette: { /* … */, accent: opts.accent ?? "#5cb6b9" },
+    wallpaper: { src: opts.wallpaperSrc, parallax: true, vignette: true },
+    // …
+  };
+}
+```
+
+Consumers then call it at boot:
+
+```tsx
+const theme = createMyTheme({ wallpaperSrc: "/wallpaper.jpg" });
+<Desktop apps={apps} theme={theme} />;
+```
+
+## Asset ownership
+
+The library does **not** bundle wallpaper images, fonts, or icons into themes. Reasons:
+
+- **Tree-shaking.** A theme that bundles a 200 KB JPEG forces every consumer to ship it.
+- **Customization.** Half the value of a theme is letting consumers swap the wallpaper for their own.
+- **Licensing.** Assets and code have different license stories.
+
+Consumers serve their own assets from `public/` (or equivalent), pass the URL to the factory, and the theme writes it into `wallpaper.src`.
+
+## Customizable schema
+
+Themes opt in to runtime tweaks by declaring `customizable`:
+
+```ts
+customizable: {
+  "palette.accent": {
+    kind: "color-from-palette",
+    section: "Appearance",
+    label: "Accent",
+    options: ["#5cb6b9", "#7c66f5", "#a855f7", "#ec4899"],
+  },
+  "chrome.dockPosition": {
+    kind: "select",
+    section: "Layout",
+    label: "Dock position",
+    options: [
+      { value: "bottom", label: "Bottom" },
+      { value: "left",   label: "Left" },
+      { value: "hidden", label: "Hidden" },
+    ],
+  },
+}
+```
+
+The full reference is at [Customizable schema](/themes/customizable/).
+
+## Picking sensible defaults
+
+Some rules of thumb from `theme-default` and `theme-mintables`:
+
+- **Surface colors with alpha.** `rgba(20, 22, 32, 0.62)` lets `blur.surface` actually frost something. Solid colors defeat the effect.
+- **Open animations at 180-220 ms.** Faster reads as snappy; slower reads as sluggish. Mintables runs 220 ms because the cinematic register can afford it.
+- **Genie minimize at 280-320 ms.** Long enough to read as physical, short enough not to drag.
+- **One blur value for surface, one for Spotlight.** Spotlight typically wants a deeper blur because it floats over everything.
+- **`palette.border` at `rgba(255,255,255,0.08-0.10)`.** Hairlines should feel intentional but not bright.
+
+## Publishing
+
+Themes are tiny — single-file packages. The Mintables theme is ~120 lines. A minimal `package.json`:
+
+```json
+{
+  "name": "@my-org/theme-acme",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "dependencies": {
+    "@react-ui-os/core": "^1.0.0"
+  }
+}
+```
+
+Build with `tsup` (ESM + CJS + types) and you're done.
+
+## See also
+
+- [`OsTheme`](/themes/overview/) — the full token reference.
+- [Customizable schema](/themes/customizable/) — what runtime tweaks look like.
+- [`useTheme`](/api/usetheme/) — how components consume tokens.

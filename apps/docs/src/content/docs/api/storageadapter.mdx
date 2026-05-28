@@ -1,0 +1,121 @@
+---
+title: StorageAdapter
+description: The persistence interface the library writes user prefs, downloads, presets, and state-earned-folder predicates through. localStorage by default; swap for server-backed sync.
+sidebar:
+  order: 4
+---
+
+The library owns persistence but lets the consumer swap the backend. The default adapter is `localStorage`-backed; pass your own to `<Desktop>` for server-side sync, cross-device storage, encrypted local stores, or to mock during tests.
+
+## Import
+
+```tsx
+import { createLocalStorageAdapter, type StorageAdapter } from "@react-ui-os/core";
+```
+
+## Interface
+
+```ts
+interface StorageAdapter {
+  get<T = unknown>(key: string): T | null;
+  set<T>(key: string, value: T): void;
+  remove(key: string): void;
+  subscribe(listener: (key: string) => void): () => void;
+}
+```
+
+The library passes **unprefixed** keys (`"settings:default"`, `"recents"`, etc.). It's the adapter's job to namespace them however it wants.
+
+## The default adapter
+
+```tsx
+const storage = createLocalStorageAdapter(); // prefix "rui-os"
+// or
+const storage = createLocalStorageAdapter("acme-os"); // namespace
+```
+
+Behavior:
+
+- Writes JSON-stringify the value and call `localStorage.setItem(prefix:key, json)`.
+- Dispatches a `CustomEvent("react-ui-os:storage-changed", { detail: { key } })` for in-tab subscribers.
+- Listens to the native `storage` event for cross-tab updates.
+- SSR-safe: every method short-circuits when `window` is undefined.
+
+## Custom backends
+
+### Server-backed
+
+```ts
+const remote: StorageAdapter = {
+  get: (key) => fetchPref(key),
+  set: (key, value) => savePref(key, value),
+  remove: (key) => deletePref(key),
+  subscribe: (listener) => {
+    const source = new EventSource("/prefs/stream");
+    source.onmessage = (e) => listener(JSON.parse(e.data).key);
+    return () => source.close();
+  },
+};
+
+<Desktop apps={apps} theme={theme} storage={remote} />;
+```
+
+### Encrypted localStorage
+
+Wrap the default adapter and run `encrypt` / `decrypt` on the values:
+
+```ts
+const base = createLocalStorageAdapter();
+const encrypted: StorageAdapter = {
+  ...base,
+  get: (key) => {
+    const raw = base.get<string>(key);
+    return raw ? JSON.parse(decrypt(raw)) : null;
+  },
+  set: (key, value) => base.set(key, encrypt(JSON.stringify(value))),
+};
+```
+
+### In-memory mock for tests
+
+```ts
+function createMemoryAdapter(): StorageAdapter {
+  const store = new Map<string, unknown>();
+  const listeners = new Set<(key: string) => void>();
+  return {
+    get: (key) => (store.get(key) ?? null) as never,
+    set: (key, value) => {
+      store.set(key, value);
+      listeners.forEach((l) => l(key));
+    },
+    remove: (key) => {
+      store.delete(key);
+      listeners.forEach((l) => l(key));
+    },
+    subscribe: (l) => {
+      listeners.add(l);
+      return () => listeners.delete(l);
+    },
+  };
+}
+```
+
+## Keys the library writes
+
+| Key                       | Written by                                                    |
+| ------------------------- | ------------------------------------------------------------- |
+| `settings:<themeId>`      | `useSettings().setPref` and Settings UI                       |
+| Anything you write        | Consumer code (the docs `Recents` demo writes `"recents"`)    |
+
+Reads via `get<T>(...)` are typed by the caller; the adapter doesn't enforce.
+
+## Subscribe semantics
+
+`subscribe(listener)` calls `listener(key)` whenever any value changes. Cross-tab `storage` events translate to the same callback. The returned function unsubscribes.
+
+The library uses one subscription per `<DesktopProvider>` instance to invalidate user prefs and to re-evaluate `appearsAsDesktopIcon` predicates.
+
+## See also
+
+- [`useSettings`](/api/usesettings/) — the most common writer.
+- [DesktopIcons](/components/desktopicons/) — state-earned folder predicates read from this adapter.

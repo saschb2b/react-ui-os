@@ -1,0 +1,74 @@
+---
+title: DesktopIcons
+description: "Right-edge column of file-style shortcuts for system windows. State-earned — a folder icon only appears once its predicate passes."
+sidebar:
+  order: 8
+---
+
+`DesktopIcons` renders a column of file-style shortcuts on the right edge of the desktop. Each shortcut maps to a system window whose `appearsAsDesktopIcon` predicate currently returns `true`. The library subscribes to storage change events so the column updates without polling.
+
+## Import
+
+```tsx
+import {
+  DesktopIcons,
+  registerSystemWindow,
+  type SystemWindowDef,
+} from "@react-ui-os/desktop";
+```
+
+## Props
+
+None. The component reads from the registered system window list and the active storage adapter.
+
+## Registering a system window
+
+```tsx
+registerSystemWindow("downloads", {
+  name: "Downloads",
+  accent: "#7c66f5",
+  defaultBounds: { w: 560, h: 420 },
+  content: DownloadsFolder,
+  appearsAsDesktopIcon: (storage) => hasDownloads(storage),
+});
+```
+
+The fields that control desktop-icon behavior:
+
+| Field                   | Type                                                                            | Description                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `appearsAsDesktopIcon`  | `boolean \| ((storage: StorageAdapter) => boolean)`                              | `false` (default) hides the icon. `true` always shows it. A function is the **state-earned** pattern: evaluated on each storage change. |
+| `desktopIcon`           | `ComponentType<{ size?: number }>`                                              | The icon painted on the shortcut. Defaults to a generic folder SVG.                                                        |
+
+## State-earned folders
+
+The library follows the rule: a folder icon should not exist until the user has put something in it. Same shape Mintables uses for Downloads and Presets:
+
+```tsx
+registerSystemWindow("downloads", {
+  name: "Downloads",
+  defaultBounds: { w: 560, h: 420 },
+  content: DownloadsFolder,
+  appearsAsDesktopIcon: (storage) => listDownloads(storage).length > 0,
+});
+```
+
+- The first time `recordDownload(...)` writes to storage, the icon fades in.
+- When the last entry is deleted, it fades out.
+- The desktop never shows an empty-state pane for it, because the surface whose empty state you would design isn't there yet.
+
+## Click behavior
+
+| Gesture        | Effect                                                                       |
+| -------------- | ---------------------------------------------------------------------------- |
+| Single click   | Visual press (placeholder for a desktop selection model)                     |
+| Double click   | Opens the matching system window via `openWindow({ kind: "system", systemId })` |
+
+## Position
+
+`DesktopIcons` reserves the upper-right edge, below the menu bar when present. Stacked vertically with 18 px gaps between tiles.
+
+## See also
+
+- [FileExplorer](/components/fileexplorer/) is the typical body for a folder-style system window.
+- [`StorageAdapter`](/api/storageadapter/) is how the predicate reads state.
