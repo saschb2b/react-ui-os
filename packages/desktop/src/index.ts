@@ -21,6 +21,7 @@ export {
   subscribeHud,
   type HudPayload,
 } from "./hud";
+export { Tooltip } from "./tooltip";
 export {
   ContextMenu,
   ContextMenuAnchor,

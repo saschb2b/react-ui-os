@@ -12,6 +12,7 @@ import {
   openContextMenu,
   type ContextMenuItem,
 } from "./context-menu";
+import { Tooltip } from "./tooltip";
 import {
   DOCK_EDGE_OFFSET,
   DOCK_GAP,
@@ -176,11 +177,15 @@ function DockTile({
     : "translateY(-3px) scale(1.06)";
 
   return (
+    <Tooltip
+      text={app.name}
+      shortcut={isLeft ? undefined : undefined}
+      placement={isLeft ? "right" : "top"}
+    >
     <button
       type="button"
       onClick={handleClick}
       onContextMenu={handleContextMenu}
-      title={app.name}
       data-dock-app-id={app.id}
       style={{
         position: "relative",
@@ -276,6 +281,7 @@ function DockTile({
         </span>
       )}
     </button>
+    </Tooltip>
   );
 }
 

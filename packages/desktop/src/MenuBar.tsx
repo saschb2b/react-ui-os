@@ -5,6 +5,7 @@ import { useNotifications, useWindowManager } from "@react-ui-os/core";
 import { useApp, useTheme } from "./desktop-context";
 import { NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
+import { Tooltip } from "./tooltip";
 import { MENU_BAR_HEIGHT } from "./util/layout";
 
 export { MENU_BAR_HEIGHT };
@@ -103,8 +104,13 @@ function WorkspaceIndicator() {
       {workspaces.map((id, idx) => {
         const isActive = id === activeId;
         return (
-          <button
+          <Tooltip
             key={id}
+            text={`Workspace ${String(idx + 1)}`}
+            shortcut={`⌃⌥${idx === 0 ? "1" : idx === workspaces.length - 1 ? String(workspaces.length) : String(idx + 1)}`}
+            placement="bottom"
+          >
+          <button
             type="button"
             role="tab"
             aria-selected={isActive}
@@ -138,6 +144,7 @@ function WorkspaceIndicator() {
               }}
             />
           </button>
+          </Tooltip>
         );
       })}
     </div>
@@ -172,6 +179,14 @@ function SystemClock({ color, accent }: { color: string; accent: string }) {
   });
 
   return (
+    <Tooltip
+      text={
+        unreadCount > 0
+          ? `${String(unreadCount)} unread notification${unreadCount === 1 ? "" : "s"}`
+          : "Notification Center"
+      }
+      placement="bottom"
+    >
     <button
       type="button"
       onClick={() => {
@@ -219,5 +234,6 @@ function SystemClock({ color, accent }: { color: string; accent: string }) {
       )}
       {day} {time}
     </button>
+    </Tooltip>
   );
 }
