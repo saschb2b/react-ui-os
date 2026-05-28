@@ -29,8 +29,9 @@ Most React UI libraries ship fifty components and let you wire them. That instin
 | `@react-ui-os/desktop` | The components. `<Desktop>`, `<DesktopProvider>`, `<Wallpaper>`, `<MenuBar>`, `<Dock>`, `<WindowLayer>`, `<Window>`, `<Spotlight>`, `<Settings>`, `<FileExplorer>`, `<DesktopIcons>`. |
 | `@react-ui-os/theme-default` | Unbranded baseline theme. |
 | `@react-ui-os/theme-mintables` | Cinematic frosted-glass theme with parallax wallpaper, deep blur, teal accent. |
+| `@react-ui-os/theme-saas` | Neutral light theme. Left dock, hidden menu bar — exercises the non-Mac chrome variants. |
 
-All four packages ship dual ESM/CJS bundles + TypeScript declarations via `tsup`. Source-exported during in-repo development via a `source` Vite condition; consumers resolve through the bundled `dist/` output.
+All five packages ship dual ESM/CJS bundles + TypeScript declarations via `tsup`. Source-exported during in-repo development via a `source` Vite condition; consumers resolve through the bundled `dist/` output.
 
 ## Three depths of API
 
@@ -136,6 +137,7 @@ react-ui-os/
     desktop/                     # @react-ui-os/desktop (components)
     theme-default/               # @react-ui-os/theme-default
     theme-mintables/             # @react-ui-os/theme-mintables
+    theme-saas/                  # @react-ui-os/theme-saas
   .github/workflows/             # CI + Pages deploy
   CLAUDE.md                      # architecture and contribution rules
   DESIGN.md                      # visual direction and design tokens
