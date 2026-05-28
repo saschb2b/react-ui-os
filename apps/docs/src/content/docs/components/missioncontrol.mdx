@@ -27,15 +27,7 @@ Only windows that aren't minimized are shown. Mission Control is "what's on scre
 
 ## Grid layout
 
-The grid columns scale with window count:
-
-| Windows open | Columns |
-| ------------ | ------- |
-| 1            | 1       |
-| 2            | 2       |
-| 3–4          | 2       |
-| 5–9          | 3       |
-| 10+          | 4       |
+Cards lay out via CSS `grid-template-columns: auto-fit` between 220 px and 280 px wide. The number of columns is whatever the viewport can fit — the grid grows to use available width without sprawling cards to fill space they don't need.
 
 Each card's aspect ratio mirrors its window's aspect, clamped between 0.7 and 2.4 so a tall utility doesn't dominate next to a wide document.
 

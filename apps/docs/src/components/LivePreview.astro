@@ -77,26 +77,44 @@ const figureClass = `rui-live-preview${wide ? " rui-live-preview--wide" : ""}`;
     overflow: hidden;
     background: var(--sl-color-black);
     box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.45);
+    /*
+     * Promote the figure into its own stacking context. Without this,
+     * Starlight's right-side TOC divider (which has its own stacking
+     * context further down the tree) paints over the figure when we
+     * break out of the content column.
+     */
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
   }
 
   /*
    * Break out of the Starlight content column. Article content tops out
-   * around 800 px; widening to ~1200 px gives the desktop chrome the
-   * horizontal room it needs so the dock and menu-bar widgets don't feel
-   * cramped. The calc(50% - 50vw + 16px) trick recenters the figure under
-   * the article — leaves a small gutter so we don't bump into the TOC.
+   * around 800 px; widening to ~1100 px gives the desktop chrome room
+   * for the dock and menu-bar widgets without crossing into the TOC
+   * column (which lives roughly 1180 px+ from page left at this width).
+   * The transform-based recenter keeps the article gutter symmetric.
    */
   .rui-live-preview--wide {
-    width: min(1200px, calc(100vw - 32px));
+    width: min(1100px, calc(100vw - 320px));
     margin-left: 50%;
     transform: translateX(-50%);
   }
 
+  /* At Starlight's TOC breakpoint the right column collapses, so we can
+     extend farther without bumping into it. */
   @media (max-width: 1100px) {
     .rui-live-preview--wide {
       width: calc(100% + 32px);
       margin-left: -16px;
       transform: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .rui-live-preview--wide {
+      width: 100%;
+      margin-left: 0;
     }
   }
 

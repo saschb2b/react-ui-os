@@ -124,7 +124,10 @@ function Overlay({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: 48,
+    // Responsive padding: 48 px on a desktop, down to 16 px in a docs
+    // iframe so the grid actually has room to breathe instead of being
+    // squeezed by a quarter of the viewport on each side.
+    padding: "clamp(16px, 5vmin, 48px)",
     boxSizing: "border-box",
   };
   return (
@@ -179,12 +182,18 @@ function Grid({
   accentFor: (win: OpenWindow) => string;
 }) {
   const theme = useTheme();
+  // Auto-fit so the grid finds the right column count on its own: cards
+  // never narrower than 180 px, never wider than 320 px. That avoids the
+  // ugly 2+1 layout 3 windows used to produce, and stops single cards
+  // from sprawling to fill 800 px just because there's room.
   return (
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: `repeat(${String(gridCols(windows.length))}, minmax(180px, 1fr))`,
-        gap: 18,
+        gridTemplateColumns:
+          "repeat(auto-fit, minmax(min(220px, 100%), max-content))",
+        justifyContent: "center",
+        gap: "clamp(8px, 1.5vmin, 18px)",
         maxWidth: "min(1100px, 100%)",
         width: "100%",
       }}
@@ -218,7 +227,8 @@ function Card({
 }) {
   // Card aspect mirrors the window's aspect, so a tall window reads tall
   // in the grid. Clamped to a sensible range so a 320×360 utility doesn't
-  // dominate next to a 1000×700 doc.
+  // dominate next to a 1000×700 doc. Width is capped so a single card
+  // never sprawls to fill the whole modal.
   const ratio = clampRatio(win.w / Math.max(win.h, 1));
   return (
     <button
@@ -236,6 +246,7 @@ function Card({
         color: theme.palette.textPrimary,
         textAlign: "left",
         fontFamily: "inherit",
+        width: "min(280px, 100%)",
         overflow: "hidden",
         position: "relative",
         aspectRatio: `${String(ratio)} / 1`,
@@ -336,14 +347,6 @@ function StripePattern({ accent }: { accent: string }) {
       }}
     />
   );
-}
-
-function gridCols(count: number): number {
-  if (count <= 1) return 1;
-  if (count <= 2) return 2;
-  if (count <= 4) return 2;
-  if (count <= 9) return 3;
-  return 4;
 }
 
 function clampRatio(r: number): number {
