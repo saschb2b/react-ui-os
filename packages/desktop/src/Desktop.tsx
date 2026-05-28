@@ -16,6 +16,7 @@ import { ContextMenu } from "./context-menu";
 import { DesktopBackdrop } from "./desktop-backdrop";
 import { SnapPreview } from "./snap";
 import { AppSwitcher } from "./AppSwitcher";
+import { MissionControl } from "./MissionControl";
 
 export interface DesktopProps {
   apps: App[];
@@ -67,6 +68,7 @@ export function Desktop({
         <NotificationCenter />
         <ContextMenu />
         <AppSwitcher />
+        <MissionControl />
         <DesktopBackdrop />
       </div>
       {children}

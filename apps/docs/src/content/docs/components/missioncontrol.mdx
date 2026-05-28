@@ -1,0 +1,68 @@
+---
+title: Mission Control
+description: Press F3 to see every open window at once, tiled in a grid. Click any to focus and dismiss.
+sidebar:
+  order: 11
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+Press `F3` (or `Ctrl + ↑` on non-Mac keyboards) and every open window slides into a tiled grid of large preview cards. Click a card and the corresponding window comes to the front; click empty space or press `Esc` and you return to the desktop unchanged.
+
+<LivePreview src="?demo=dock" label="Open all three apps, then press F3" height="460px" />
+
+The cards aren't live thumbnails — they represent the window's chrome (title bar, traffic lights, accent stripe, aspect ratio) so the user can pick by shape and name at a glance. This avoids the cost of mirroring live DOM into a canvas while still giving the macOS-style "where is what" view.
+
+## Behavior
+
+| Action            | Effect                                    |
+| ----------------- | ----------------------------------------- |
+| `F3`              | Toggle Mission Control                    |
+| `Ctrl + ↑`        | Same — handy on non-Mac keyboards         |
+| Click a card      | Bring that window to the front; dismiss   |
+| Click empty space | Dismiss without changing focus            |
+| `Esc`             | Dismiss without changing focus            |
+
+Only windows that aren't minimized are shown. Mission Control is "what's on screen right now," not "what's stashed in the dock." Use [the dock](/components/dock/) or [Spotlight](/components/spotlight/) to bring a minimized window back first.
+
+## Grid layout
+
+The grid columns scale with window count:
+
+| Windows open | Columns |
+| ------------ | ------- |
+| 1            | 1       |
+| 2            | 2       |
+| 3–4          | 2       |
+| 5–9          | 3       |
+| 10+          | 4       |
+
+Each card's aspect ratio mirrors its window's aspect, clamped between 0.7 and 2.4 so a tall utility doesn't dominate next to a wide document.
+
+## Composition
+
+The component is mounted by `<Desktop>` by default. Drop down to `<DesktopProvider>` if you want to swap it for a custom implementation:
+
+```tsx
+<DesktopProvider apps={apps} theme={theme}>
+  <Wallpaper />
+  <MenuBar />
+  <WindowLayer />
+  <Dock />
+  <MyOwnMissionControl />
+  {/* default surfaces you do want */}
+</DesktopProvider>
+```
+
+## Accessibility
+
+- The overlay is `role="dialog" aria-label="Mission Control"`.
+- Each card is a real `<button>` with the window's name in its label — screen readers announce "Hello window" rather than something synthetic.
+- Modal: Esc and click-outside both dismiss without changing focus.
+- The hint to keyboard users is built into the existing keyboard shortcut docs; no on-screen text needed because F3 is universally known.
+
+## See also
+
+- [App switcher](/components/appswitcher/) — Cmd/Ctrl + Tab linear cycle.
+- [Spotlight](/components/spotlight/) — keyword launcher.
+- [Window snapping](/components/snapping/) — drag-to-edge tile placement.

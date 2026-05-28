@@ -12,6 +12,7 @@ export { KeyboardShortcuts } from "./keyboard-shortcuts";
 export { NotificationToasts } from "./NotificationToasts";
 export { NotificationCenter } from "./NotificationCenter";
 export { AppSwitcher } from "./AppSwitcher";
+export { MissionControl } from "./MissionControl";
 export {
   ContextMenu,
   ContextMenuAnchor,
