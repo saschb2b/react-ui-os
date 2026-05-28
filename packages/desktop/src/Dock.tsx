@@ -1,12 +1,17 @@
 "use client";
 
 import {
+  markAllNotificationsRead,
   useNotifications,
   useWindowManager,
   windowIdOf,
 } from "@react-ui-os/core";
 import type { App } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
+import {
+  openContextMenu,
+  type ContextMenuItem,
+} from "./context-menu";
 import {
   DOCK_EDGE_OFFSET,
   DOCK_GAP,
@@ -39,6 +44,7 @@ export function Dock() {
     <nav
       aria-label="App dock"
       data-dock-position={position}
+      data-rui-dock=""
       style={{
         position: "fixed",
         ...(isLeft
@@ -86,6 +92,7 @@ function DockTile({
     focusedWindow,
     openWindow,
     focusWindow,
+    closeWindow,
     minimizeWindow,
     restoreWindow,
   } = useWindowManager();
@@ -95,6 +102,51 @@ function DockTile({
   const isFocused = focusedWindow?.id === id;
   const isMinimized = win?.state === "minimized";
   const badgeCount = unreadByApp[app.id] ?? 0;
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const items: ContextMenuItem[] = [];
+    if (!win) {
+      items.push({
+        label: `Open ${app.name}`,
+        onSelect: () => openWindow({ kind: "app", appId: app.id }),
+      });
+    } else {
+      items.push({
+        label: isFocused ? "Window in front" : "Bring to front",
+        disabled: isFocused && !isMinimized,
+        onSelect: () => {
+          if (isMinimized) restoreWindow(id);
+          else focusWindow(id);
+        },
+      });
+      items.push({
+        label: isMinimized ? "Restore" : "Minimize",
+        shortcut: isMinimized ? undefined : "⌘M",
+        onSelect: () =>
+          isMinimized ? restoreWindow(id) : minimizeWindow(id),
+      });
+      items.push({
+        label: "Close",
+        shortcut: "⌘W",
+        onSelect: () => closeWindow(id),
+      });
+    }
+    if (badgeCount > 0) {
+      items.push({ separator: true });
+      items.push({
+        label: `Mark ${String(badgeCount)} notification${badgeCount === 1 ? "" : "s"} as read`,
+        onSelect: () => markAllNotificationsRead(),
+      });
+    }
+    if (items.length === 0) return;
+    openContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      items,
+      ariaLabel: `${app.name} dock menu`,
+    });
+  };
 
   const handleClick = () => {
     if (!win) {
@@ -127,6 +179,7 @@ function DockTile({
     <button
       type="button"
       onClick={handleClick}
+      onContextMenu={handleContextMenu}
       title={app.name}
       data-dock-app-id={app.id}
       style={{

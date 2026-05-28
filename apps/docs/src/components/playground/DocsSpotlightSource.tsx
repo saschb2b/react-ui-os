@@ -19,6 +19,7 @@ const DOCS_PAGES: DocsPage[] = [
   { id: "spotlight", name: "Spotlight", path: "/components/spotlight/", kind: "component" },
   { id: "settings", name: "Settings", path: "/components/settings/", kind: "component" },
   { id: "notifications", name: "Notifications", path: "/components/notifications/", kind: "component" },
+  { id: "contextmenu", name: "ContextMenu", path: "/components/contextmenu/", kind: "component" },
   { id: "fileexplorer", name: "FileExplorer", path: "/components/fileexplorer/", kind: "component" },
   { id: "desktopicons", name: "DesktopIcons", path: "/components/desktopicons/", kind: "component" },
   { id: "usewindowmanager", name: "useWindowManager", path: "/api/usewindowmanager/", kind: "api" },

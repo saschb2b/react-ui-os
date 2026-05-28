@@ -1,0 +1,133 @@
+---
+title: ContextMenu
+description: One menu primitive backing every right-click in the desktop. Imperative for ad-hoc menus, declarative wrapper for static ones.
+sidebar:
+  order: 8
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+Right-click anywhere on the desktop background and a system menu pops up. Right-click a window's title bar — window menu. Right-click a dock tile — app menu. Right-click an item in the FileExplorer — item actions. Every one of those uses the same `<ContextMenu>` primitive and the same `openContextMenu(...)` store, so consumers wiring a custom region get the same look, the same keyboard behavior, and the same flip-to-stay-in-viewport positioning.
+
+<LivePreview label="Right-click the desktop background, a dock tile, or a window's title bar" height="460px" />
+
+## Import
+
+```tsx
+import {
+  ContextMenu,
+  ContextMenuAnchor,
+  openContextMenu,
+  closeContextMenu,
+  type ContextMenuItem,
+} from "@react-ui-os/desktop";
+```
+
+`<Desktop>` mounts `<ContextMenu />` and `<DesktopBackdrop />` for you. Mount them yourself only when composing your own layout from `<DesktopProvider>`.
+
+## Imperative — `openContextMenu`
+
+The cleanest path when you already have the event in hand and the items depend on click state.
+
+```tsx
+function MyRegion() {
+  return (
+    <div
+      onContextMenu={(e) => {
+        e.preventDefault();
+        openContextMenu({
+          x: e.clientX,
+          y: e.clientY,
+          ariaLabel: "Layer menu",
+          items: [
+            { label: "Duplicate", shortcut: "⌘D", onSelect: duplicateLayer },
+            { label: "Group", shortcut: "⌘G", onSelect: groupLayers },
+            { separator: true },
+            { label: "Delete", danger: true, onSelect: deleteLayer },
+          ],
+        });
+      }}
+    >
+      ...
+    </div>
+  );
+}
+```
+
+## Declarative — `<ContextMenuAnchor>`
+
+Wraps a single child. The wrapped element gets an `onContextMenu` handler that opens the menu with the supplied items. Pass a function for `items` if they depend on per-event state.
+
+```tsx
+<ContextMenuAnchor
+  items={[
+    { label: "Open", onSelect: open, shortcut: "↵" },
+    { label: "Rename", onSelect: rename, shortcut: "F2" },
+    { separator: true },
+    { label: "Delete", onSelect: del, danger: true, shortcut: "⌫" },
+  ]}
+>
+  <div>Right-click me</div>
+</ContextMenuAnchor>
+```
+
+## ContextMenuItem
+
+| Field        | Type                | Description                                                                                |
+| ------------ | ------------------- | ------------------------------------------------------------------------------------------ |
+| `label`      | `string`            | Displayed text. Omit when `separator: true`.                                               |
+| `icon`       | `ReactNode`         | Optional leading icon (~14 px).                                                            |
+| `shortcut`   | `string`            | Right-aligned hint (`"⌘N"`, `"F2"`, `"↵"`). Decorative — does not bind the key.            |
+| `onSelect`   | `() => void`        | Activation handler. The menu closes after this runs.                                       |
+| `disabled`   | `boolean`           | Greys out the row and skips it in keyboard navigation.                                     |
+| `danger`     | `boolean`           | Tints the row red. Typical pattern: sits below a separator (Delete, Move to Trash).        |
+| `separator`  | `boolean`           | Renders a divider instead of a row. The other fields are ignored.                          |
+| `submenu`    | `ContextMenuItem[]` | Reserved for nested menus (not yet implemented in the renderer).                            |
+
+## Keyboard
+
+| Key      | Effect                                       |
+| -------- | -------------------------------------------- |
+| ↑ / ↓    | Move highlight. Wraps; skips disabled rows.  |
+| Enter / Space | Activate the highlighted row.            |
+| Esc      | Close. Focus returns to whatever was focused before. |
+
+## What `<Desktop>` ships out of the box
+
+Right-clicking the desktop background opens a built-in menu via [`<DesktopBackdrop>`](/api/desktopbackdrop/). Customize it without rebuilding the rest:
+
+```tsx
+import { DesktopBackdrop, type ContextMenuItem } from "@react-ui-os/desktop";
+
+const extraItems: ContextMenuItem[] = [
+  { label: "Change wallpaper…", onSelect: openWallpaperPicker },
+  { label: "Sort icons", onSelect: sortDesktopIcons },
+];
+
+<DesktopProvider apps={apps} theme={theme}>
+  <Wallpaper />
+  <MenuBar />
+  <WindowLayer />
+  <Dock />
+  <DesktopBackdrop extraItems={extraItems} />
+  {/* ... */}
+</DesktopProvider>;
+```
+
+For full control, pass `buildItems` instead — it receives the defaults so you can keep, drop, or reorder them.
+
+## What about app-specific menus?
+
+Window title bars and dock tiles each get their own context menu out of the box (Restore/Minimize/Close on the title bar, Open/Minimize/Close/Mark-as-read on the dock tile). Override or extend by registering app-specific items inside your content component — the same `openContextMenu` is available there.
+
+## Accessibility
+
+- The menu surface is `role="menu"` with the `ariaLabel` you supplied.
+- Each row is `role="menuitem"`.
+- Separators are `role="separator"`.
+- Focus is restored to the element that opened the menu on close (when the consumer passes `returnFocusTo`, which `ContextMenuAnchor` does automatically).
+
+## See also
+
+- [`<Desktop>`](/components/desktop/) — mounts both the renderer and the backdrop.
+- [Notifications](/components/notifications/) — same pattern (vanilla store + mounted component + imperative call from anywhere).

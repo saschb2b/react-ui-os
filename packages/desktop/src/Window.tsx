@@ -12,6 +12,10 @@ import type { OpenWindow } from "@react-ui-os/core";
 import { useApp, useTheme } from "./desktop-context";
 import { getDockTileRect } from "./Dock";
 import { clampWindowToWorkArea } from "./util/clamp";
+import {
+  openContextMenu,
+  type ContextMenuItem,
+} from "./context-menu";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { getMenuBarHeight, getWorkArea } from "./util/layout";
 
@@ -139,6 +143,43 @@ export function Window({ win }: WindowProps) {
   const handleMaximize = useCallback(() => {
     toggleMaximize(win.id);
   }, [toggleMaximize, win.id]);
+
+  const handleTitleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      const isMaximized = win.state === "maximized";
+      const items: ContextMenuItem[] = [
+        {
+          label: isMaximized ? "Restore" : "Maximize",
+          shortcut: isMaximized ? "Esc" : "⌘↩",
+          onSelect: handleMaximize,
+        },
+        {
+          label: "Minimize",
+          shortcut: "⌘M",
+          onSelect: () => {
+            handleMinimize();
+          },
+        },
+        { separator: true },
+        {
+          label: "Close",
+          shortcut: "⌘W",
+          danger: true,
+          onSelect: () => {
+            handleClose();
+          },
+        },
+      ];
+      openContextMenu({
+        x: e.clientX,
+        y: e.clientY,
+        items,
+        ariaLabel: `${title} window menu`,
+      });
+    },
+    [handleClose, handleMaximize, handleMinimize, win.state, title],
+  );
 
   const startDrag = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -288,6 +329,7 @@ export function Window({ win }: WindowProps) {
       ref={elRef}
       role="region"
       aria-label={`${title} window`}
+      data-rui-window={win.id}
       onPointerDown={() => {
         if (!focused) focusWindow(win.id);
       }}
@@ -326,6 +368,7 @@ export function Window({ win }: WindowProps) {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         onDoubleClick={handleMaximize}
+        onContextMenu={handleTitleContextMenu}
       />
       <div
         style={{
@@ -470,6 +513,7 @@ interface TitleBarProps {
   onPointerUp: (e: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerCancel: (e: ReactPointerEvent<HTMLDivElement>) => void;
   onDoubleClick: () => void;
+  onContextMenu: (e: React.MouseEvent) => void;
 }
 
 function TitleBar({
@@ -484,6 +528,7 @@ function TitleBar({
   onPointerUp,
   onPointerCancel,
   onDoubleClick,
+  onContextMenu,
 }: TitleBarProps) {
   const theme = useTheme();
   return (
@@ -493,6 +538,7 @@ function TitleBar({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerCancel}
       onDoubleClick={onDoubleClick}
+      onContextMenu={onContextMenu}
       style={{
         position: "relative",
         height: TITLE_BAR_HEIGHT,

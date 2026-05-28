@@ -38,6 +38,7 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
 
   return (
     <header
+      data-rui-menubar=""
       style={{
         position: "fixed",
         top: 0,

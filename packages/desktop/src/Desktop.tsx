@@ -12,6 +12,8 @@ import { Spotlight } from "./Spotlight";
 import { DesktopIcons } from "./DesktopIcons";
 import { NotificationToasts } from "./NotificationToasts";
 import { NotificationCenter } from "./NotificationCenter";
+import { ContextMenu } from "./context-menu";
+import { DesktopBackdrop } from "./desktop-backdrop";
 
 export interface DesktopProps {
   apps: App[];
@@ -60,6 +62,8 @@ export function Desktop({
         <Spotlight />
         <NotificationToasts />
         <NotificationCenter />
+        <ContextMenu />
+        <DesktopBackdrop />
       </div>
       {children}
     </DesktopProvider>

@@ -12,6 +12,17 @@ export { KeyboardShortcuts } from "./keyboard-shortcuts";
 export { NotificationToasts } from "./NotificationToasts";
 export { NotificationCenter } from "./NotificationCenter";
 export {
+  ContextMenu,
+  ContextMenuAnchor,
+  openContextMenu,
+  closeContextMenu,
+  getContextMenuState,
+  subscribeContextMenu,
+  type ContextMenuItem,
+  type ContextMenuState,
+} from "./context-menu";
+export { DesktopBackdrop } from "./desktop-backdrop";
+export {
   SPOTLIGHT_OPEN_EVENT,
   NOTIFICATION_CENTER_TOGGLE_EVENT,
 } from "./events";
