@@ -10,7 +10,8 @@ import {
 } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
-import { MENU_BAR_HEIGHT } from "./util/layout";
+import { getChromeMetrics } from "./util/layout";
+import { useViewportMode } from "./util/viewport-mode";
 
 /**
  * Right-edge slide-in panel showing the full notification history.
@@ -52,7 +53,9 @@ export function NotificationCenter() {
     }
   }, [open, unreadCount]);
 
-  const topGutter = theme.chrome.menuBar === "top" ? MENU_BAR_HEIGHT : 0;
+  const mode = useViewportMode();
+  const metrics = getChromeMetrics(mode);
+  const topGutter = theme.chrome.menuBar === "top" ? metrics.menuBarHeight : 0;
 
   const backdrop: CSSProperties = {
     position: "fixed",

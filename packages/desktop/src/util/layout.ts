@@ -1,16 +1,66 @@
 import type { OsTheme } from "@react-ui-os/core";
+import { getViewportMode, type ViewportMode } from "./viewport-mode";
 
-export const MENU_BAR_HEIGHT = 28;
+/**
+ * Chrome metrics that change between regular and compact viewports. The
+ * library reads these instead of importing fixed numbers so a small
+ * embed (a docs iframe, a phone) gets tighter chrome automatically.
+ */
+export interface ChromeMetrics {
+  menuBarHeight: number;
+  dockTileSize: number;
+  dockGap: number;
+  dockPadding: number;
+  dockEdgeOffset: number;
+  titleBarHeight: number;
+  /** Computed: the full bottom-dock footprint along its axis. */
+  dockHeight: number;
+  /** Computed: the full left-dock footprint along its axis. */
+  dockWidth: number;
+}
 
-export const DOCK_TILE_SIZE = 56;
-export const DOCK_GAP = 10;
-export const DOCK_PADDING = 10;
-export const DOCK_EDGE_OFFSET = 14;
+const REGULAR_METRICS = {
+  menuBarHeight: 28,
+  dockTileSize: 56,
+  dockGap: 10,
+  dockPadding: 10,
+  dockEdgeOffset: 14,
+  titleBarHeight: 32,
+} as const;
 
-/** Footprint of the dock when it floats at the bottom. */
-export const DOCK_HEIGHT = DOCK_TILE_SIZE + DOCK_PADDING * 2;
-/** Footprint of the dock when it floats on the left edge. */
-export const DOCK_WIDTH = DOCK_TILE_SIZE + DOCK_PADDING * 2;
+const COMPACT_METRICS = {
+  menuBarHeight: 24,
+  dockTileSize: 40,
+  dockGap: 6,
+  dockPadding: 6,
+  dockEdgeOffset: 8,
+  titleBarHeight: 28,
+} as const;
+
+export function getChromeMetrics(
+  mode: ViewportMode = getViewportMode(),
+): ChromeMetrics {
+  const base = mode === "compact" ? COMPACT_METRICS : REGULAR_METRICS;
+  return {
+    ...base,
+    dockHeight: base.dockTileSize + base.dockPadding * 2,
+    dockWidth: base.dockTileSize + base.dockPadding * 2,
+  };
+}
+
+/* ─── Back-compat exports ───────────────────────────────────────
+ * Existing call sites import these as plain numbers. We keep them
+ * exporting the regular-mode constants so external consumers don't
+ * break, but the library's own components read getChromeMetrics()
+ * to stay responsive.
+ */
+export const MENU_BAR_HEIGHT = REGULAR_METRICS.menuBarHeight;
+export const DOCK_TILE_SIZE = REGULAR_METRICS.dockTileSize;
+export const DOCK_GAP = REGULAR_METRICS.dockGap;
+export const DOCK_PADDING = REGULAR_METRICS.dockPadding;
+export const DOCK_EDGE_OFFSET = REGULAR_METRICS.dockEdgeOffset;
+export const DOCK_HEIGHT = REGULAR_METRICS.dockTileSize + REGULAR_METRICS.dockPadding * 2;
+export const DOCK_WIDTH = REGULAR_METRICS.dockTileSize + REGULAR_METRICS.dockPadding * 2;
 
 export interface WorkArea {
   /** Top-left corner of the work area in viewport coords. */
@@ -21,7 +71,8 @@ export interface WorkArea {
 }
 
 export function getMenuBarHeight(theme: OsTheme): number {
-  return theme.chrome.menuBar === "none" ? 0 : MENU_BAR_HEIGHT;
+  if (theme.chrome.menuBar === "none") return 0;
+  return getChromeMetrics().menuBarHeight;
 }
 
 /**
@@ -37,18 +88,19 @@ export function getDockReservation(theme: OsTheme): {
   if (theme.chrome.dockPosition === "hidden") {
     return { top: 0, right: 0, bottom: 0, left: 0 };
   }
+  const metrics = getChromeMetrics();
   if (theme.chrome.dockPosition === "left") {
     return {
       top: 0,
       right: 0,
       bottom: 0,
-      left: DOCK_WIDTH + DOCK_EDGE_OFFSET * 2,
+      left: metrics.dockWidth + metrics.dockEdgeOffset * 2,
     };
   }
   return {
     top: 0,
     right: 0,
-    bottom: DOCK_HEIGHT + DOCK_EDGE_OFFSET,
+    bottom: metrics.dockHeight + metrics.dockEdgeOffset,
     left: 0,
   };
 }

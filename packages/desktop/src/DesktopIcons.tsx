@@ -10,7 +10,8 @@ import {
   type SystemWindowDef,
 } from "./system-windows";
 import { pickInitialBounds } from "./util/initial-bounds";
-import { MENU_BAR_HEIGHT } from "./util/layout";
+import { getChromeMetrics } from "./util/layout";
+import { useViewportMode } from "./util/viewport-mode";
 
 interface VisibleIcon {
   systemId: string;
@@ -51,8 +52,10 @@ export function DesktopIcons() {
 
   if (visible.length === 0) return null;
 
+  const mode = useViewportMode();
+  const metrics = getChromeMetrics(mode);
   const topInset =
-    (theme.chrome.menuBar === "top" ? MENU_BAR_HEIGHT : 0) + EDGE_INSET;
+    (theme.chrome.menuBar === "top" ? metrics.menuBarHeight : 0) + EDGE_INSET;
 
   return (
     <div

@@ -9,7 +9,8 @@ import {
   type NotificationItem,
 } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
-import { MENU_BAR_HEIGHT } from "./util/layout";
+import { getChromeMetrics } from "./util/layout";
+import { useViewportMode } from "./util/viewport-mode";
 
 /**
  * Top-right stack of active toasts. Each toast slides in from the right
@@ -24,7 +25,9 @@ export function NotificationToasts() {
   const theme = useTheme();
   const apps = useApps();
   const { active } = useNotifications();
-  const dockGutter = theme.chrome.menuBar === "top" ? MENU_BAR_HEIGHT + 12 : 12;
+  const mode = useViewportMode();
+  const metrics = getChromeMetrics(mode);
+  const dockGutter = theme.chrome.menuBar === "top" ? metrics.menuBarHeight + 12 : 12;
 
   if (active.length === 0) return null;
 

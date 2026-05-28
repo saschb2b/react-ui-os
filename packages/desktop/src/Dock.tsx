@@ -14,12 +14,8 @@ import {
 } from "./context-menu";
 import { Tooltip } from "./tooltip";
 import { pickInitialBounds } from "./util/initial-bounds";
-import {
-  DOCK_EDGE_OFFSET,
-  DOCK_GAP,
-  DOCK_PADDING,
-  DOCK_TILE_SIZE,
-} from "./util/layout";
+import { getChromeMetrics } from "./util/layout";
+import { useViewportMode } from "./util/viewport-mode";
 
 export { DOCK_HEIGHT, DOCK_WIDTH } from "./util/layout";
 
@@ -36,6 +32,8 @@ export { DOCK_HEIGHT, DOCK_WIDTH } from "./util/layout";
 export function Dock() {
   const theme = useTheme();
   const apps = useApps();
+  const mode = useViewportMode();
+  const metrics = getChromeMetrics(mode);
   const position = theme.chrome.dockPosition;
 
   if (position === "hidden") return null;
@@ -51,24 +49,24 @@ export function Dock() {
         position: "fixed",
         ...(isLeft
           ? {
-              left: DOCK_EDGE_OFFSET,
+              left: metrics.dockEdgeOffset,
               top: "50%",
               transform: "translateY(-50%)",
             }
           : {
-              bottom: DOCK_EDGE_OFFSET,
+              bottom: metrics.dockEdgeOffset,
               left: "50%",
               transform: "translateX(-50%)",
             }),
         display: "flex",
         flexDirection: isLeft ? "column" : "row",
-        gap: DOCK_GAP,
-        padding: DOCK_PADDING,
+        gap: metrics.dockGap,
+        padding: metrics.dockPadding,
         backgroundColor: theme.palette.surface,
         backdropFilter: theme.blur.surface,
         WebkitBackdropFilter: theme.blur.surface,
         border: `1px solid ${theme.palette.border}`,
-        borderRadius: theme.shape.dockTileRadius + DOCK_PADDING - 4,
+        borderRadius: theme.shape.dockTileRadius + metrics.dockPadding - 4,
         boxShadow: "0 12px 32px -8px rgba(0,0,0,0.45)",
         zIndex: 1200,
         userSelect: "none",
@@ -90,6 +88,8 @@ function DockTile({
 }) {
   const theme = useTheme();
   const apps = useApps();
+  const mode = useViewportMode();
+  const metrics = getChromeMetrics(mode);
   const {
     windows,
     focusedWindow,
@@ -198,8 +198,8 @@ function DockTile({
       data-dock-app-id={app.id}
       style={{
         position: "relative",
-        width: DOCK_TILE_SIZE,
-        height: DOCK_TILE_SIZE,
+        width: metrics.dockTileSize,
+        height: metrics.dockTileSize,
         padding: 0,
         border: "none",
         borderRadius: theme.shape.dockTileRadius,
@@ -221,15 +221,15 @@ function DockTile({
       }}
     >
       {Art ? (
-        <Art size={Math.round(DOCK_TILE_SIZE * 0.7)} />
+        <Art size={Math.round(metrics.dockTileSize * 0.7)} />
       ) : Icon ? (
-        <Icon size={Math.round(DOCK_TILE_SIZE * 0.5)} />
+        <Icon size={Math.round(metrics.dockTileSize * 0.5)} />
       ) : (
         <span
           style={{
             fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
             fontWeight: 700,
-            fontSize: 22,
+            fontSize: Math.round(metrics.dockTileSize * 0.4),
             textShadow: "0 1px 2px rgba(0,0,0,0.4)",
           }}
         >
@@ -243,12 +243,12 @@ function DockTile({
             position: "absolute",
             ...(isLeft
               ? {
-                  right: -DOCK_EDGE_OFFSET + 4,
+                  right: -metrics.dockEdgeOffset + 4,
                   top: "50%",
                   transform: "translateY(-50%)",
                 }
               : {
-                  bottom: -DOCK_EDGE_OFFSET + 2,
+                  bottom: -metrics.dockEdgeOffset + 2,
                   left: "50%",
                   transform: "translateX(-50%)",
                 }),

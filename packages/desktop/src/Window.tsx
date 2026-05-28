@@ -44,9 +44,12 @@ function snapZoneLabel(zone: SnapZone): string {
   }
 }
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
-import { getMenuBarHeight, getWorkArea } from "./util/layout";
-
-const TITLE_BAR_HEIGHT = 32;
+import {
+  getChromeMetrics,
+  getMenuBarHeight,
+  getWorkArea,
+} from "./util/layout";
+import { useViewportMode } from "./util/viewport-mode";
 
 interface WindowProps {
   win: OpenWindow;
@@ -102,6 +105,9 @@ export function Window({ win }: WindowProps) {
     setBounds,
   } = wm;
   const focused = focusedWindow?.id === win.id;
+  const mode = useViewportMode();
+  const metrics = getChromeMetrics(mode);
+  const titleBarHeight = metrics.titleBarHeight;
 
   const appPayload =
     win.payload.kind === "app" ? win.payload.appId : undefined;
@@ -425,6 +431,7 @@ export function Window({ win }: WindowProps) {
         title={title}
         focused={focused}
         accent={accent}
+        height={titleBarHeight}
         onClose={handleClose}
         onMinimize={handleMinimize}
         onMaximize={handleMaximize}
@@ -570,6 +577,7 @@ interface TitleBarProps {
   title: string;
   focused: boolean;
   accent: string;
+  height: number;
   onClose: () => void;
   onMinimize: () => void;
   onMaximize: () => void;
@@ -585,6 +593,7 @@ function TitleBar({
   title,
   focused,
   accent,
+  height,
   onClose,
   onMinimize,
   onMaximize,
@@ -606,7 +615,7 @@ function TitleBar({
       onContextMenu={onContextMenu}
       style={{
         position: "relative",
-        height: TITLE_BAR_HEIGHT,
+        height: height,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",

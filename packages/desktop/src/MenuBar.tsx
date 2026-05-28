@@ -11,7 +11,8 @@ import {
 } from "./status-items";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { Tooltip } from "./tooltip";
-import { MENU_BAR_HEIGHT } from "./util/layout";
+import { getChromeMetrics, MENU_BAR_HEIGHT } from "./util/layout";
+import { useViewportMode } from "./util/viewport-mode";
 
 export { MENU_BAR_HEIGHT };
 
@@ -22,6 +23,8 @@ export { MENU_BAR_HEIGHT };
  */
 export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
   const theme = useTheme();
+  const mode = useViewportMode();
+  const metrics = getChromeMetrics(mode);
   const { focusedWindow } = useWindowManager();
   const focusedApp = useApp(
     focusedWindow?.payload.kind === "app"
@@ -50,7 +53,7 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
         top: 0,
         left: 0,
         right: 0,
-        height: MENU_BAR_HEIGHT,
+        height: metrics.menuBarHeight,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
