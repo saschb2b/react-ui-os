@@ -6,6 +6,8 @@ import { Wallpaper } from "./Wallpaper";
 import { MenuBar } from "./MenuBar";
 import { Dock } from "./Dock";
 import { WindowLayer } from "./WindowLayer";
+import { KeyboardShortcuts } from "./keyboard-shortcuts";
+import { Spotlight } from "./Spotlight";
 
 export interface DesktopProps {
   apps: App[];
@@ -18,8 +20,9 @@ export interface DesktopProps {
 
 /**
  * One-line desktop. Wraps the provider stack and composes the default
- * surfaces: wallpaper, menu bar, dock, window layer. Replace with
- * `<DesktopProvider>` + your own layout when you need finer control.
+ * surfaces: wallpaper, menu bar, dock, window layer, keyboard shortcuts,
+ * and Spotlight. Replace with `<DesktopProvider>` + your own layout when
+ * you need finer control.
  */
 export function Desktop({ apps, theme, brand, storage }: DesktopProps) {
   return (
@@ -36,6 +39,8 @@ export function Desktop({ apps, theme, brand, storage }: DesktopProps) {
         <MenuBar brand={brand} />
         <WindowLayer />
         <Dock />
+        <KeyboardShortcuts />
+        <Spotlight />
       </div>
     </DesktopProvider>
   );

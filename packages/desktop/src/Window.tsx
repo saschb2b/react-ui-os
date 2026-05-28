@@ -22,6 +22,11 @@ interface WindowProps {
 
 type AnimationPhase = "idle" | "opening" | "closing" | "minimizing";
 
+type ResizeDir = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+
+const MIN_W = 240;
+const MIN_H = 160;
+
 interface DragState {
   pointerId: number;
   startClientX: number;
@@ -30,6 +35,21 @@ interface DragState {
   startY: number;
   lastX: number;
   lastY: number;
+}
+
+interface ResizeState {
+  pointerId: number;
+  dir: ResizeDir;
+  startClientX: number;
+  startClientY: number;
+  startX: number;
+  startY: number;
+  startW: number;
+  startH: number;
+  lastX: number;
+  lastY: number;
+  lastW: number;
+  lastH: number;
 }
 
 /**
@@ -56,6 +76,7 @@ export function Window({ win }: WindowProps) {
 
   const elRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<DragState | null>(null);
+  const resizeRef = useRef<ResizeState | null>(null);
   const [phase, setPhase] = useState<AnimationPhase>("opening");
 
   // After the open animation finishes, drop the phase so subsequent re-renders
@@ -152,6 +173,74 @@ export function Window({ win }: WindowProps) {
     [setBounds, win.id, win.w, win.h],
   );
 
+  const startResize = useCallback(
+    (dir: ResizeDir, e: ReactPointerEvent<HTMLDivElement>) => {
+      if (e.button !== 0) return;
+      if (win.state === "maximized") return;
+      e.stopPropagation();
+      focusWindow(win.id);
+      e.currentTarget.setPointerCapture(e.pointerId);
+      resizeRef.current = {
+        pointerId: e.pointerId,
+        dir,
+        startClientX: e.clientX,
+        startClientY: e.clientY,
+        startX: win.x,
+        startY: win.y,
+        startW: win.w,
+        startH: win.h,
+        lastX: win.x,
+        lastY: win.y,
+        lastW: win.w,
+        lastH: win.h,
+      };
+    },
+    [focusWindow, win.id, win.state, win.x, win.y, win.w, win.h],
+  );
+
+  const moveResize = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+    const r = resizeRef.current;
+    if (!r || r.pointerId !== e.pointerId) return;
+    const dx = e.clientX - r.startClientX;
+    const dy = e.clientY - r.startClientY;
+    let x = r.startX;
+    let y = r.startY;
+    let w = r.startW;
+    let h = r.startH;
+    if (r.dir.includes("e")) w = Math.max(MIN_W, r.startW + dx);
+    if (r.dir.includes("w")) {
+      const nextW = Math.max(MIN_W, r.startW - dx);
+      x = r.startX + (r.startW - nextW);
+      w = nextW;
+    }
+    if (r.dir.includes("s")) h = Math.max(MIN_H, r.startH + dy);
+    if (r.dir.includes("n")) {
+      const nextH = Math.max(MIN_H, r.startH - dy);
+      y = r.startY + (r.startH - nextH);
+      h = nextH;
+    }
+    r.lastX = x;
+    r.lastY = y;
+    r.lastW = w;
+    r.lastH = h;
+    const el = elRef.current;
+    if (el) {
+      el.style.transform = `translate3d(${String(x)}px, ${String(y)}px, 0)`;
+      el.style.width = `${String(w)}px`;
+      el.style.height = `${String(h)}px`;
+    }
+  }, []);
+
+  const endResize = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      const r = resizeRef.current;
+      if (!r || r.pointerId !== e.pointerId) return;
+      setBounds(win.id, r.lastX, r.lastY, r.lastW, r.lastH);
+      resizeRef.current = null;
+    },
+    [setBounds, win.id],
+  );
+
   const maximized = win.state === "maximized";
 
   const baseTransform = maximized
@@ -231,7 +320,120 @@ export function Window({ win }: WindowProps) {
       >
         {app ? <app.content appId={app.id} focused={focused} /> : null}
       </div>
+      {!maximized && (
+        <ResizeHandles
+          onStart={startResize}
+          onMove={moveResize}
+          onEnd={endResize}
+        />
+      )}
     </div>
+  );
+}
+
+interface ResizeHandlesProps {
+  onStart: (
+    dir: ResizeDir,
+    e: ReactPointerEvent<HTMLDivElement>,
+  ) => void;
+  onMove: (e: ReactPointerEvent<HTMLDivElement>) => void;
+  onEnd: (e: ReactPointerEvent<HTMLDivElement>) => void;
+}
+
+const HANDLE_THICKNESS = 6;
+const CORNER_SIZE = 12;
+
+/**
+ * Eight invisible drag grips around the window's edges and corners. Each
+ * gets its own resize cursor; the parent <Window> owns the actual resize
+ * state machine so handles only need to forward pointer events.
+ */
+function ResizeHandles({ onStart, onMove, onEnd }: ResizeHandlesProps) {
+  const edge = (
+    dir: ResizeDir,
+    style: React.CSSProperties,
+    cursor: string,
+  ) => (
+    <div
+      key={dir}
+      onPointerDown={(e) => {
+        onStart(dir, e);
+      }}
+      onPointerMove={onMove}
+      onPointerUp={onEnd}
+      onPointerCancel={onEnd}
+      style={{
+        position: "absolute",
+        cursor,
+        touchAction: "none",
+        ...style,
+      }}
+    />
+  );
+
+  return (
+    <>
+      {edge(
+        "n",
+        {
+          top: 0,
+          left: CORNER_SIZE,
+          right: CORNER_SIZE,
+          height: HANDLE_THICKNESS,
+        },
+        "ns-resize",
+      )}
+      {edge(
+        "s",
+        {
+          bottom: 0,
+          left: CORNER_SIZE,
+          right: CORNER_SIZE,
+          height: HANDLE_THICKNESS,
+        },
+        "ns-resize",
+      )}
+      {edge(
+        "e",
+        {
+          right: 0,
+          top: CORNER_SIZE,
+          bottom: CORNER_SIZE,
+          width: HANDLE_THICKNESS,
+        },
+        "ew-resize",
+      )}
+      {edge(
+        "w",
+        {
+          left: 0,
+          top: CORNER_SIZE,
+          bottom: CORNER_SIZE,
+          width: HANDLE_THICKNESS,
+        },
+        "ew-resize",
+      )}
+      {edge(
+        "nw",
+        { top: 0, left: 0, width: CORNER_SIZE, height: CORNER_SIZE },
+        "nwse-resize",
+      )}
+      {edge(
+        "ne",
+        { top: 0, right: 0, width: CORNER_SIZE, height: CORNER_SIZE },
+        "nesw-resize",
+      )}
+      {edge(
+        "sw",
+        { bottom: 0, left: 0, width: CORNER_SIZE, height: CORNER_SIZE },
+        "nesw-resize",
+      )}
+      {edge(
+        "se",
+        { bottom: 0, right: 0, width: CORNER_SIZE, height: CORNER_SIZE },
+        "nwse-resize",
+      )}
+    </>
   );
 }
 

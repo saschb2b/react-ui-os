@@ -7,6 +7,9 @@ export { MenuBar, MENU_BAR_HEIGHT } from "./MenuBar";
 export { Dock, DOCK_HEIGHT, getDockTileRect } from "./Dock";
 export { WindowLayer } from "./WindowLayer";
 export { Window } from "./Window";
+export { Spotlight } from "./Spotlight";
+export { KeyboardShortcuts } from "./keyboard-shortcuts";
+export { SPOTLIGHT_OPEN_EVENT } from "./events";
 export {
   useDesktopContext,
   useTheme,
