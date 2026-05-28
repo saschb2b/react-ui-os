@@ -1,6 +1,9 @@
 export type {
   App,
   AppContentProps,
+  ColorFromPaletteField,
+  CustomizableField,
+  ImagePickField,
   OsTheme,
   OsThemeBlur,
   OsThemeChrome,
@@ -8,7 +11,12 @@ export type {
   OsThemePalette,
   OsThemeShape,
   OsThemeWallpaper,
+  RangeField,
+  SelectField,
+  SettingsPrefs,
+  ToggleField,
 } from "./types";
 
 export * from "./window-manager";
 export * from "./storage";
+export * from "./settings";

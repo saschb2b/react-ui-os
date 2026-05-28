@@ -13,6 +13,7 @@ import { useApp, useTheme } from "./desktop-context";
 import { MENU_BAR_HEIGHT } from "./MenuBar";
 import { DOCK_HEIGHT, getDockTileRect } from "./Dock";
 import { clampWindowToWorkArea } from "./util/clamp";
+import { getSystemWindow } from "./system-windows";
 
 const TITLE_BAR_HEIGHT = 32;
 
@@ -73,6 +74,19 @@ export function Window({ win }: WindowProps) {
   const appPayload =
     win.payload.kind === "app" ? win.payload.appId : undefined;
   const app = useApp(appPayload ?? "__none__");
+  const systemDef =
+    win.payload.kind === "system"
+      ? getSystemWindow(win.payload.systemId)
+      : undefined;
+
+  const title =
+    win.payload.kind === "app"
+      ? (app?.name ?? "Window")
+      : (systemDef?.name ?? "Window");
+  const accent =
+    win.payload.kind === "app"
+      ? (app?.accent ?? theme.palette.accent)
+      : (systemDef?.accent ?? theme.palette.accent);
 
   const elRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -268,7 +282,7 @@ export function Window({ win }: WindowProps) {
     <div
       ref={elRef}
       role="region"
-      aria-label={app?.name ? `${app.name} window` : "Window"}
+      aria-label={`${title} window`}
       onPointerDown={() => {
         if (!focused) focusWindow(win.id);
       }}
@@ -298,9 +312,9 @@ export function Window({ win }: WindowProps) {
       }}
     >
       <TitleBar
-        title={app?.name ?? "Window"}
+        title={title}
         focused={focused}
-        accent={app?.accent ?? theme.palette.accent}
+        accent={accent}
         onClose={handleClose}
         onMinimize={handleMinimize}
         onMaximize={handleMaximize}
@@ -318,7 +332,11 @@ export function Window({ win }: WindowProps) {
           padding: 16,
         }}
       >
-        {app ? <app.content appId={app.id} focused={focused} /> : null}
+        {app ? (
+          <app.content appId={app.id} focused={focused} />
+        ) : systemDef ? (
+          <systemDef.content focused={focused} />
+        ) : null}
       </div>
       {!maximized && (
         <ResizeHandles

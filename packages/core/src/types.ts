@@ -105,4 +105,68 @@ export interface OsTheme {
   blur: OsThemeBlur;
   wallpaper: OsThemeWallpaper;
   chrome: OsThemeChrome;
+  /**
+   * End-user tweakable subset of the theme. Keys are dotted paths into the
+   * theme object (e.g. `"palette.accent"`, `"shape.dockTileRadius"`). The
+   * Settings system app reads this map and renders one field per entry; the
+   * library persists the chosen value via the storage adapter and overlays
+   * it on top of the theme defaults to produce the effective theme.
+   *
+   * A theme that omits this field exposes no settings panel. A theme that
+   * supplies ten entries gets a ten-field panel for free.
+   */
+  customizable?: Record<string, CustomizableField>;
 }
+
+/* ─── Customizable schema ─────────────────────────────────────── */
+
+interface CustomizableBase {
+  /** Visible label shown in the Settings panel. */
+  label: string;
+  /** Optional helper copy under the label. */
+  description?: string;
+  /**
+   * Logical grouping for the Settings panel. Defaults to "General".
+   * Fields with the same `section` value render together.
+   */
+  section?: string;
+}
+
+export interface ColorFromPaletteField extends CustomizableBase {
+  kind: "color-from-palette";
+  /** Hex / CSS color strings the user picks from. */
+  options: string[];
+}
+
+export interface ImagePickField extends CustomizableBase {
+  kind: "image-pick";
+  options: Array<{ src: string; label: string }>;
+}
+
+export interface RangeField extends CustomizableBase {
+  kind: "range";
+  min: number;
+  max: number;
+  step: number;
+  /** Optional unit suffix shown next to the numeric readout. */
+  unit?: string;
+}
+
+export interface SelectField extends CustomizableBase {
+  kind: "select";
+  options: Array<{ value: string; label: string }>;
+}
+
+export interface ToggleField extends CustomizableBase {
+  kind: "toggle";
+}
+
+export type CustomizableField =
+  | ColorFromPaletteField
+  | ImagePickField
+  | RangeField
+  | SelectField
+  | ToggleField;
+
+/** User-chosen overrides keyed by the same dotted paths used by `customizable`. */
+export type SettingsPrefs = Record<string, unknown>;

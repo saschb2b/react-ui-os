@@ -10,9 +10,19 @@ export { Window } from "./Window";
 export { Spotlight } from "./Spotlight";
 export { KeyboardShortcuts } from "./keyboard-shortcuts";
 export { SPOTLIGHT_OPEN_EVENT } from "./events";
+export { Settings } from "./Settings";
+export {
+  systemWindows,
+  getSystemWindow,
+  listSystemWindows,
+  type SystemWindowDef,
+} from "./system-windows";
 export {
   useDesktopContext,
   useTheme,
+  useBaseTheme,
   useApps,
   useApp,
+  useSettings,
+  type UseSettingsResult,
 } from "./desktop-context";

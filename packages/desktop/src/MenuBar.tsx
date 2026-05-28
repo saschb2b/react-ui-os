@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useWindowManager } from "@react-ui-os/core";
 import { useApp, useTheme } from "./desktop-context";
+import { getSystemWindow } from "./system-windows";
 
 const MENU_BAR_HEIGHT = 28;
 
@@ -20,6 +21,11 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
       ? focusedWindow.payload.appId
       : "__none__",
   );
+  const focusedSystem =
+    focusedWindow?.payload.kind === "system"
+      ? getSystemWindow(focusedWindow.payload.systemId)
+      : undefined;
+  const focusedName = focusedApp?.name ?? focusedSystem?.name;
 
   return (
     <header
@@ -46,7 +52,7 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <strong style={{ letterSpacing: 0.2 }}>{brand}</strong>
-        {focusedApp && (
+        {focusedName && (
           <span
             style={{
               color: theme.palette.textSecondary,
@@ -54,7 +60,7 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
               paddingLeft: 8,
             }}
           >
-            {focusedApp.name}
+            {focusedName}
           </span>
         )}
       </div>

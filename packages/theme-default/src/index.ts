@@ -5,6 +5,10 @@ import type { OsTheme } from "@react-ui-os/core";
  * wallpaper or accent: neutral surfaces, a modest accent, soft motion. The
  * point is to read as "the skeleton" so consumers immediately see what is
  * theirs to customize. Branded looks ship as separate theme packages.
+ *
+ * The `customizable` block declares which tokens end users may tweak from
+ * the Settings panel. Themes can expose more or less; this baseline picks
+ * a small, demonstrative set.
  */
 export const defaultTheme: OsTheme = {
   id: "default",
@@ -44,6 +48,71 @@ export const defaultTheme: OsTheme = {
     windowControls: "traffic-lights",
     dockPosition: "bottom",
     menuBar: "top",
+  },
+  customizable: {
+    "palette.accent": {
+      kind: "color-from-palette",
+      section: "Appearance",
+      label: "Accent color",
+      description: "Tints the dock tile gradients and focused-window highlight.",
+      options: ["#6b8afd", "#f59e0b", "#22c55e", "#a855f7", "#ec4899", "#06b6d4"],
+    },
+    "shape.windowRadius": {
+      kind: "range",
+      section: "Appearance",
+      label: "Window radius",
+      description: "Corner roundness of every window.",
+      min: 0,
+      max: 24,
+      step: 2,
+      unit: "px",
+    },
+    "shape.dockTileRadius": {
+      kind: "range",
+      section: "Appearance",
+      label: "Dock tile radius",
+      min: 4,
+      max: 24,
+      step: 2,
+      unit: "px",
+    },
+    "motion.windowOpenDurationMs": {
+      kind: "range",
+      section: "Motion",
+      label: "Window open speed",
+      description: "How long the window open animation plays.",
+      min: 0,
+      max: 400,
+      step: 20,
+      unit: "ms",
+    },
+    "motion.genieDurationMs": {
+      kind: "range",
+      section: "Motion",
+      label: "Minimize speed",
+      description: "Genie animation duration on minimize.",
+      min: 0,
+      max: 600,
+      step: 20,
+      unit: "ms",
+    },
+    "chrome.dockPosition": {
+      kind: "select",
+      section: "Layout",
+      label: "Dock position",
+      description: "Where the app dock sits on the desktop.",
+      options: [
+        { value: "bottom", label: "Bottom" },
+        { value: "left", label: "Left" },
+        { value: "hidden", label: "Hidden" },
+      ],
+    },
+    "wallpaper.vignette": {
+      kind: "toggle",
+      section: "Appearance",
+      label: "Wallpaper vignette",
+      description: "Adds a soft dark halo around the wallpaper edges.",
+    },
   },
 };
 

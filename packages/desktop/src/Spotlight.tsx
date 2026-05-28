@@ -13,10 +13,19 @@ import type { App } from "@react-ui-os/core";
 import { useWindowManager } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { SPOTLIGHT_OPEN_EVENT } from "./events";
+import { listSystemWindows, type SystemWindowDef } from "./system-windows";
 
-interface Result {
-  app: App;
-}
+type Result =
+  | { kind: "app"; key: string; name: string; tagline?: string; accent?: string; app: App }
+  | {
+      kind: "system";
+      key: string;
+      name: string;
+      tagline?: string;
+      accent?: string;
+      systemId: string;
+      def: SystemWindowDef;
+    };
 
 /**
  * Cmd/Ctrl+K command palette. Self-contained: it owns its open/close
@@ -108,15 +117,31 @@ export function Spotlight() {
   }, [open]);
 
   const results = useMemo<Result[]>(() => {
+    const appResults: Result[] = apps.map((app) => ({
+      kind: "app",
+      key: `app:${app.id}`,
+      name: app.name,
+      tagline: app.tagline,
+      accent: app.accent,
+      app,
+    }));
+    const systemResults: Result[] = listSystemWindows().map((sys) => ({
+      kind: "system",
+      key: `system:${sys.systemId}`,
+      name: sys.name,
+      tagline: sys.tagline,
+      accent: sys.accent,
+      systemId: sys.systemId,
+      def: sys,
+    }));
+    const all = [...appResults, ...systemResults];
     const q = query.trim().toLowerCase();
-    if (!q) return apps.map((app) => ({ app }));
-    return apps
-      .filter((app) => {
-        const name = app.name.toLowerCase();
-        const tag = (app.tagline ?? "").toLowerCase();
-        return name.includes(q) || tag.includes(q);
-      })
-      .map((app) => ({ app }));
+    if (!q) return all;
+    return all.filter((r) => {
+      const name = r.name.toLowerCase();
+      const tag = (r.tagline ?? "").toLowerCase();
+      return name.includes(q) || tag.includes(q);
+    });
   }, [apps, query]);
 
   useEffect(() => {
@@ -144,7 +169,11 @@ export function Spotlight() {
 
   const activate = useCallback(
     (result: Result) => {
-      openWindow({ kind: "app", appId: result.app.id });
+      if (result.kind === "app") {
+        openWindow({ kind: "app", appId: result.app.id });
+      } else {
+        openWindow({ kind: "system", systemId: result.systemId });
+      }
       handleClose();
     },
     [openWindow, handleClose],
@@ -277,7 +306,7 @@ export function Spotlight() {
           ) : (
             results.map((result, i) => (
               <ResultRow
-                key={result.app.id}
+                key={result.key}
                 result={result}
                 index={i}
                 selected={i === selectedIndex}
@@ -330,8 +359,10 @@ function ResultRow({
   onActivate: () => void;
 }) {
   const theme = useTheme();
-  const accent = result.app.accent ?? theme.palette.accent;
-  const Icon = result.app.icon;
+  const accent = result.accent ?? theme.palette.accent;
+  const Icon = result.kind === "app" ? result.app.icon : undefined;
+  const kindLabel =
+    result.kind === "app" ? "App" : "System";
 
   return (
     <div
@@ -374,7 +405,7 @@ function ResultRow({
           <Icon size={15} />
         ) : (
           <span style={{ fontWeight: 700, fontSize: 14 }}>
-            {result.app.name.charAt(0).toUpperCase()}
+            {result.name.charAt(0).toUpperCase()}
           </span>
         )}
       </div>
@@ -389,22 +420,20 @@ function ResultRow({
           whiteSpace: "nowrap",
         }}
       >
-        {result.app.name}
+        {result.name}
       </span>
-      {result.app.tagline && (
-        <span
-          style={{
-            fontSize: 11,
-            color: theme.palette.textSecondary,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            maxWidth: 220,
-          }}
-        >
-          {result.app.tagline}
-        </span>
-      )}
+      <span
+        style={{
+          fontSize: 11,
+          color: theme.palette.textSecondary,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          maxWidth: 220,
+        }}
+      >
+        {result.tagline ?? kindLabel}
+      </span>
     </div>
   );
 }

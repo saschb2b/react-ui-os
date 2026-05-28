@@ -14,6 +14,7 @@ import { SPOTLIGHT_OPEN_EVENT } from "./events";
  *   Cmd/Ctrl+1..9    open / focus / cycle-minimize app N (1-indexed into
  *                    the apps registry, in declared order)
  *   Cmd/Ctrl+K       dispatches SPOTLIGHT_OPEN_EVENT
+ *   Cmd/Ctrl+,       open Settings (macOS convention)
  *   Escape           restores the focused window if maximized
  *
  * Every binding bails when the event target is an `<input>`,
@@ -53,6 +54,13 @@ export function KeyboardShortcuts() {
       if (mod && key === "k") {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT));
+        return;
+      }
+
+      // Cmd-, opens Settings as a system window (macOS convention).
+      if (mod && e.key === ",") {
+        e.preventDefault();
+        openWindow({ kind: "system", systemId: "settings" });
         return;
       }
 
