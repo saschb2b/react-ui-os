@@ -38,6 +38,9 @@ export function KeyboardShortcuts() {
     focusWindow,
     setBounds,
     toggleMaximize,
+    state,
+    switchWorkspace,
+    moveWindowToWorkspace,
   } = useWindowManager();
 
   useEffect(() => {
@@ -120,6 +123,27 @@ export function KeyboardShortcuts() {
         return;
       }
 
+      // Ctrl + Alt + ←/→ switches workspaces.
+      // Ctrl + Alt + Shift + ←/→ moves the focused window with you.
+      if (e.ctrlKey && e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        e.preventDefault();
+        const idx = state.workspaces.indexOf(state.activeWorkspaceId);
+        if (idx < 0) return;
+        const dir = e.key === "ArrowRight" ? 1 : -1;
+        const nextIdx = (idx + dir + state.workspaces.length) % state.workspaces.length;
+        const nextId = state.workspaces[nextIdx];
+        if (!nextId || nextId === state.activeWorkspaceId) return;
+        if (e.shiftKey && focusedWindow) {
+          moveWindowToWorkspace(focusedWindow.id, nextId);
+        }
+        switchWorkspace(nextId);
+        showHud({
+          title: `Workspace ${String(nextIdx + 1)}`,
+          sublabel: e.shiftKey ? "Window moved with you" : undefined,
+        });
+        return;
+      }
+
       // Cmd/Ctrl + Arrow snaps the focused window to a viewport zone.
       // Mirrors the Windows Snap chord (Win + Arrow) on a Mac-friendly
       // modifier. Up = maximize, Down = restore (or center if not snapped),
@@ -170,6 +194,9 @@ export function KeyboardShortcuts() {
     setBounds,
     theme,
     toggleMaximize,
+    state,
+    switchWorkspace,
+    moveWindowToWorkspace,
   ]);
 
   return null;

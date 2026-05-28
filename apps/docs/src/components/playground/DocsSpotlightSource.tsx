@@ -24,6 +24,7 @@ const DOCS_PAGES: DocsPage[] = [
   { id: "appswitcher", name: "App switcher", path: "/components/appswitcher/", kind: "component" },
   { id: "missioncontrol", name: "Mission Control", path: "/components/missioncontrol/", kind: "component" },
   { id: "hud", name: "HUD", path: "/components/hud/", kind: "component" },
+  { id: "workspaces", name: "Workspaces", path: "/components/workspaces/", kind: "component" },
   { id: "fileexplorer", name: "FileExplorer", path: "/components/fileexplorer/", kind: "component" },
   { id: "desktopicons", name: "DesktopIcons", path: "/components/desktopicons/", kind: "component" },
   { id: "usewindowmanager", name: "useWindowManager", path: "/api/usewindowmanager/", kind: "api" },

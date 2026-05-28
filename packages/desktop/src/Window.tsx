@@ -92,6 +92,7 @@ interface ResizeState {
  */
 export function Window({ win }: WindowProps) {
   const theme = useTheme();
+  const wm = useWindowManager();
   const {
     focusedWindow,
     focusWindow,
@@ -99,7 +100,7 @@ export function Window({ win }: WindowProps) {
     minimizeWindow,
     toggleMaximize,
     setBounds,
-  } = useWindowManager();
+  } = wm;
   const focused = focusedWindow?.id === win.id;
 
   const appPayload =
@@ -177,6 +178,8 @@ export function Window({ win }: WindowProps) {
     (e: React.MouseEvent) => {
       e.preventDefault();
       const isMaximized = win.state === "maximized";
+      const wmState = wm.state;
+      const workspaces = wmState.workspaces;
       const items: ContextMenuItem[] = [
         {
           label: isMaximized ? "Restore" : "Maximize",
@@ -190,16 +193,30 @@ export function Window({ win }: WindowProps) {
             handleMinimize();
           },
         },
-        { separator: true },
-        {
-          label: "Close",
-          shortcut: "⌘W",
-          danger: true,
-          onSelect: () => {
-            handleClose();
-          },
-        },
       ];
+      if (workspaces.length > 1) {
+        items.push({ separator: true });
+        for (let i = 0; i < workspaces.length; i++) {
+          const wsId = workspaces[i];
+          if (!wsId) continue;
+          items.push({
+            label: `Move to Workspace ${String(i + 1)}`,
+            disabled: wsId === win.workspaceId,
+            onSelect: () => {
+              wm.moveWindowToWorkspace(win.id, wsId);
+            },
+          });
+        }
+      }
+      items.push({ separator: true });
+      items.push({
+        label: "Close",
+        shortcut: "⌘W",
+        danger: true,
+        onSelect: () => {
+          handleClose();
+        },
+      });
       openContextMenu({
         x: e.clientX,
         y: e.clientY,
@@ -207,7 +224,7 @@ export function Window({ win }: WindowProps) {
         ariaLabel: `${title} window menu`,
       });
     },
-    [handleClose, handleMaximize, handleMinimize, win.state, title],
+    [handleClose, handleMaximize, handleMinimize, win.state, win.id, win.workspaceId, title, wm],
   );
 
   const startDrag = useCallback(

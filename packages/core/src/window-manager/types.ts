@@ -41,6 +41,13 @@ export interface OpenWindow {
   w: number;
   h: number;
   z: number;
+  /**
+   * Workspace this window belongs to. Defaults to the workspace that was
+   * active when the window opened. Switching workspaces hides all windows
+   * whose `workspaceId` doesn't match — they aren't unmounted, just
+   * filtered by the window layer, so internal state survives.
+   */
+  workspaceId: string;
 }
 
 export interface WindowManagerState {
@@ -49,6 +56,10 @@ export interface WindowManagerState {
   focusedId: string | null;
   /** Next z-index to assign. The reducer increments monotonically. */
   nextZ: number;
+  /** Ordered list of workspace ids. The library seeds three by default. */
+  workspaces: string[];
+  /** Workspace currently displayed by the desktop. */
+  activeWorkspaceId: string;
 }
 
 /**
@@ -84,6 +95,10 @@ export interface WindowManagerActions {
   moveWindow: (id: string, x: number, y: number) => void;
   resizeWindow: (id: string, w: number, h: number) => void;
   setBounds: (id: string, x: number, y: number, w: number, h: number) => void;
+  switchWorkspace: (workspaceId: string) => void;
+  moveWindowToWorkspace: (id: string, workspaceId: string) => void;
+  addWorkspace: (workspaceId?: string) => void;
+  removeWorkspace: (workspaceId: string) => void;
 }
 
 export type WindowManagerAction =
@@ -95,6 +110,10 @@ export type WindowManagerAction =
   | { type: "MAXIMIZE_TOGGLE"; id: string }
   | { type: "MOVE"; id: string; x: number; y: number }
   | { type: "RESIZE"; id: string; w: number; h: number }
-  | { type: "SET_BOUNDS"; id: string; x: number; y: number; w: number; h: number };
+  | { type: "SET_BOUNDS"; id: string; x: number; y: number; w: number; h: number }
+  | { type: "SWITCH_WORKSPACE"; workspaceId: string }
+  | { type: "MOVE_WINDOW_TO_WORKSPACE"; id: string; workspaceId: string }
+  | { type: "ADD_WORKSPACE"; workspaceId: string }
+  | { type: "REMOVE_WORKSPACE"; workspaceId: string };
 
 export type WindowManagerDispatch = Dispatch<WindowManagerAction>;

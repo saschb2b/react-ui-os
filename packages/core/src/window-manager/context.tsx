@@ -116,6 +116,39 @@ export function useWindowManager(): UseWindowManagerResult {
     },
     [dispatch],
   );
+  const switchWorkspace = useCallback(
+    (workspaceId: string) => {
+      dispatch({ type: "SWITCH_WORKSPACE", workspaceId });
+    },
+    [dispatch],
+  );
+  const moveWindowToWorkspace = useCallback(
+    (id: string, workspaceId: string) => {
+      dispatch({ type: "MOVE_WINDOW_TO_WORKSPACE", id, workspaceId });
+    },
+    [dispatch],
+  );
+  const addWorkspace = useCallback(
+    (workspaceId?: string) => {
+      const id =
+        workspaceId ??
+        String(
+          (state.workspaces.length === 0
+            ? 1
+            : Math.max(
+                ...state.workspaces.map((w) => Number.parseInt(w, 10) || 0),
+              ) + 1),
+        );
+      dispatch({ type: "ADD_WORKSPACE", workspaceId: id });
+    },
+    [dispatch, state.workspaces],
+  );
+  const removeWorkspace = useCallback(
+    (workspaceId: string) => {
+      dispatch({ type: "REMOVE_WORKSPACE", workspaceId });
+    },
+    [dispatch],
+  );
 
   const focusedWindow = useMemo<OpenWindow | null>(() => {
     if (!state.focusedId) return null;
@@ -141,5 +174,9 @@ export function useWindowManager(): UseWindowManagerResult {
     moveWindow,
     resizeWindow,
     setBounds,
+    switchWorkspace,
+    moveWindowToWorkspace,
+    addWorkspace,
+    removeWorkspace,
   };
 }

@@ -74,8 +74,73 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
           </span>
         )}
       </div>
-      <SystemClock color={theme.palette.textSecondary} accent={theme.palette.accent} />
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <WorkspaceIndicator />
+        <SystemClock color={theme.palette.textSecondary} accent={theme.palette.accent} />
+      </div>
     </header>
+  );
+}
+
+function WorkspaceIndicator() {
+  const theme = useTheme();
+  const { state, switchWorkspace } = useWindowManager();
+  const workspaces = state.workspaces;
+  const activeId = state.activeWorkspaceId;
+  // Hide the indicator when there's only one workspace — no signal to give.
+  if (workspaces.length <= 1) return null;
+  return (
+    <div
+      role="tablist"
+      aria-label="Workspaces"
+      style={{
+        display: "inline-flex",
+        gap: 4,
+        padding: "2px 6px",
+        borderRadius: 8,
+      }}
+    >
+      {workspaces.map((id, idx) => {
+        const isActive = id === activeId;
+        return (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            aria-label={`Workspace ${String(idx + 1)}`}
+            onClick={() => switchWorkspace(id)}
+            style={{
+              appearance: "none",
+              border: 0,
+              background: "transparent",
+              padding: 4,
+              cursor: "pointer",
+              borderRadius: 999,
+              display: "inline-flex",
+            }}
+          >
+            <span
+              aria-hidden
+              style={{
+                display: "inline-block",
+                width: isActive ? 14 : 6,
+                height: 6,
+                borderRadius: 3,
+                background: isActive
+                  ? theme.palette.accent
+                  : theme.palette.textSecondary,
+                opacity: isActive ? 1 : 0.55,
+                transition: "width 140ms ease, opacity 140ms ease",
+                boxShadow: isActive
+                  ? `0 0 6px ${theme.palette.accent}aa`
+                  : "none",
+              }}
+            />
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
