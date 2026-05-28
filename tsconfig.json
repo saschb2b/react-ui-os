@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/desktop" },
+    { "path": "./packages/theme-default" },
+    { "path": "./apps/playground" }
+  ]
+}

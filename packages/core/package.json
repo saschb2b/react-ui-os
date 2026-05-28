@@ -1,0 +1,26 @@
+{
+  "name": "@react-ui-os/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./window-manager": "./src/window-manager/index.ts",
+    "./storage": "./src/storage/index.ts"
+  },
+  "scripts": {
+    "build": "echo 'core is source-exported; nothing to bundle yet'",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src tests"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
+  }
+}
