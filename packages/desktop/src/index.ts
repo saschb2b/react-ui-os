@@ -23,6 +23,14 @@ export {
 } from "./context-menu";
 export { DesktopBackdrop } from "./desktop-backdrop";
 export {
+  SnapPreview,
+  computeSnapZone,
+  rectForZone,
+  type SnapZone,
+  type SnapRect,
+  type SnapState,
+} from "./snap";
+export {
   SPOTLIGHT_OPEN_EVENT,
   NOTIFICATION_CENTER_TOGGLE_EVENT,
 } from "./events";

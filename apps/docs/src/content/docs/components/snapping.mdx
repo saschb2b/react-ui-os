@@ -1,0 +1,88 @@
+---
+title: Window snapping
+description: Drag a window to a viewport edge or use Cmd/Ctrl + Arrow to snap it to a half or a corner. A translucent preview shows the target before you release.
+sidebar:
+  order: 9
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+Drag a window's title bar toward the edge of the desktop. As the pointer crosses the activation threshold a translucent rectangle in the theme accent shows you the snap target. Release and the window snaps to that rectangle. It is the same gesture Windows Snap and macOS edge-drag use, in one consistent vocabulary.
+
+<LivePreview src="?demo=dock" label="Drag the Hello window toward the left edge to see the snap preview" height="460px" />
+
+## Pointer snap zones
+
+| Pointer position             | Snap target                            |
+| ---------------------------- | -------------------------------------- |
+| Top edge                     | Maximize (fills the entire work area)  |
+| Left edge                    | Left half                              |
+| Right edge                   | Right half                             |
+| Top-left corner              | Top-left quarter                       |
+| Top-right corner             | Top-right quarter                      |
+| Bottom-left corner           | Bottom-left quarter                    |
+| Bottom-right corner          | Bottom-right quarter                   |
+
+Edge activation kicks in within 24 px of the edge. Corners take precedence when the pointer is within 48 px of both an edge pair.
+
+## Keyboard
+
+| Shortcut                | Effect                                |
+| ----------------------- | ------------------------------------- |
+| Cmd/Ctrl + ←            | Snap focused window to the left half  |
+| Cmd/Ctrl + →            | Snap focused window to the right half |
+| Cmd/Ctrl + ↑            | Maximize (when not already)           |
+| Cmd/Ctrl + ↓            | Restore from maximize                 |
+| Cmd/Ctrl + Shift + ←    | Top-left quarter                      |
+| Cmd/Ctrl + Shift + →    | Top-right quarter                     |
+| Escape                  | Restore from maximize                 |
+
+Every binding bails when the event target is a text input or contenteditable element, so typing in a field is never hijacked.
+
+## How it works under the hood
+
+During a drag, `Window.tsx` reads the pointer position on every move event and asks `computeSnapZone(x, y, work)` whether the pointer is inside an activation threshold. If yes, it writes the resolved rectangle into a module-level `snap-store`. The `<SnapPreview>` overlay subscribes to that store and paints a translucent rectangle in the indicated zone. On `pointerup` the Window reads the current snap state — if a zone is active, the new bounds are the snap rect; otherwise the dragged position commits.
+
+The store is intentionally module-scoped (same as notifications and the context menu) so the drag handler in Window and the preview rendered inside `<Desktop>` do not need to share a provider beyond the existing DesktopProvider.
+
+## Custom regions
+
+If you build your own draggable surface (a floating tool panel, say), the snap math is exposed for you:
+
+```tsx
+import {
+  computeSnapZone,
+  rectForZone,
+  setSnapPreview,
+  getSnapPreview,
+} from "@react-ui-os/desktop";
+
+function onPointerMove(e: PointerEvent) {
+  const work = /* your work area */;
+  const zone = computeSnapZone(e.clientX, e.clientY, work);
+  setSnapPreview(
+    zone
+      ? { windowId: "my-panel", zone, rect: rectForZone(zone, work) }
+      : null,
+  );
+}
+
+function onPointerUp() {
+  const snap = getSnapPreview();
+  if (snap?.windowId === "my-panel") {
+    applyRect(snap.rect);
+  }
+  setSnapPreview(null);
+}
+```
+
+## Accessibility
+
+- Snap preview is `aria-hidden` — it is a visual hint, not a status.
+- Keyboard shortcuts work without any pointer interaction.
+- Reduced-motion preferences keep the preview's slide transition short. The window snap itself is instantaneous either way.
+
+## See also
+
+- [Window](/components/window/) — the dragging surface.
+- [Recipes: deep-link a feature](/recipes/overview/#deep-link-a-feature) — pattern for opening a window with a specific snap state on boot.

@@ -16,6 +16,12 @@ import {
   openContextMenu,
   type ContextMenuItem,
 } from "./context-menu";
+import {
+  computeSnapZone,
+  rectForZone,
+  setSnapPreview,
+  getSnapPreview,
+} from "./snap";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { getMenuBarHeight, getWorkArea } from "./util/layout";
 
@@ -217,15 +223,33 @@ export function Window({ win }: WindowProps) {
       if (el) {
         el.style.transform = `translate3d(${String(clamped.x)}px, ${String(clamped.y)}px, 0)`;
       }
+      // Snap preview tracks the pointer, not the window. Drag the pointer
+      // into the edge zone; the preview lights up; on release we snap.
+      const zone = computeSnapZone(e.clientX, e.clientY, work);
+      if (zone) {
+        setSnapPreview({
+          windowId: win.id,
+          zone,
+          rect: rectForZone(zone, work),
+        });
+      } else {
+        setSnapPreview(null);
+      }
     },
-    [theme, win.w, win.h],
+    [theme, win.id, win.w, win.h],
   );
 
   const endDrag = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
       const drag = dragRef.current;
       if (!drag || drag.pointerId !== e.pointerId) return;
-      setBounds(win.id, drag.lastX, drag.lastY, win.w, win.h);
+      const snap = getSnapPreview();
+      if (snap && snap.windowId === win.id) {
+        setBounds(win.id, snap.rect.x, snap.rect.y, snap.rect.w, snap.rect.h);
+      } else {
+        setBounds(win.id, drag.lastX, drag.lastY, win.w, win.h);
+      }
+      setSnapPreview(null);
       dragRef.current = null;
     },
     [setBounds, win.id, win.w, win.h],

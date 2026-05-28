@@ -14,6 +14,7 @@ import { NotificationToasts } from "./NotificationToasts";
 import { NotificationCenter } from "./NotificationCenter";
 import { ContextMenu } from "./context-menu";
 import { DesktopBackdrop } from "./desktop-backdrop";
+import { SnapPreview } from "./snap";
 
 export interface DesktopProps {
   apps: App[];
@@ -56,6 +57,7 @@ export function Desktop({
         <Wallpaper />
         <MenuBar brand={brand} />
         <DesktopIcons />
+        <SnapPreview />
         <WindowLayer />
         <Dock />
         <KeyboardShortcuts />

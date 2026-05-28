@@ -2,8 +2,10 @@
 
 import { useEffect } from "react";
 import { useWindowManager, windowIdOf } from "@react-ui-os/core";
-import { useApps } from "./desktop-context";
+import { useApps, useTheme } from "./desktop-context";
 import { SPOTLIGHT_OPEN_EVENT } from "./events";
+import { rectForZone, type SnapZone } from "./snap";
+import { getWorkArea } from "./util/layout";
 
 /**
  * Global keyboard shortcut handler. Renders null. Mount once anywhere
@@ -24,6 +26,7 @@ import { SPOTLIGHT_OPEN_EVENT } from "./events";
  */
 export function KeyboardShortcuts() {
   const apps = useApps();
+  const theme = useTheme();
   const {
     focusedWindow,
     windowById,
@@ -32,6 +35,7 @@ export function KeyboardShortcuts() {
     minimizeWindow,
     restoreWindow,
     focusWindow,
+    setBounds,
     toggleMaximize,
   } = useWindowManager();
 
@@ -114,6 +118,36 @@ export function KeyboardShortcuts() {
         toggleMaximize(focusedWindow.id);
         return;
       }
+
+      // Cmd/Ctrl + Arrow snaps the focused window to a viewport zone.
+      // Mirrors the Windows Snap chord (Win + Arrow) on a Mac-friendly
+      // modifier. Up = maximize, Down = restore (or center if not snapped),
+      // Left/Right = halves.
+      if (mod && focusedWindow && focusedWindow.state !== "maximized") {
+        const zone = arrowToZone(e.key, e.shiftKey);
+        if (zone) {
+          e.preventDefault();
+          const rect = rectForZone(zone, getWorkArea(theme));
+          setBounds(focusedWindow.id, rect.x, rect.y, rect.w, rect.h);
+          return;
+        }
+      }
+      // Cmd/Ctrl + Up while maximized is a no-op; while not, it toggles
+      // maximize. Cmd/Ctrl + Down restores from maximize.
+      if (mod && focusedWindow && e.key === "ArrowUp") {
+        if (focusedWindow.state !== "maximized") {
+          e.preventDefault();
+          toggleMaximize(focusedWindow.id);
+        }
+        return;
+      }
+      if (mod && focusedWindow && e.key === "ArrowDown") {
+        if (focusedWindow.state === "maximized") {
+          e.preventDefault();
+          toggleMaximize(focusedWindow.id);
+        }
+        return;
+      }
     };
 
     window.addEventListener("keydown", onKey);
@@ -129,8 +163,23 @@ export function KeyboardShortcuts() {
     minimizeWindow,
     restoreWindow,
     focusWindow,
+    setBounds,
+    theme,
     toggleMaximize,
   ]);
 
+  return null;
+}
+
+function arrowToZone(key: string, shift: boolean): SnapZone | null {
+  // Cmd/Ctrl + Shift + Arrow picks a quarter zone in the indicated corner.
+  if (shift) {
+    if (key === "ArrowLeft") return "top-left-quarter";
+    if (key === "ArrowRight") return "top-right-quarter";
+    // Down + Shift = bottom corners. Direction comes from the next key.
+    return null;
+  }
+  if (key === "ArrowLeft") return "left-half";
+  if (key === "ArrowRight") return "right-half";
   return null;
 }
