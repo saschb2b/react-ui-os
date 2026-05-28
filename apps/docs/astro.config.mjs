@@ -1,7 +1,29 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
 import starlight from "@astrojs/starlight";
+
+// Resolve every @react-ui-os/* workspace package to its TypeScript source.
+// The docs site is built straight from source (the deploy workflow runs
+// `pnpm --filter docs build` without building the libraries first), so the
+// `dist/` directories don't exist on a clean checkout. The `source` export
+// condition handles this for the dev server, but the production build's
+// commonjs resolver ignores it and falls back to the missing `dist/index.js`.
+// An explicit alias is honored by every resolver in both dev and build.
+const PACKAGES = [
+  "core",
+  "desktop",
+  "theme-default",
+  "theme-mintables",
+  "theme-saas",
+];
+const sourceAliases = PACKAGES.map((name) => ({
+  find: `@react-ui-os/${name}`,
+  replacement: fileURLToPath(
+    new URL(`../../packages/${name}/src/index.ts`, import.meta.url),
+  ),
+}));
 
 // GitHub Pages deploy. Change `site` and drop `base` once a custom domain
 // is wired up via a CNAME file. The workflow at .github/workflows/docs.yml
@@ -100,6 +122,7 @@ export default defineConfig({
   ],
   vite: {
     resolve: {
+      alias: sourceAliases,
       conditions: ["source"],
     },
   },
