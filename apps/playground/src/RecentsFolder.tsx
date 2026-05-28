@@ -8,18 +8,9 @@ import {
   deleteRecent,
   listRecents,
   RECENTS_STORAGE_KEY,
+  renameRecent,
   type RecentEntry,
 } from "./recents";
-
-function formatTimestamp(ms: number): string {
-  const date = new Date(ms);
-  return date.toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
 
 function entryToItem(entry: RecentEntry): ExplorerItem {
   return {
@@ -27,7 +18,6 @@ function entryToItem(entry: RecentEntry): ExplorerItem {
     name: entry.name,
     kind: entry.kind,
     timestamp: entry.createdAt,
-    subtitle: formatTimestamp(entry.createdAt),
     icon: "📄",
   };
 }
@@ -54,12 +44,28 @@ export function RecentsFolder() {
   return (
     <FileExplorer
       items={items}
-      emptyMessage="No recents yet. Use the Hello app to add one."
+      emptyState={
+        <div
+          style={{
+            padding: "40px 20px",
+            display: "flex",
+            justifyContent: "center",
+            opacity: 0.6,
+            fontSize: 12,
+          }}
+        >
+          No recents yet. Use the Hello app to add one.
+        </div>
+      }
+      onRename={(item, newName) => {
+        renameRecent(storage, item.id, newName);
+      }}
       actions={[
         {
           id: "delete",
           label: "Delete",
           danger: true,
+          shortcut: "⌫",
           onClick: (selected) => {
             for (const item of selected) deleteRecent(storage, item.id);
           },

@@ -15,6 +15,8 @@ export { FileExplorer } from "./FileExplorer";
 export type {
   ExplorerItem,
   ExplorerAction,
+  ExplorerSidebarItem,
+  ExplorerSidebarSection,
   FileExplorerProps,
 } from "./FileExplorer";
 export { DesktopIcons } from "./DesktopIcons";

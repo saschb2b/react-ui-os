@@ -49,6 +49,19 @@ export function deleteRecent(storage: StorageAdapter, id: string): void {
   );
 }
 
+export function renameRecent(
+  storage: StorageAdapter,
+  id: string,
+  name: string,
+): void {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  storage.set(
+    STORAGE_KEY,
+    listRecents(storage).map((e) => (e.id === id ? { ...e, name: trimmed } : e)),
+  );
+}
+
 export function clearRecents(storage: StorageAdapter): void {
   storage.remove(STORAGE_KEY);
 }
