@@ -10,10 +10,10 @@ import {
 import { useWindowManager } from "@react-ui-os/core";
 import type { OpenWindow } from "@react-ui-os/core";
 import { useApp, useTheme } from "./desktop-context";
-import { MENU_BAR_HEIGHT } from "./MenuBar";
-import { DOCK_HEIGHT, getDockTileRect } from "./Dock";
+import { getDockTileRect } from "./Dock";
 import { clampWindowToWorkArea } from "./util/clamp";
 import { getSystemWindow } from "./system-windows";
+import { getMenuBarHeight, getWorkArea } from "./util/layout";
 
 const TITLE_BAR_HEIGHT = 32;
 
@@ -163,9 +163,10 @@ export function Window({ win }: WindowProps) {
       if (!drag || drag.pointerId !== e.pointerId) return;
       const targetX = drag.startX + (e.clientX - drag.startClientX);
       const targetY = drag.startY + (e.clientY - drag.startClientY);
+      const work = getWorkArea(theme);
       const clamped = clampWindowToWorkArea(targetX, targetY, win.w, win.h, {
-        width: window.innerWidth,
-        height: window.innerHeight - MENU_BAR_HEIGHT - DOCK_HEIGHT,
+        width: work.width,
+        height: work.height,
       });
       drag.lastX = clamped.x;
       drag.lastY = clamped.y;
@@ -174,7 +175,7 @@ export function Window({ win }: WindowProps) {
         el.style.transform = `translate3d(${String(clamped.x)}px, ${String(clamped.y)}px, 0)`;
       }
     },
-    [win.w, win.h],
+    [theme, win.w, win.h],
   );
 
   const endDrag = useCallback(
@@ -256,9 +257,11 @@ export function Window({ win }: WindowProps) {
   );
 
   const maximized = win.state === "maximized";
+  const work = getWorkArea(theme);
+  const menuBarHeight = getMenuBarHeight(theme);
 
   const baseTransform = maximized
-    ? "translate3d(0, 0, 0)"
+    ? `translate3d(${String(work.x)}px, 0, 0)`
     : `translate3d(${String(win.x)}px, ${String(win.y)}px, 0)`;
 
   const animationStyle =
@@ -289,11 +292,9 @@ export function Window({ win }: WindowProps) {
       style={{
         position: "fixed",
         left: 0,
-        top: MENU_BAR_HEIGHT,
-        width: maximized ? "100vw" : win.w,
-        height: maximized
-          ? `calc(100vh - ${String(MENU_BAR_HEIGHT)}px - ${String(DOCK_HEIGHT + 14)}px)`
-          : win.h,
+        top: menuBarHeight,
+        width: maximized ? work.width : win.w,
+        height: maximized ? work.height : win.h,
         transform: baseTransform,
         backgroundColor: theme.palette.surface,
         backdropFilter: theme.blur.surface,

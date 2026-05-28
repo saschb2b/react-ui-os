@@ -3,34 +3,53 @@
 import { useWindowManager, windowIdOf } from "@react-ui-os/core";
 import type { App } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
+import {
+  DOCK_EDGE_OFFSET,
+  DOCK_GAP,
+  DOCK_PADDING,
+  DOCK_TILE_SIZE,
+} from "./util/layout";
 
-const DOCK_TILE_SIZE = 56;
-const DOCK_GAP = 10;
-const DOCK_PADDING = 10;
-const DOCK_BOTTOM_OFFSET = 14;
-
-export const DOCK_HEIGHT = DOCK_TILE_SIZE + DOCK_PADDING * 2;
+export { DOCK_HEIGHT, DOCK_WIDTH } from "./util/layout";
 
 /**
- * Bottom-floating dock that lists the registered apps. Click toggles:
- * open if not running, focus + restore if minimized or unfocused, otherwise
- * minimize. The indicator dot below each tile reflects window state.
+ * App dock. Direction follows `theme.chrome.dockPosition`:
+ *
+ *   "bottom"  horizontal pill centered at the bottom of the desktop
+ *   "left"    vertical rail centered on the left edge
+ *   "hidden"  returns null
+ *
+ * Clicking a tile toggles: open if not running, focus + restore if minimized
+ * or unfocused, otherwise minimize.
  */
 export function Dock() {
   const theme = useTheme();
   const apps = useApps();
+  const position = theme.chrome.dockPosition;
 
-  if (theme.chrome.dockPosition === "hidden") return null;
+  if (position === "hidden") return null;
+
+  const isLeft = position === "left";
 
   return (
     <nav
       aria-label="App dock"
+      data-dock-position={position}
       style={{
         position: "fixed",
-        bottom: DOCK_BOTTOM_OFFSET,
-        left: "50%",
-        transform: "translateX(-50%)",
+        ...(isLeft
+          ? {
+              left: DOCK_EDGE_OFFSET,
+              top: "50%",
+              transform: "translateY(-50%)",
+            }
+          : {
+              bottom: DOCK_EDGE_OFFSET,
+              left: "50%",
+              transform: "translateX(-50%)",
+            }),
         display: "flex",
+        flexDirection: isLeft ? "column" : "row",
         gap: DOCK_GAP,
         padding: DOCK_PADDING,
         backgroundColor: theme.palette.surface,
@@ -44,13 +63,19 @@ export function Dock() {
       }}
     >
       {apps.map((app) => (
-        <DockTile key={app.id} app={app} />
+        <DockTile key={app.id} app={app} position={position} />
       ))}
     </nav>
   );
 }
 
-function DockTile({ app }: { app: App }) {
+function DockTile({
+  app,
+  position,
+}: {
+  app: App;
+  position: "bottom" | "left" | "hidden";
+}) {
   const theme = useTheme();
   const {
     windows,
@@ -84,6 +109,13 @@ function DockTile({ app }: { app: App }) {
   const accent = app.accent ?? theme.palette.accent;
   const Art = app.iconArt;
   const Icon = app.icon;
+  const isLeft = position === "left";
+
+  // Hover lift direction follows the dock's orientation: bottom dock lifts
+  // up, left dock lifts inward (to the right).
+  const hoverTransform = isLeft
+    ? "translateX(3px) scale(1.06)"
+    : "translateY(-3px) scale(1.06)";
 
   return (
     <button
@@ -109,10 +141,10 @@ function DockTile({ app }: { app: App }) {
         justifyContent: "center",
       }}
       onPointerEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-3px) scale(1.06)";
+        e.currentTarget.style.transform = hoverTransform;
       }}
       onPointerLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0) scale(1)";
+        e.currentTarget.style.transform = "translate(0, 0) scale(1)";
       }}
     >
       {Art ? (
@@ -136,9 +168,17 @@ function DockTile({ app }: { app: App }) {
           aria-hidden
           style={{
             position: "absolute",
-            bottom: -DOCK_BOTTOM_OFFSET + 2,
-            left: "50%",
-            transform: "translateX(-50%)",
+            ...(isLeft
+              ? {
+                  right: -DOCK_EDGE_OFFSET + 4,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                }
+              : {
+                  bottom: -DOCK_EDGE_OFFSET + 2,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                }),
             width: 4,
             height: 4,
             borderRadius: "50%",

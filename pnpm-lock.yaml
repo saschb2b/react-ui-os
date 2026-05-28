@@ -47,6 +47,9 @@ importers:
       '@react-ui-os/theme-default':
         specifier: workspace:*
         version: link:../../packages/theme-default
+      '@react-ui-os/theme-mintables':
+        specifier: workspace:*
+        version: link:../../packages/theme-mintables
       react:
         specifier: ^19.0.0
         version: 19.2.6
@@ -108,6 +111,16 @@ importers:
         version: 5.9.3
 
   packages/theme-default:
+    dependencies:
+      '@react-ui-os/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/theme-mintables:
     dependencies:
       '@react-ui-os/core':
         specifier: workspace:*

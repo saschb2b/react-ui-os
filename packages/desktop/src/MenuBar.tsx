@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { useWindowManager } from "@react-ui-os/core";
 import { useApp, useTheme } from "./desktop-context";
 import { getSystemWindow } from "./system-windows";
-
-const MENU_BAR_HEIGHT = 28;
+import { MENU_BAR_HEIGHT } from "./util/layout";
 
 export { MENU_BAR_HEIGHT };
 
 /**
  * System chrome at the top of the desktop. Left: brand. Center-right: the
- * focused app's name. Right: a small status cluster (live clock).
+ * focused app's name. Right: a small status cluster (live clock). Returns
+ * null when `theme.chrome.menuBar` is "none".
  */
 export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
   const theme = useTheme();
@@ -26,6 +26,8 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
       ? getSystemWindow(focusedWindow.payload.systemId)
       : undefined;
   const focusedName = focusedApp?.name ?? focusedSystem?.name;
+
+  if (theme.chrome.menuBar !== "top") return null;
 
   return (
     <header
@@ -73,8 +75,8 @@ function SystemClock({ color }: { color: string }) {
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    // Set immediately on mount, then update once a minute. Avoids the SSR
-    // "rendered HH:MM != current HH:MM" hydration mismatch.
+    // Set immediately on mount, then update every 30s. Guarding against the
+    // SSR "rendered HH:MM != current HH:MM" hydration mismatch.
     setNow(new Date());
     const id = window.setInterval(() => {
       setNow(new Date());
