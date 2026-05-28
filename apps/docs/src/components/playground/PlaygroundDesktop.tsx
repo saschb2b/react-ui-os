@@ -4,6 +4,7 @@ import { useWindowManager } from "@react-ui-os/core";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
 import { docsApps } from "./apps";
 import { SPOTLIGHT_OPEN_EVENT } from "@react-ui-os/desktop";
+import { DocsSpotlightSource } from "./DocsSpotlightSource";
 
 const theme = createMintablesTheme({ wallpaperSrc: "wallpaper.jpg" });
 
@@ -87,6 +88,7 @@ export default function PlaygroundDesktop() {
   return (
     <Desktop apps={docsApps} theme={theme} brand="react-ui-os.dev">
       <DemoActivator />
+      <DocsSpotlightSource />
     </Desktop>
   );
 }

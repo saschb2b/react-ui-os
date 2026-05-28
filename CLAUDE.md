@@ -4,19 +4,20 @@ A React component library that ships a working OS-style desktop. Apps are data; 
 
 ## Tech stack
 
-- **TypeScript strict, ESM only.** No CJS exports.
+- **TypeScript strict, ESM + CJS dual bundles** via tsup.
 - **React 19** peer dependency.
-- **Vite 7** for the playground app.
-- **Vitest 3** for unit tests (window-manager reducer is pure, easy to cover).
+- **Vite 7** for the playground app, **Astro 6 + Starlight 0.39** for the docs site.
+- **Vitest 3** for unit tests.
 - **pnpm workspaces + Turborepo** for monorepo orchestration.
 - **ESLint + Prettier** for linting and formatting. No Biome.
-- **No CSS framework.** Phase 1 uses inline styles consumed from theme tokens. CSS variables come in phase 2.
+- **No CSS framework.** Inline styles consumed from theme tokens.
 
 ## Commands (from repo root)
 
 - `pnpm dev` - launches `apps/playground` at `http://localhost:5173`
-- `pnpm build` - turbo build pipeline (source-exported in phase 1, bundling later)
-- `pnpm typecheck` - `tsc --noEmit` across all packages
+- `pnpm --filter docs dev` - launches `apps/docs` (Starlight) at `http://localhost:4321`
+- `pnpm build` - turbo build, produces `dist/` for every library package
+- `pnpm typecheck` - tsc + astro check across all packages
 - `pnpm test` - vitest across all packages
 - `pnpm lint`
 - `pnpm format:check` / `pnpm format`
@@ -25,36 +26,48 @@ A React component library that ships a working OS-style desktop. Apps are data; 
 
 ```
 apps/
-  playground/                   # Vite demo, the place to prove API decisions
+  docs/                          # Astro Starlight docs site
+  playground/                    # Vite + React 19 dev playground
 packages/
-  core/                         # @react-ui-os/core
+  core/                          # @react-ui-os/core (pure logic + types)
     src/
-      types.ts                  # App, OsTheme, AppContentProps
-      window-manager/           # reducer + context + hooks
-      storage/                  # StorageAdapter + localStorage default
-      index.ts                  # public barrel
+      types.ts                   # App, OsTheme, AppContentProps, etc.
+      window-manager/            # reducer + context + hooks
+      storage/                   # StorageAdapter + localStorage default
+      settings/                  # applyPrefs / getPath / setPath
+      index.ts                   # public barrel
     tests/
-  desktop/                      # @react-ui-os/desktop
+  desktop/                       # @react-ui-os/desktop (components)
     src/
-      Desktop.tsx               # one-line API
-      DesktopProvider.tsx       # lift-the-hood mode
+      Desktop.tsx                # one-line API
+      DesktopProvider.tsx        # lift-the-hood mode
       Wallpaper.tsx
       MenuBar.tsx
       Dock.tsx
       WindowLayer.tsx
-      Window.tsx                # one window: chrome, drag, focus
-      desktop-context.tsx       # apps + theme + storage context
-      style-injector.tsx        # one-shot global keyframes
+      Window.tsx
+      Spotlight.tsx
+      Settings.tsx
+      FileExplorer.tsx
+      DesktopIcons.tsx
+      keyboard-shortcuts.tsx
+      desktop-context.tsx
+      system-windows.ts
+      spotlight-sources.ts       # registerSpotlightSource registry
+      events.ts                  # SPOTLIGHT_OPEN_EVENT
+      style-injector.tsx
       util/
       index.ts
-  theme-default/                # @react-ui-os/theme-default
-    src/
-      index.ts                  # exports `defaultTheme`
+  theme-default/                 # @react-ui-os/theme-default
+  theme-mintables/               # @react-ui-os/theme-mintables
+.github/workflows/
+  ci.yml                         # typecheck/test/build on push + PR
+  docs.yml                       # Pages deploy on push to main
 ```
 
 ## The contract
 
-Every concept in the library is one of three shapes.
+Every concept in the library is one of these shapes.
 
 ### `App`
 
@@ -71,7 +84,7 @@ interface App {
 }
 ```
 
-One object. The dock, menu bar, Spotlight (phase 2), and keyboard shortcuts (phase 2) all read from the same `App[]` registry. Contributing here lights up four surfaces with no wiring.
+One object. The dock, menu bar, Spotlight, and keyboard shortcuts all read from the same `App[]` registry. Contributing here lights up four surfaces with no wiring.
 
 ### `OsTheme`
 
@@ -85,12 +98,21 @@ interface OsTheme {
   blur: { surface, spotlight };
   wallpaper: { src?, parallax?, vignette? };
   chrome: { windowControls, dockPosition, menuBar };
+  customizable?: Record<string, CustomizableField>;
 }
 ```
 
-Themes are pure data. They never depend on `@react-ui-os/desktop`; they live in their own package and only depend on `@react-ui-os/core` for types. This keeps the dependency graph clean and lets a consumer install a theme without pulling in the components.
+Themes are pure data. They depend on `@react-ui-os/core` for types only, never on `@react-ui-os/desktop`. `chrome` is the structural lever (SaaS dock-on-left, retro Windows controls, hidden dock). `customizable` declares which tokens the end user may tweak via the Settings system window.
 
-`chrome` is the lever for the structural variants: SaaS-style dock-on-left, retro Windows controls, dock hidden entirely, etc. Visual tokens (`palette`, `shape`, `motion`, `blur`, `wallpaper`) handle everything else.
+### `WindowPayload`
+
+```ts
+type WindowPayload =
+  | { kind: "app"; appId: string }
+  | { kind: "system"; systemId: string; args?: Record<string, string | number | boolean> };
+```
+
+`windowIdOf(payload)` serializes the args into the id so two system windows with distinct args coexist as distinct windows. Backward compatible: omitting args keeps the single-slot behavior.
 
 ### `StorageAdapter`
 
@@ -103,7 +125,31 @@ interface StorageAdapter {
 }
 ```
 
-Library-owned persistence with a swap. Default is `localStorage` + a custom-event change bus so listeners react without polling. Override via `<Desktop storage={myAdapter}>` to push to a backend or sync across devices.
+Library-owned persistence with a swap. Default is `localStorage` + a custom-event change bus. Override via `<Desktop storage={myAdapter}>` for server-backed sync.
+
+### `SystemWindowDef`
+
+```ts
+interface SystemWindowDef {
+  name: string | ((args?: SystemWindowArgs) => string);
+  tagline?: string;
+  accent?: string;
+  defaultBounds: { w: number; h: number };
+  content: ComponentType<SystemWindowContentProps>;
+  appearsAsDesktopIcon?: boolean | ((storage: StorageAdapter) => boolean);
+  desktopIcon?: ComponentType<{ size?: number }>;
+}
+```
+
+`registerSystemWindow(id, def)` adds it to the registry. `appearsAsDesktopIcon` as a function is the state-earned-folder pattern: the icon shows up only once the predicate passes (e.g. once the first item has been written to storage).
+
+### `SpotlightSource`
+
+```ts
+type SpotlightSource = (query: string) => SpotlightResult[];
+```
+
+`registerSpotlightSource(id, source)` lets any feature contribute results to the Cmd-K palette beyond apps and system windows. Sources are queried on every keystroke; misbehaving sources are caught so they don't tear down the palette.
 
 ## Package boundaries
 
@@ -117,59 +163,74 @@ Violations are a signal. If a component needs a token your theme does not have, 
 
 The same primitives are reachable at three levels. The library should always let users step down to the next level without rewriting.
 
-1. **`<Desktop apps theme>`.** One tag. Full default composition.
-2. **`<DesktopProvider apps theme>` + composed surfaces.** Wrap your own choice of `<Wallpaper>`, `<MenuBar>`, `<Dock>`, `<WindowLayer>`, `<Spotlight>` (phase 2), etc.
-3. **`useWindowManager()`, `useTheme()`, `useApps()`, `useApp(id)`.** When you need to drive the system from somewhere outside the default chrome.
+1. **`<Desktop apps theme>`.** One tag. Full default composition. Accepts an optional `children` for headless companions that need `useWindowManager()`.
+2. **`<DesktopProvider apps theme>` + composed surfaces.** Wrap your own choice of `<Wallpaper>`, `<MenuBar>`, `<Dock>`, `<WindowLayer>`, `<Spotlight>`, `<Settings>`.
+3. **`useWindowManager()`, `useTheme()`, `useApps()`, `useApp(id)`, `useSettings()`.** Drive the system from outside the default chrome.
 
 Designs that require depth-3 features for ordinary use cases are a smell. The 80% case should be depth 1.
 
-## Lessons from Mintables baked into this library
+## Lessons baked into the library
 
-These are the patterns the system enforces structurally, not just by convention. If you find yourself fighting them, ask whether the fight is justified before adding a workaround.
+Patterns the system enforces structurally. If you find yourself fighting them, ask whether the fight is justified before adding a workaround.
 
 ### Windows are first-class. URLs are downstream.
 
-The window manager is the source of truth, held in React state. Routes (in any consuming app) are observers. Opening the same `App` twice focuses the existing window rather than spawning a duplicate. The stable id comes from the payload: `app:<id>` for app windows, `system:<id>` for built-in system windows like Settings.
-
-If a consumer wants URL sync, they read `focusedWindow` and write to the router. The library does not own the URL.
+The window manager is the source of truth, held in React state. Routes (in any consuming app) are observers. Opening the same `App` twice focuses the existing window rather than spawning a duplicate.
 
 ### Drag is a layout property, not a state update.
 
-`<Window>` writes `transform` directly to the DOM during a drag. React only learns the result on `pointerup`. This keeps multi-window scenes with heavy content (3D previews, editors) at 60 fps. When implementing resize handles, follow the same pattern: ref + direct DOM mutation during the gesture, commit on release.
+`<Window>` writes `transform` directly to the DOM during a drag. React only learns the result on `pointerup`. This keeps multi-window scenes with heavy content at 60 fps. The same pattern is used for resize handles.
 
 ### Animations are state machines, not effects.
 
-Window open / close / minimize use a local `phase` state machine (`opening | closing | minimizing | idle`). The dispatch to the window manager happens *after* the animation timeout fires. This prevents the animation from getting interrupted by React unmounting the window before the genie completes.
+Window open / close / minimize use a local `phase` state machine. The dispatch to the window manager happens *after* the animation timeout fires.
 
 ### Storage events glue the system together.
 
-`createLocalStorageAdapter()` dispatches a custom `CustomEvent` on every write, plus listens for the native `storage` event (cross-tab). Any feature that depends on persisted state (Spotlight history, Settings, downloads folder) should subscribe via `storage.subscribe(...)`, never poll. Same pattern Mintables proved out: write to storage, dispatch event, subscribers update.
+`createLocalStorageAdapter()` dispatches a custom `CustomEvent` on every write, plus listens for the native `storage` event for cross-tab updates. Any feature that depends on persisted state (Settings, downloads, presets, state-earned folders) subscribes via `storage.subscribe(...)`. Never poll.
+
+### Three uniform contribution shapes.
+
+The whole "ecosystem feel" lives in this: adding to the system is always one of three shapes.
+
+- An `App` lights up the dock, menu bar, Spotlight, and keyboard shortcuts.
+- A `SystemWindowDef` registered via `registerSystemWindow(...)` adds a system window plus an optional desktop shortcut.
+- A `SpotlightSource` registered via `registerSpotlightSource(...)` adds findable rows to Cmd-K.
+
+All three are declarative. All three persist via the same event-driven storage pattern.
 
 ## Adding things
 
 ### A new component
 
-Lives in `packages/desktop/src/`. Reads tokens via `useTheme()`, app data via `useApps()` or `useApp(id)`, window state via `useWindowManager()`. Inline styles consumed from theme tokens for phase 1.
+Lives in `packages/desktop/src/`. Reads tokens via `useTheme()`, app data via `useApps()` or `useApp(id)`, window state via `useWindowManager()`. Inline styles consumed from theme tokens.
 
 Export it from `packages/desktop/src/index.ts` so consumers can use it directly in depth-2 compositions.
 
 ### A new theme
 
-Create `packages/theme-<name>/` with the same shape as `theme-default`. Implement every field of `OsTheme`. If your theme needs a token category that does not exist yet, add it to the `OsTheme` type in `core` first and update `theme-default` to supply a sensible value. Never branch in components on `theme.id === "mytheme"`; if a component needs theme-conditional behavior, that conditional belongs in a token.
+Create `packages/theme-<name>/` with the same shape as `theme-default`. Export a static `OsTheme` for simple themes or a `createXxxTheme(opts)` factory when the theme needs consumer-supplied assets (wallpapers, accents). Never branch in components on `theme.id === "mytheme"`; if a component needs theme-conditional behavior, that conditional belongs in a token.
 
-### A system app (phase 2 onward)
+### A new system window
 
-System apps (Settings, file explorers, etc.) are first-class windows with `payload: { kind: "system", systemId: "settings" }`. Same window-manager primitives, just a different render path in the WindowLayer dispatch. Their content lives in `packages/desktop/src/system/<name>/`.
+Call `registerSystemWindow(id, def)` once at module load. The window is then openable via `openWindow({ kind: "system", systemId: id, args? })`. For multi-instance windows (one per `args` set), pass `name` as a `(args) => string` function so the title reflects the arg.
 
-## Phase plan
+### A new Spotlight source
 
-- **Phase 1 (shipped).** Workspace scaffold, window manager + types + storage, baseline theme, components: Desktop / Wallpaper / MenuBar / Dock / WindowLayer / Window (with traffic lights, drag, focus, minimize genie).
-- **Phase 2.** Resize handles, ESC-from-maximize, keyboard shortcuts (Cmd-W/M/1..9/K), Spotlight, Settings app + customizable schema, the storage-backed user prefs layer.
-- **Phase 3.** `@react-ui-os/theme-mintables` cinematic theme. Settings inspector dev tool. CSS variables under the tokens (groundwork for runtime theming if we ever want it).
+Call `registerSpotlightSource(id, query => results)` at module load or inside a `useEffect`. Each result needs `id`, `name`, and `onActivate`; optional `tagline`, `accent`, `icon`, and `kindLabel`.
+
+## Phase history
+
+- **Phase 1.** Workspace scaffold, window manager + types + storage, default theme, baseline components (Desktop, Wallpaper, MenuBar, Dock, WindowLayer, Window with traffic lights, drag, focus, minimize genie).
+- **Phase 2a.** Resize handles, ESC-from-maximize, keyboard shortcuts (Cmd-W/M/1..9/K), Spotlight.
+- **Phase 2b.** Settings as a system window + the `customizable` schema + effective-theme overlay.
+- **Phase 3.** `@react-ui-os/theme-mintables` cinematic theme. Chrome variants (dock-on-left, hidden menu bar). Wallpaper parallax.
+- **Phase 4.** FileExplorer primitive with full macOS-Finder interaction model. State-earned desktop folders.
+- **Phase 5.** Bundling via tsup. Docs site rebuilt on Astro Starlight. `SystemWindowArgs` for multi-instance system windows. `registerSpotlightSource` for arbitrary result kinds. CI + Pages deploy.
 
 ## Writing rules
 
-- **No em dashes (—) or en dashes (–).** Anywhere. Not in docs, not in user-facing copy, not in commit messages, not in code comments. Use commas, colons, periods, parentheses. This is a hard rule. Pre-existing dashes from imported third-party content are not in scope for cleanup, but never introduce new ones.
+- **No em dashes (—) or en dashes (–).** Anywhere. Not in docs, not in user-facing copy, not in commit messages, not in code comments. Use commas, colons, periods, parentheses. Pre-existing dashes from imported third-party content are not in scope for cleanup, but never introduce new ones.
 - **No marketing-y headers** ("Effortless," "Powerful," "Beautiful"). The library does the work; the docs describe it plainly.
 - **Code over prose** when explaining an API. One real snippet beats three paragraphs.
 
@@ -177,7 +238,7 @@ System apps (Settings, file explorers, etc.) are first-class windows with `paylo
 
 - Public API barrels live at the package's `src/index.ts`.
 - Type-only exports use `export type { … }`.
-- `"use client"` directive at the top of every file that uses hooks or DOM APIs. Tree-shakes cleanly and works for any consumer that ever adds RSC.
+- `"use client"` directive at the top of every file that uses hooks or DOM APIs.
 - Component files are `PascalCase.tsx`. Hook files, types, and pure utilities are `kebab-case.ts(x)`.
 - Tests live in `tests/` next to `src/`, mirroring the structure. Vitest with `environment: "node"` for pure logic.
 - SSR-safety: any `window` / `document` access must be guarded (`typeof window === "undefined"` check). The library should mount cleanly in Next.js, Remix, Astro islands, and Vite-SSR.
