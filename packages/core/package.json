@@ -3,13 +3,42 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./window-manager": "./src/window-manager/index.ts",
-    "./storage": "./src/storage/index.ts"
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./window-manager": {
+      "source": "./src/window-manager/index.ts",
+      "types": "./dist/window-manager/index.d.ts",
+      "import": "./dist/window-manager/index.js",
+      "require": "./dist/window-manager/index.cjs"
+    },
+    "./storage": {
+      "source": "./src/storage/index.ts",
+      "types": "./dist/storage/index.d.ts",
+      "import": "./dist/storage/index.js",
+      "require": "./dist/storage/index.cjs"
+    },
+    "./settings": {
+      "source": "./src/settings/index.ts",
+      "types": "./dist/settings/index.d.ts",
+      "import": "./dist/settings/index.js",
+      "require": "./dist/settings/index.cjs"
+    }
   },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
   "scripts": {
-    "build": "echo 'core is source-exported; nothing to bundle yet'",
+    "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "lint": "eslint src tests"

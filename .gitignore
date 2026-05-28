@@ -3,6 +3,7 @@ dist
 .turbo
 .cache
 *.tsbuildinfo
+*.tsup.log
 
 # OS / editor
 .DS_Store
