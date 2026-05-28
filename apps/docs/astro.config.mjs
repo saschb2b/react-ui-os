@@ -18,6 +18,8 @@ const SOCIAL_IMAGE = `${SITE}${BASE}/wallpaper.jpg`;
 export default defineConfig({
   site: SITE,
   base: BASE,
+  // The dev toolbar overlaps the docs UI in local dev. Turn it off.
+  devToolbar: { enabled: false },
   integrations: [
     starlight({
       title: "react-ui-os",
