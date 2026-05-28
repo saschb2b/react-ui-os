@@ -17,6 +17,7 @@ import { DesktopBackdrop } from "./desktop-backdrop";
 import { SnapPreview } from "./snap";
 import { AppSwitcher } from "./AppSwitcher";
 import { MissionControl } from "./MissionControl";
+import { HudOverlay } from "./hud";
 
 export interface DesktopProps {
   apps: App[];
@@ -69,6 +70,7 @@ export function Desktop({
         <ContextMenu />
         <AppSwitcher />
         <MissionControl />
+        <HudOverlay />
         <DesktopBackdrop />
       </div>
       {children}

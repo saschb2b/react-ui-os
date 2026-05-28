@@ -5,6 +5,7 @@ import { useWindowManager, windowIdOf } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { SPOTLIGHT_OPEN_EVENT } from "./events";
 import { rectForZone, type SnapZone } from "./snap";
+import { showHud } from "./hud";
 import { getWorkArea } from "./util/layout";
 
 /**
@@ -129,6 +130,7 @@ export function KeyboardShortcuts() {
           e.preventDefault();
           const rect = rectForZone(zone, getWorkArea(theme));
           setBounds(focusedWindow.id, rect.x, rect.y, rect.w, rect.h);
+          showHud({ title: snapZoneLabel(zone) });
           return;
         }
       }
@@ -138,6 +140,7 @@ export function KeyboardShortcuts() {
         if (focusedWindow.state !== "maximized") {
           e.preventDefault();
           toggleMaximize(focusedWindow.id);
+          showHud({ title: "Maximized" });
         }
         return;
       }
@@ -145,6 +148,7 @@ export function KeyboardShortcuts() {
         if (focusedWindow.state === "maximized") {
           e.preventDefault();
           toggleMaximize(focusedWindow.id);
+          showHud({ title: "Restored" });
         }
         return;
       }
@@ -169,6 +173,25 @@ export function KeyboardShortcuts() {
   ]);
 
   return null;
+}
+
+function snapZoneLabel(zone: SnapZone): string {
+  switch (zone) {
+    case "left-half":
+      return "Snapped Left";
+    case "right-half":
+      return "Snapped Right";
+    case "top-max":
+      return "Maximized";
+    case "top-left-quarter":
+      return "Top Left Quarter";
+    case "top-right-quarter":
+      return "Top Right Quarter";
+    case "bottom-left-quarter":
+      return "Bottom Left Quarter";
+    case "bottom-right-quarter":
+      return "Bottom Right Quarter";
+  }
 }
 
 function arrowToZone(key: string, shift: boolean): SnapZone | null {

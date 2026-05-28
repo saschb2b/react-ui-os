@@ -21,7 +21,28 @@ import {
   rectForZone,
   setSnapPreview,
   getSnapPreview,
+  type SnapZone,
 } from "./snap";
+import { showHud } from "./hud";
+
+function snapZoneLabel(zone: SnapZone): string {
+  switch (zone) {
+    case "left-half":
+      return "Snapped Left";
+    case "right-half":
+      return "Snapped Right";
+    case "top-max":
+      return "Maximized";
+    case "top-left-quarter":
+      return "Top Left Quarter";
+    case "top-right-quarter":
+      return "Top Right Quarter";
+    case "bottom-left-quarter":
+      return "Bottom Left Quarter";
+    case "bottom-right-quarter":
+      return "Bottom Right Quarter";
+  }
+}
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { getMenuBarHeight, getWorkArea } from "./util/layout";
 
@@ -147,8 +168,10 @@ export function Window({ win }: WindowProps) {
   }, [appPayload, minimizeWindow, theme.motion.genieDurationMs, win.id]);
 
   const handleMaximize = useCallback(() => {
+    const willMaximize = win.state !== "maximized";
     toggleMaximize(win.id);
-  }, [toggleMaximize, win.id]);
+    showHud({ title: willMaximize ? "Maximized" : "Restored" });
+  }, [toggleMaximize, win.id, win.state]);
 
   const handleTitleContextMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -246,6 +269,7 @@ export function Window({ win }: WindowProps) {
       const snap = getSnapPreview();
       if (snap && snap.windowId === win.id) {
         setBounds(win.id, snap.rect.x, snap.rect.y, snap.rect.w, snap.rect.h);
+        showHud({ title: snapZoneLabel(snap.zone) });
       } else {
         setBounds(win.id, drag.lastX, drag.lastY, win.w, win.h);
       }

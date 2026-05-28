@@ -14,6 +14,14 @@ export { NotificationCenter } from "./NotificationCenter";
 export { AppSwitcher } from "./AppSwitcher";
 export { MissionControl } from "./MissionControl";
 export {
+  HudOverlay,
+  showHud,
+  hideHud,
+  getHud,
+  subscribeHud,
+  type HudPayload,
+} from "./hud";
+export {
   ContextMenu,
   ContextMenuAnchor,
   openContextMenu,
