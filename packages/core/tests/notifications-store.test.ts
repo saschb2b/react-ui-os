@@ -107,6 +107,24 @@ describe("notification store", () => {
     expect(getNotificationSnapshot().unreadCount).toBe(0);
   });
 
+  it("snapshot reference is stable between mutations (useSyncExternalStore contract)", () => {
+    // Regression guard: an earlier version of the ticker silently rebuilt
+    // the cached snapshot on every interval tick. React's
+    // useSyncExternalStore then bailed with "result of getServerSnapshot
+    // should be cached" because getSnapshot returned a different object
+    // identity without a corresponding listener notification, looking
+    // like an infinite loop.
+    notify({ title: "A" });
+    const snap1 = getNotificationSnapshot();
+    expect(getNotificationSnapshot()).toBe(snap1);
+    // The ticker fires every second but must not swap the snapshot
+    // reference unless the active set actually changes.
+    vi.advanceTimersByTime(500);
+    expect(getNotificationSnapshot()).toBe(snap1);
+    vi.advanceTimersByTime(400);
+    expect(getNotificationSnapshot()).toBe(snap1);
+  });
+
   it("unreadByApp groups by appId", () => {
     notify({ title: "A", appId: "mail" });
     notify({ title: "B", appId: "mail" });

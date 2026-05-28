@@ -30,6 +30,23 @@ export interface StatusItem {
 
 const items = new Map<string, StatusItem>();
 const listeners = new Set<() => void>();
+// Cached snapshot. `listStatusItems` is used as the getSnapshot for
+// useSyncExternalStore, so it MUST return the same array reference
+// between mutations — otherwise React detects an "always-different"
+// snapshot and bails with "result of getServerSnapshot should be
+// cached", which manifests as an infinite render loop.
+let cachedSnapshot: StatusItem[] = [];
+
+function rebuildSnapshot(): void {
+  cachedSnapshot = Array.from(items.values()).sort(
+    (a, b) => (a.order ?? 100) - (b.order ?? 100),
+  );
+}
+
+function emit(): void {
+  rebuildSnapshot();
+  for (const listener of listeners) listener();
+}
 
 /**
  * Register a status item. Returns an unsubscribe. Re-registering the same
@@ -38,11 +55,11 @@ const listeners = new Set<() => void>();
  */
 export function registerStatusItem(item: StatusItem): () => void {
   items.set(item.id, item);
-  for (const listener of listeners) listener();
+  emit();
   return () => {
     if (items.get(item.id) === item) {
       items.delete(item.id);
-      for (const listener of listeners) listener();
+      emit();
     }
   };
 }
@@ -51,14 +68,16 @@ export function registerStatusItem(item: StatusItem): () => void {
 export function unregisterStatusItem(id: string): void {
   if (!items.has(id)) return;
   items.delete(id);
-  for (const listener of listeners) listener();
+  emit();
 }
 
-/** Read every registered item, sorted by `order` then registration time. */
+/**
+ * Read the cached snapshot. Stable across calls until a registration
+ * mutates the registry, at which point a single new array is built and
+ * cached for subsequent reads.
+ */
 export function listStatusItems(): StatusItem[] {
-  return Array.from(items.values()).sort(
-    (a, b) => (a.order ?? 100) - (b.order ?? 100),
-  );
+  return cachedSnapshot;
 }
 
 export function subscribeStatusItems(listener: () => void): () => void {

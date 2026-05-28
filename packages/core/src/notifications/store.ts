@@ -57,23 +57,44 @@ function emit(): void {
   for (const listener of listeners) listener(cachedSnapshot);
 }
 
+/**
+ * Recompute the active count from `items` without touching the cached
+ * snapshot. Used by the ticker to decide whether anything has changed
+ * before paying for a rebuild + emit. Mirrors the filter inside
+ * `rebuildSnapshot` exactly.
+ */
+function computeActiveCount(): number {
+  const now = Date.now();
+  let count = 0;
+  for (const item of items) {
+    if (item.dismissedAt) continue;
+    const duration = item.duration ?? defaultDurationFor(item.level);
+    if (duration === 0 || now - item.createdAt < duration) count += 1;
+  }
+  return count;
+}
+
 function ensureTickerRunning(): void {
   if (tickHandle || typeof window === "undefined") return;
   tickHandle = setInterval(() => {
-    // Tick only when there is an active toast whose duration may have
-    // elapsed. Otherwise the timer is wasted work.
-    const stillActive = cachedSnapshot.active.length > 0;
-    if (!stillActive) {
+    // The cached snapshot is what `useSyncExternalStore`'s getSnapshot
+    // returns; it MUST stay referentially stable between notifications.
+    // Earlier this function rebuilt the snapshot every tick and only
+    // emitted when the active count changed — that silently swapped the
+    // cached reference, so React would see a fresh object on a
+    // post-render getSnapshot call without a matching listener fire and
+    // bail with "result of getServerSnapshot should be cached" (an
+    // infinite render loop). Now: compute cheaply, only rebuild + emit
+    // when something would actually change.
+    if (cachedSnapshot.active.length === 0) {
       if (tickHandle) {
         clearInterval(tickHandle);
         tickHandle = null;
       }
       return;
     }
-    const prevActiveCount = cachedSnapshot.active.length;
-    rebuildSnapshot();
-    if (cachedSnapshot.active.length !== prevActiveCount) {
-      for (const listener of listeners) listener(cachedSnapshot);
+    if (computeActiveCount() !== cachedSnapshot.active.length) {
+      emit();
     }
   }, TICK_MS);
 }
