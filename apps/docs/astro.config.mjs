@@ -55,6 +55,10 @@ export default defineConfig({
             { label: "Playground", link: "/playground/" },
           ],
         },
+        {
+          label: "Releases",
+          items: [{ label: "Changelog", link: "/changelog/" }],
+        },
       ],
       components: {
         // Use Starlight defaults for now. Layout slots will be overridden

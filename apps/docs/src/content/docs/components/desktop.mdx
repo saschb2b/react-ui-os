@@ -48,12 +48,13 @@ const apps: App[] = [
 
 ## Props
 
-| Prop      | Type                  | Default          | Description                                                                                                                                                                  |
-| --------- | --------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps`    | `App[]`               | **required**     | The app registry. Order matters: Cmd-1..9 maps to indices, dock tiles render in this order.                                                                                  |
-| `theme`   | `OsTheme`             | **required**     | The active theme. Pass `defaultTheme` or call `createMintablesTheme(...)`.                                                                                                   |
-| `brand`   | `string`              | `"react-ui-os"`  | Label shown on the left of the menu bar.                                                                                                                                     |
-| `storage` | `StorageAdapter`      | `localStorage`  | Backend for user preferences and state-earned folders. Defaults to a `localStorage`-backed adapter; swap for a server adapter to sync across devices.                        |
+| Prop       | Type                  | Default          | Description                                                                                                                                                                  |
+| ---------- | --------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps`     | `App[]`               | **required**     | The app registry. Order matters: Cmd-1..9 maps to indices, dock tiles render in this order.                                                                                  |
+| `theme`    | `OsTheme`             | **required**     | The active theme. Pass `defaultTheme` or call `createMintablesTheme(...)`.                                                                                                   |
+| `brand`    | `string`              | `"react-ui-os"`  | Label shown on the left of the menu bar.                                                                                                                                     |
+| `storage`  | `StorageAdapter`      | `localStorage`  | Backend for user preferences and state-earned folders. Defaults to a `localStorage`-backed adapter; swap for a server adapter to sync across devices.                        |
+| `children` | `ReactNode`            | `undefined`     | Headless companions rendered inside the provider alongside the default surfaces. Use for URL sync, deep-link activators, analytics, or any component that needs `useWindowManager()`. |
 
 ## Examples
 
@@ -73,6 +74,25 @@ import { createMintablesTheme } from "@react-ui-os/theme-mintables";
 const theme = createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
 
 <Desktop apps={apps} theme={theme} brand="acme.studio" />;
+```
+
+### With a headless companion
+
+Mount a deep-link activator inside the provider so it can call `openWindow(...)` directly. This is how the playground reads `?demo=spotlight` and opens Spotlight on boot.
+
+```tsx
+function DemoActivator() {
+  const { openWindow } = useWindowManager();
+  useEffect(() => {
+    const demo = new URLSearchParams(location.search).get("demo");
+    if (demo === "settings") openWindow({ kind: "system", systemId: "settings" });
+  }, [openWindow]);
+  return null;
+}
+
+<Desktop apps={apps} theme={theme}>
+  <DemoActivator />
+</Desktop>;
 ```
 
 ### With a custom storage backend

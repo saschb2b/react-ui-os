@@ -24,6 +24,7 @@ const DOCS_PAGES: DocsPage[] = [
   { id: "usetheme", name: "useTheme", path: "/api/usetheme/", kind: "api" },
   { id: "usesettings", name: "useSettings", path: "/api/usesettings/", kind: "api" },
   { id: "storageadapter", name: "StorageAdapter", path: "/api/storageadapter/", kind: "api" },
+  { id: "registerspotlightsource", name: "registerSpotlightSource", path: "/api/registerspotlightsource/", kind: "api" },
   { id: "themes-overview", name: "Themes overview", path: "/themes/overview/", kind: "theme" },
   { id: "themes-customizable", name: "Customizable schema", path: "/themes/customizable/", kind: "theme" },
   { id: "themes-writing", name: "Writing a theme", path: "/themes/writing/", kind: "theme" },

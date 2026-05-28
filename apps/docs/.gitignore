@@ -1,0 +1,11 @@
+# Astro
+dist/
+.astro/
+
+# Build / cache
+node_modules/
+.cache/
+.output/
+
+# OS
+.DS_Store

@@ -31,12 +31,13 @@ None. Drop the component anywhere inside `<DesktopProvider>` and it works. The d
 
 ## Result kinds
 
-| Kind     | Source                                                                                  |
-| -------- | --------------------------------------------------------------------------------------- |
-| App      | Every entry in the `apps` prop passed to `<Desktop>` / `<DesktopProvider>`.             |
-| System   | Every entry in the `systemWindows` registry (Settings by default, plus any you register). |
+| Kind     | Source                                                                                                          |
+| -------- | --------------------------------------------------------------------------------------------------------------- |
+| App      | Every entry in the `apps` prop passed to `<Desktop>` / `<DesktopProvider>`.                                     |
+| System   | Every entry in the `systemWindows` registry (Settings by default, plus any you register).                        |
+| External | Every result returned by a function registered via [`registerSpotlightSource`](/api/registerspotlightsource/).  |
 
-Each row shows the app or system window's accent tile, name, and tagline. Activating an entry calls `openWindow(...)`, the same primitive a dock click uses. From "I typed three letters" to "the right window is on top" is one keystroke and one dispatch.
+Each row shows an accent tile, name, and tagline. Activating an App or System result calls `openWindow(...)`, the same primitive a dock click uses. External results run their own `onActivate` callback so they can navigate, dispatch, or open a URL. From "I typed three letters" to "the right thing happens" is one keystroke and one dispatch.
 
 ## Keyboard
 
@@ -49,7 +50,30 @@ Each row shows the app or system window's accent tile, name, and tagline. Activa
 
 ## Adding your own results
 
-A future release exposes `registerSpotlightSource(...)` for arbitrary result kinds (docs pages, recent files, anything). For now, contribute via `registerSystemWindow(...)` — every registered system window automatically shows up as a Spotlight result.
+Two contribution paths, depending on whether the result is a window or something else.
+
+**Use `registerSystemWindow(...)`** when activating the result should open a window managed by react-ui-os. Settings is the canonical example.
+
+**Use [`registerSpotlightSource(...)`](/api/registerspotlightsource/)** when activating the result should do something else: navigate to a docs page, open an external URL, dispatch a custom event, or trigger an app-specific action. A source is a function `(query) => SpotlightResult[]`, and each result owns its own `onActivate`.
+
+```tsx
+import { registerSpotlightSource } from "@react-ui-os/desktop";
+
+useEffect(() => {
+  return registerSpotlightSource("bookmarks", (query) => {
+    if (!query) return [];
+    return bookmarks
+      .filter((b) => b.name.toLowerCase().includes(query))
+      .map((b) => ({
+        id: b.id,
+        name: b.name,
+        tagline: b.url,
+        kindLabel: "Bookmark",
+        onActivate: () => window.open(b.url, "_blank", "noopener"),
+      }));
+  });
+}, []);
+```
 
 ## Accessibility
 

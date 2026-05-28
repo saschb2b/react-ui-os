@@ -1,0 +1,145 @@
+---
+title: registerSpotlightSource
+description: Contribute arbitrary results to the Cmd-K palette without registering a window. A source is a function from query to result rows.
+sidebar:
+  order: 5
+---
+
+`registerSpotlightSource` lets a feature contribute rows to [Spotlight](/components/spotlight/) without going through the app registry or the system-window registry. Use it for docs pages, bookmarks, recent files, search-as-you-type API results — anything where activating a row should run a callback rather than open a window.
+
+## Import
+
+```tsx
+import { registerSpotlightSource } from "@react-ui-os/desktop";
+import type {
+  SpotlightSource,
+  SpotlightResult,
+} from "@react-ui-os/desktop";
+```
+
+## Signature
+
+```ts
+function registerSpotlightSource(
+  id: string,
+  source: SpotlightSource,
+): () => void;
+
+type SpotlightSource = (query: string) => SpotlightResult[];
+
+interface SpotlightResult {
+  id: string;
+  name: string;
+  tagline?: string;
+  accent?: string;
+  icon?: ReactNode;
+  kindLabel?: string;
+  onActivate: () => void;
+}
+```
+
+`id` is a stable key — registering twice with the same id replaces the previous source. That makes it safe to call from a component that re-mounts.
+
+The returned function unregisters the source. Call it in the cleanup of the `useEffect` that registered.
+
+## What a source receives
+
+The `query` is the raw Spotlight input, already lowercased and trimmed. An empty query is the convention for "no input yet" — most sources return `[]` in that case so they do not flood the palette before the user has typed anything.
+
+```tsx
+useEffect(() => {
+  return registerSpotlightSource("bookmarks", (query) => {
+    if (!query) return [];
+    return bookmarks
+      .filter((b) => b.name.toLowerCase().includes(query))
+      .map((b) => ({
+        id: `bookmark-${b.id}`,
+        name: b.name,
+        tagline: b.url,
+        kindLabel: "Bookmark",
+        accent: "#22c55e",
+        onActivate: () => window.open(b.url, "_blank", "noopener"),
+      }));
+  });
+}, []);
+```
+
+## What a result renders
+
+Every result row shows a small accent tile, a name, an optional tagline on the right, and an optional `kindLabel` underneath the name. The `icon` prop is rendered inside the tile (use a tiny SVG, 16x16 or so). If no icon is provided the first letter of the `name` is rendered automatically.
+
+```tsx
+{
+  id: "doc-window",
+  name: "Window",
+  tagline: "/components/window/",
+  kindLabel: "Docs · Component",
+  accent: "#7c66f5",
+  icon: <DocIcon />,
+  onActivate: () => router.push("/components/window/"),
+}
+```
+
+## Error safety
+
+Spotlight calls every registered source on every keystroke. A misbehaving source — one that throws while filtering — would otherwise take down the whole palette. To prevent that, sources are invoked inside a try/catch: throws are swallowed and the source contributes zero results for that keystroke. Errors are logged to the console in development.
+
+This means you can register a source against unstable data without guarding every property access. But if a source consistently throws, the right fix is still to repair the source — not rely on the swallow.
+
+## Example: docs pages
+
+The react-ui-os docs site registers a source so Cmd-K finds docs pages, not just apps. Activating a row escapes the playground iframe and navigates the parent docs frame to the matching path.
+
+```tsx
+import { useEffect } from "react";
+import { registerSpotlightSource } from "@react-ui-os/desktop";
+
+const PAGES = [
+  { name: "Window", path: "/components/window/" },
+  { name: "Spotlight", path: "/components/spotlight/" },
+  // ...
+];
+
+export function DocsSpotlightSource() {
+  useEffect(() => {
+    return registerSpotlightSource("docs-pages", (query) => {
+      if (!query) return [];
+      const q = query.toLowerCase();
+      return PAGES.filter((p) => p.name.toLowerCase().includes(q)).map((p) => ({
+        id: p.path,
+        name: p.name,
+        tagline: p.path,
+        kindLabel: "Docs",
+        onActivate: () => {
+          if (window.top && window.top !== window) {
+            window.top.location.href = p.path;
+          } else {
+            window.location.href = p.path;
+          }
+        },
+      }));
+    });
+  }, []);
+  return null;
+}
+```
+
+Mount it inside `<Desktop>` as a child so any provider context (`useWindowManager`, `useTheme`) is available if you need it:
+
+```tsx
+<Desktop apps={apps} theme={theme}>
+  <DocsSpotlightSource />
+</Desktop>
+```
+
+## When to prefer `registerSystemWindow` instead
+
+If activating the result should open a window that lives inside react-ui-os — chrome, traffic lights, dock indicator, minimize-to-genie, all of it — register a system window instead. Every entry in the system-window registry is automatically a Spotlight result, with `openWindow(...)` wired as the activator.
+
+Reach for `registerSpotlightSource` when the activation is anything else: navigate, open a URL, dispatch an event, mutate app state.
+
+## See also
+
+- [Spotlight](/components/spotlight/) — the palette itself.
+- [Desktop](/components/desktop/) — the entry point that mounts Spotlight by default.
+- [useWindowManager](/api/usewindowmanager/) — for sources whose `onActivate` opens a managed window.

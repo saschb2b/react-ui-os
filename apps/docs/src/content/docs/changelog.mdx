@@ -11,6 +11,7 @@ The library is pre-1.0. Treat every release as potentially breaking; the entries
 
 ### Added
 
+- **`registerSpotlightSource(id, source)`** — third contribution path for the Cmd-K palette. A source is a function `(query) => SpotlightResult[]`; each result owns its own `onActivate`, so activations can navigate, open URLs, or dispatch events without going through `openWindow`. Sources are called inside a try/catch so a misbehaving source contributes zero rows rather than killing the palette. Use it for docs pages, bookmarks, recents, or anything that is not a window.
 - **`SystemWindowArgs`** — the system variant of `WindowPayload` now accepts an optional `args` record of string/number/boolean primitives. `windowIdOf` serializes the args into the id so two system windows with distinct args coexist as distinct windows (one per "Component: Window" / "Component: Spotlight" pair). Backward compatible: omitting args keeps the single-slot behavior.
 - **`SystemWindowDef.name`** can be a `(args) => string` function for per-instance titles. New `resolveSystemWindowName(def, args)` helper.
 - **`<Desktop children>`** — children now render inside the provider alongside the default surfaces. Lets consumers mount headless companions (URL sync, analytics, deep-link activators) with access to `useWindowManager()`.
@@ -39,6 +40,6 @@ The full repo history lives at [github.com/saschb2b/react-ui-os/commits/main](ht
 ## Roadmap
 
 - Auto-generated props tables from TypeScript types (replace hand-written reference tables with the single source of truth).
-- `registerSpotlightSource(...)` — let any feature contribute results to Spotlight beyond apps and system windows.
 - A `theme-saas` reference theme that exercises `chrome.dockPosition: "left"` and a neutral light palette.
+- An OG / social-card image for shared docs URLs.
 - First `1.0.0` release once the API stops moving.
