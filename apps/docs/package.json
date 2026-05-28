@@ -18,6 +18,7 @@
     "@react-ui-os/desktop": "workspace:*",
     "@react-ui-os/theme-default": "workspace:*",
     "@react-ui-os/theme-mintables": "workspace:*",
+    "@react-ui-os/theme-saas": "workspace:*",
     "astro": "^6.4.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

@@ -1,12 +1,23 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import type { OsTheme } from "@react-ui-os/core";
 import { Desktop } from "@react-ui-os/desktop";
 import { useWindowManager } from "@react-ui-os/core";
+import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
+import { createSaasTheme } from "@react-ui-os/theme-saas";
 import { docsApps } from "./apps";
 import { SPOTLIGHT_OPEN_EVENT } from "@react-ui-os/desktop";
 import { DocsSpotlightSource } from "./DocsSpotlightSource";
 
-const theme = createMintablesTheme({ wallpaperSrc: "wallpaper.jpg" });
+type ThemeChoice = "mintables" | "saas" | "default";
+
+function readThemeChoice(): ThemeChoice {
+  if (typeof window === "undefined") return "mintables";
+  const value = new URLSearchParams(window.location.search).get("theme");
+  if (value === "saas") return "saas";
+  if (value === "default") return "default";
+  return "mintables";
+}
 
 /**
  * Deep-link the playground from a docs LivePreview. `?demo=<key>` opens
@@ -85,6 +96,13 @@ function DemoActivator() {
  * sits inside the same provider so it can dispatch openWindow.
  */
 export default function PlaygroundDesktop() {
+  const themeChoice = readThemeChoice();
+  const theme = useMemo<OsTheme>(() => {
+    if (themeChoice === "saas") return createSaasTheme();
+    if (themeChoice === "default") return defaultTheme;
+    return createMintablesTheme({ wallpaperSrc: "wallpaper.jpg" });
+  }, [themeChoice]);
+
   return (
     <Desktop apps={docsApps} theme={theme} brand="react-ui-os.dev">
       <DemoActivator />
