@@ -6,7 +6,10 @@
  * read clearly as "a contained preview" rather than the page itself.
  */
 interface Props {
-  /** Override the iframe src — useful for component-specific demos later. */
+  /**
+   * Path or query to append after the playground base URL. Defaults to the
+   * catch-all playground. Pass `?demo=spotlight` to deep-link into a feature.
+   */
   src?: string;
   /** CSS height. Defaults to 460px. */
   height?: string;
@@ -14,8 +17,16 @@ interface Props {
   label?: string;
 }
 
-const { src = "/playground", height = "460px", label = "Live preview" } =
-  Astro.props;
+const { src = "", height = "460px", label = "Live preview" } = Astro.props;
+
+// Resolve against the deploy's base URL so the iframe works locally, under
+// the /react-ui-os/ Pages prefix, and behind a custom domain.
+const base = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+const resolvedSrc = src.startsWith("?")
+  ? `${base}playground${src}`
+  : `${base}playground${src ? `/${src.replace(/^\//, "")}` : ""}`;
 ---
 
 <figure class="rui-live-preview">
@@ -26,12 +37,12 @@ const { src = "/playground", height = "460px", label = "Live preview" } =
       <span></span>
     </span>
     <span class="rui-live-preview__label">{label}</span>
-    <a class="rui-live-preview__open" href={src} target="_blank" rel="noreferrer">
+    <a class="rui-live-preview__open" href={resolvedSrc} target="_blank" rel="noreferrer">
       Open in new tab ↗
     </a>
   </header>
   <iframe
-    src={src}
+    src={resolvedSrc}
     title={label}
     loading="lazy"
     style={`height: ${height};`}

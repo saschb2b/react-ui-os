@@ -1,112 +1,96 @@
 import type { App } from "@react-ui-os/core";
-import { useWindowManager } from "@react-ui-os/core";
 import { registerSystemWindow } from "@react-ui-os/desktop";
-import {
-  ComponentReference,
-  componentNames,
-  componentReferenceTitle,
-} from "./component-reference";
+import { useDesktopContext } from "@react-ui-os/desktop";
+import { addRecent, hasRecents } from "./recents";
+import { RecentsFolder } from "./RecentsFolder";
 
-// Register a single Component reference system window. Args carry the
-// component name; the new WindowPayload args extension lets two of these
-// coexist (one per name) because windowIdOf encodes the args.
-registerSystemWindow("component", {
-  name: (args) =>
-    componentReferenceTitle(args as { name?: unknown } | undefined),
-  tagline: "API reference",
-  accent: "#7c66f5",
-  defaultBounds: { w: 520, h: 380 },
-  content: ComponentReference,
+// State-earned Recents folder: the desktop icon appears once the user
+// has added an entry from Hello, disappears when the last is deleted.
+registerSystemWindow("recents", {
+  name: "Recents",
+  tagline: "Recently created items",
+  accent: "#6b8afd",
+  defaultBounds: { w: 560, h: 420 },
+  content: RecentsFolder,
+  appearsAsDesktopIcon: (storage) => hasRecents(storage),
 });
 
-function GetStartedContent() {
+function HelloContent({ focused }: { focused: boolean }) {
+  const { storage } = useDesktopContext();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <h2 style={{ margin: 0, fontSize: 18 }}>react-ui-os</h2>
+      <h2 style={{ margin: 0, fontSize: 18 }}>Hello, desktop.</h2>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        A React component library that ships a working OS-style desktop in one
-        line. You are looking at the docs site, which is itself an instance of
-        the library.
+        Drag the title bar. Drag any edge or corner to resize. Double-click
+        to maximize, then press Escape to restore.
       </p>
-      <pre
-        style={{
-          margin: 0,
-          padding: 12,
-          background: "rgba(0,0,0,0.35)",
-          borderRadius: 6,
-          fontSize: 12,
-          overflow: "auto",
-        }}
-      >{`import { Desktop } from "@react-ui-os/desktop";
-import { defaultTheme } from "@react-ui-os/theme-default";
-
-<Desktop apps={apps} theme={defaultTheme} />;`}</pre>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        Try <kbd>Cmd-K</kbd> for Spotlight, <kbd>Cmd-,</kbd> for Settings, drag
-        a window edge to resize, drag the title bar to move.
-      </p>
-    </div>
-  );
-}
-
-function ComponentsContent() {
-  const { openWindow } = useWindowManager();
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <h2 style={{ margin: 0, fontSize: 18 }}>Components</h2>
-      <p style={{ margin: 0, opacity: 0.78 }}>
-        Click any component to open its API in its own window. Two windows
-        for two components can sit side by side: the library uses the new
-        SystemWindowArgs to address each instance distinctly.
+        Press <kbd>Cmd-K</kbd> for Spotlight, <kbd>Cmd-,</kbd> for Settings.
+        Cmd-1/2/3 jumps between apps.
       </p>
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-          gap: 6,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          marginTop: 4,
         }}
       >
-        {componentNames.map((name) => (
-          <button
-            key={name}
-            type="button"
-            onClick={() => {
-              openWindow(
-                { kind: "system", systemId: "component", args: { name } },
-                { x: 120 + componentNames.indexOf(name) * 32, y: 100, w: 520, h: 380 },
-              );
-            }}
-            style={{
-              padding: "8px 10px",
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 6,
-              background: "rgba(255,255,255,0.04)",
-              color: "inherit",
-              cursor: "pointer",
-              textAlign: "left",
-              fontFamily: "inherit",
-              fontSize: 12,
-            }}
-          >
-            {name}
-          </button>
-        ))}
+        <button
+          type="button"
+          onClick={() => {
+            const labels = ["Sketch", "Recipe", "Idea", "Bookmark", "Todo"];
+            const kinds = ["txt", "md", "url"];
+            const label = labels[Math.floor(Math.random() * labels.length)];
+            const kind = kinds[Math.floor(Math.random() * kinds.length)];
+            addRecent(storage, {
+              name: `${label ?? "Item"} ${String(Date.now()).slice(-4)}`,
+              kind: kind ?? "txt",
+            });
+          }}
+          style={{
+            border: "1px solid rgba(255,255,255,0.18)",
+            background: "rgba(255,255,255,0.06)",
+            color: "inherit",
+            borderRadius: 6,
+            padding: "5px 12px",
+            fontSize: 12,
+            fontFamily: "inherit",
+            cursor: "pointer",
+          }}
+        >
+          + Add to Recents
+        </button>
+        <span style={{ fontSize: 11, opacity: 0.6 }}>
+          A Recents folder will appear on the desktop.
+        </span>
       </div>
+      <p style={{ margin: 0, fontSize: 12, opacity: 0.6 }}>
+        Window focused: <strong>{focused ? "yes" : "no"}</strong>
+      </p>
     </div>
   );
 }
 
-function ThemesContent() {
+function NotesContent() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <h2 style={{ margin: 0, fontSize: 18 }}>Themes</h2>
+      <h2 style={{ margin: 0, fontSize: 18 }}>Notes</h2>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        The skeleton is one thing. The look is a theme. Mintables ships as one
-        theme; you can write your own with createOsTheme(...).
+        Plain notes app. Open me by clicking my dock tile, by pressing{" "}
+        <kbd>Cmd-2</kbd>, or by typing "notes" into Spotlight.
       </p>
+    </div>
+  );
+}
+
+function CalculatorContent() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <h2 style={{ margin: 0, fontSize: 18 }}>Calculator</h2>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        End-user tweaks live in Settings (Cmd-,). The active theme declares
-        which tokens are user-customizable; the library renders the panel.
+        Three apps gives Spotlight something to search. Try{" "}
+        <kbd>Cmd-K</kbd> then "calc".
       </p>
     </div>
   );
@@ -114,27 +98,27 @@ function ThemesContent() {
 
 export const docsApps: App[] = [
   {
-    id: "get-started",
-    name: "Get Started",
-    tagline: "Install + one-line API",
-    accent: "#5cb6b9",
-    content: GetStartedContent,
-    defaultBounds: { w: 560, h: 420 },
+    id: "hello",
+    name: "Hello",
+    tagline: "Try the library",
+    accent: "#6b8afd",
+    content: HelloContent,
+    defaultBounds: { w: 560, h: 380 },
   },
   {
-    id: "components",
-    name: "Components",
-    tagline: "Browse the inventory",
-    accent: "#7c66f5",
-    content: ComponentsContent,
-    defaultBounds: { w: 520, h: 420 },
-  },
-  {
-    id: "themes",
-    name: "Themes",
-    tagline: "Skin the skeleton",
+    id: "notes",
+    name: "Notes",
+    tagline: "Plain-text scratchpad",
     accent: "#f59e0b",
-    content: ThemesContent,
-    defaultBounds: { w: 520, h: 380 },
+    content: NotesContent,
+    defaultBounds: { w: 480, h: 300 },
+  },
+  {
+    id: "calculator",
+    name: "Calculator",
+    tagline: "Arithmetic and conversions",
+    accent: "#22c55e",
+    content: CalculatorContent,
+    defaultBounds: { w: 320, h: 360 },
   },
 ];

@@ -1,0 +1,44 @@
+---
+title: Changelog
+description: What landed and when. Until 1.0 every version may carry breaking changes; the changelog calls them out explicitly.
+sidebar:
+  order: 50
+---
+
+The library is pre-1.0. Treat every release as potentially breaking; the entries below name the breaking changes explicitly.
+
+## Unreleased
+
+### Added
+
+- **`SystemWindowArgs`** — the system variant of `WindowPayload` now accepts an optional `args` record of string/number/boolean primitives. `windowIdOf` serializes the args into the id so two system windows with distinct args coexist as distinct windows (one per "Component: Window" / "Component: Spotlight" pair). Backward compatible: omitting args keeps the single-slot behavior.
+- **`SystemWindowDef.name`** can be a `(args) => string` function for per-instance titles. New `resolveSystemWindowName(def, args)` helper.
+- **`<Desktop children>`** — children now render inside the provider alongside the default surfaces. Lets consumers mount headless companions (URL sync, analytics, deep-link activators) with access to `useWindowManager()`.
+
+### Docs
+
+- Pivoted `apps/docs` to **Astro Starlight**. Standard left-nav, right TOC, search, theme toggle. Replaced the "docs are windows" prototype with proper component reference pages.
+- `<LivePreview>` Astro component embeds `/playground?demo=<key>` iframes in component pages so each one opens with the relevant feature focused.
+- Per-feature deep-link demos: `?demo=spotlight`, `?demo=settings`, `?demo=window`, `?demo=dock`, `?demo=menubar`, `?demo=recents`.
+
+### Infrastructure
+
+- **CI** at `.github/workflows/ci.yml` — typecheck, test, build on every push and PR.
+- **Pages deploy** at `.github/workflows/docs.yml` — auto-deploys `apps/docs` on push to main.
+
+## Earlier work
+
+The full repo history lives at [github.com/saschb2b/react-ui-os/commits/main](https://github.com/saschb2b/react-ui-os/commits/main). High-level milestones:
+
+- **Phase 4** — `FileExplorer` primitive with full macOS-Finder interaction model (multi-select, Shift-range, right-click context menu, F2 rename, sidebar). State-earned desktop folders via `SystemWindowDef.appearsAsDesktopIcon`.
+- **Phase 3** — `@react-ui-os/theme-mintables` cinematic theme. Chrome variants real (`dockPosition: "left"`, `menuBar: "none"`). Wallpaper parallax.
+- **Phase 2b** — Settings as a system window. The `customizable` schema on `OsTheme`. Effective-theme overlay.
+- **Phase 2a** — Resize handles, global keyboard shortcuts, Spotlight.
+- **Phase 1** — Window manager, default theme, playground demo.
+
+## Roadmap
+
+- Auto-generated props tables from TypeScript types (replace hand-written reference tables with the single source of truth).
+- `registerSpotlightSource(...)` — let any feature contribute results to Spotlight beyond apps and system windows.
+- A `theme-saas` reference theme that exercises `chrome.dockPosition: "left"` and a neutral light palette.
+- First `1.0.0` release once the API stops moving.

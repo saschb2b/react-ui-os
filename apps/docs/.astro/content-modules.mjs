@@ -4,6 +4,7 @@ export default new Map([
 ["src/content/docs/api/usesettings.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fapi%2Fusesettings.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/api/usetheme.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fapi%2Fusetheme.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/api/usewindowmanager.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fapi%2Fusewindowmanager.mdx&astroContentModuleFlag=true")],
+["src/content/docs/changelog.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fchangelog.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/components/desktop.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fcomponents%2Fdesktop.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/components/desktopicons.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fcomponents%2Fdesktopicons.mdx&astroContentModuleFlag=true")],
 ["src/content/docs/components/dock.mdx", () => import("astro:content-layer-deferred-module?astro%3Acontent-layer-deferred-module=&fileName=src%2Fcontent%2Fdocs%2Fcomponents%2Fdock.mdx&astroContentModuleFlag=true")],

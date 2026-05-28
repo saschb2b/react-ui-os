@@ -3,9 +3,16 @@ import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
 import starlight from "@astrojs/starlight";
 
+// GitHub Pages deploy. Change `site` and drop `base` once a custom domain
+// is wired up via a CNAME file. The workflow at .github/workflows/docs.yml
+// reads neither — it just builds with these values baked in.
+const SITE = process.env.ASTRO_SITE ?? "https://saschb2b.github.io";
+const BASE = process.env.ASTRO_BASE ?? "/react-ui-os";
+
 // https://astro.build/config
 export default defineConfig({
-  site: "https://react-ui-os.dev",
+  site: SITE,
+  base: BASE,
   integrations: [
     starlight({
       title: "react-ui-os",

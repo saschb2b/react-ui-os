@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { App, OsTheme, StorageAdapter } from "@react-ui-os/core";
 import { DesktopProvider } from "./DesktopProvider";
 import { Wallpaper } from "./Wallpaper";
@@ -17,6 +18,12 @@ export interface DesktopProps {
   brand?: string;
   /** Optional storage backend override. Defaults to localStorage. */
   storage?: StorageAdapter;
+  /**
+   * Extra children rendered inside the provider, alongside the default
+   * surfaces. Useful for headless companions like analytics, URL sync,
+   * or deep-link activators that need access to `useWindowManager()`.
+   */
+  children?: ReactNode;
 }
 
 /**
@@ -25,7 +32,13 @@ export interface DesktopProps {
  * and Spotlight. Replace with `<DesktopProvider>` + your own layout when
  * you need finer control.
  */
-export function Desktop({ apps, theme, brand, storage }: DesktopProps) {
+export function Desktop({
+  apps,
+  theme,
+  brand,
+  storage,
+  children,
+}: DesktopProps) {
   return (
     <DesktopProvider apps={apps} theme={theme} storage={storage}>
       <div
@@ -44,6 +57,7 @@ export function Desktop({ apps, theme, brand, storage }: DesktopProps) {
         <KeyboardShortcuts />
         <Spotlight />
       </div>
+      {children}
     </DesktopProvider>
   );
 }
