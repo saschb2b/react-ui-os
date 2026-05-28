@@ -8,6 +8,7 @@ import { Dock } from "./Dock";
 import { WindowLayer } from "./WindowLayer";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
 import { Spotlight } from "./Spotlight";
+import { DesktopIcons } from "./DesktopIcons";
 
 export interface DesktopProps {
   apps: App[];
@@ -37,6 +38,7 @@ export function Desktop({ apps, theme, brand, storage }: DesktopProps) {
       >
         <Wallpaper />
         <MenuBar brand={brand} />
+        <DesktopIcons />
         <WindowLayer />
         <Dock />
         <KeyboardShortcuts />

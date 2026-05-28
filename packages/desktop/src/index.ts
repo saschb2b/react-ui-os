@@ -11,10 +11,19 @@ export { Spotlight } from "./Spotlight";
 export { KeyboardShortcuts } from "./keyboard-shortcuts";
 export { SPOTLIGHT_OPEN_EVENT } from "./events";
 export { Settings } from "./Settings";
+export { FileExplorer } from "./FileExplorer";
+export type {
+  ExplorerItem,
+  ExplorerAction,
+  FileExplorerProps,
+} from "./FileExplorer";
+export { DesktopIcons } from "./DesktopIcons";
+export { FolderSvg } from "./folder-svg";
 export {
   systemWindows,
   getSystemWindow,
   listSystemWindows,
+  registerSystemWindow,
   type SystemWindowDef,
 } from "./system-windows";
 export {
