@@ -1,0 +1,78 @@
+---
+title: Quickstart
+description: Three apps, Spotlight, and Settings in five minutes.
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+By the end of this page you will have three apps on a working desktop, with Spotlight finding them by name and Settings tweaking the theme live.
+
+## 1. Install
+
+See [Installation](/installation/) for package manager tabs.
+
+## 2. Register three apps
+
+```tsx title="src/apps.tsx"
+import type { App } from "@react-ui-os/core";
+
+function Notes() {
+  return (
+    <article>
+      <h2>Notes</h2>
+      <p>A plain text scratch area.</p>
+    </article>
+  );
+}
+
+function Calculator() {
+  return <h2>Calculator</h2>;
+}
+
+function Inspector({ focused }: { focused: boolean }) {
+  return (
+    <section>
+      <h2>Inspector</h2>
+      <p>This window is currently {focused ? "focused" : "in the background"}.</p>
+    </section>
+  );
+}
+
+export const apps: App[] = [
+  { id: "notes", name: "Notes", accent: "#f59e0b", content: Notes },
+  { id: "calc", name: "Calculator", accent: "#22c55e", content: Calculator },
+  { id: "inspector", name: "Inspector", accent: "#7c66f5", content: Inspector },
+];
+```
+
+## 3. Mount the desktop
+
+```tsx title="src/App.tsx"
+import { Desktop } from "@react-ui-os/desktop";
+import { defaultTheme } from "@react-ui-os/theme-default";
+import { apps } from "./apps";
+
+export default function App() {
+  return <Desktop apps={apps} theme={defaultTheme} brand="acme" />;
+}
+```
+
+## 4. Try the keyboard shortcuts
+
+- **Cmd-K** (Ctrl-K on Windows) opens Spotlight. Type "notes" and hit Enter.
+- **Cmd-,** opens Settings. The active theme exposes a `customizable` schema; the panel renders one field per entry.
+- **Cmd-W** closes the focused window. **Cmd-M** minimizes it.
+- **Cmd-1 / Cmd-2 / Cmd-3** cycle through the registered apps by registry index.
+- **Escape** restores a maximized window.
+
+## What you get
+
+<LivePreview label="Quickstart result" height="460px" />
+
+The wallpaper, dock, traffic lights, drag, resize, focus model, menu-bar focused-app indicator, Cmd-K palette, Cmd-, panel, and the genie minimize animation all come from the one `<Desktop>` tag. Nothing else to wire.
+
+## Next
+
+- The [Desktop](/components/desktop/) component reference is the API model the other component pages follow.
+- [Themes](/themes/overview/) explains how the skeleton and the look are separable.
+- The [Playground](/playground) is a richer multi-app demo with the Mintables theme and a state-earned Recents folder.

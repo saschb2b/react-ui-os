@@ -1,0 +1,125 @@
+---
+title: Installation
+description: Install react-ui-os and render your first desktop.
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+## Requirements
+
+- **React 19+**
+- **A bundler that respects `package.json` exports.** Vite, Astro, Next.js (App Router), Remix, and TanStack Start all qualify. Webpack 4 does not — use Webpack 5+.
+- **TypeScript is optional but recommended.** The types are bundled.
+
+## Install
+
+<Tabs>
+  <TabItem label="pnpm">
+
+```bash
+pnpm add @react-ui-os/core @react-ui-os/desktop @react-ui-os/theme-default
+```
+
+  </TabItem>
+  <TabItem label="npm">
+
+```bash
+npm install @react-ui-os/core @react-ui-os/desktop @react-ui-os/theme-default
+```
+
+  </TabItem>
+  <TabItem label="bun">
+
+```bash
+bun add @react-ui-os/core @react-ui-os/desktop @react-ui-os/theme-default
+```
+
+  </TabItem>
+</Tabs>
+
+Optional: pick a branded theme.
+
+<Tabs>
+  <TabItem label="pnpm">
+
+```bash
+pnpm add @react-ui-os/theme-mintables
+```
+
+  </TabItem>
+  <TabItem label="npm">
+
+```bash
+npm install @react-ui-os/theme-mintables
+```
+
+  </TabItem>
+</Tabs>
+
+## Your first desktop
+
+```tsx title="App.tsx"
+import type { App } from "@react-ui-os/core";
+import { Desktop } from "@react-ui-os/desktop";
+import { defaultTheme } from "@react-ui-os/theme-default";
+
+const apps: App[] = [
+  {
+    id: "notes",
+    name: "Notes",
+    accent: "#f59e0b",
+    content: () => (
+      <article>
+        <h1>Hello, desktop.</h1>
+        <p>Drag this window by the title bar. Try Cmd-K.</p>
+      </article>
+    ),
+  },
+];
+
+export default function App() {
+  return <Desktop apps={apps} theme={defaultTheme} />;
+}
+```
+
+That single component renders the full desktop. No other styles to import; the library injects its own keyframes at the root.
+
+## SSR
+
+The library mounts client-side. In Next.js App Router, mark the consuming module with `"use client"`:
+
+```tsx title="app/page.tsx"
+"use client";
+
+import { Desktop } from "@react-ui-os/desktop";
+// ...
+```
+
+In Astro, mount the desktop as a React island with `client:load`:
+
+```astro
+---
+import Desktop from "../components/Desktop";
+---
+<Desktop client:load />
+```
+
+Server-side, the desktop renders nothing (every JSX surface that touches `window` returns `null`), so hydration is safe.
+
+## Troubleshooting
+
+**The dock appears but windows don't drag.**
+Your bundler may be stripping `"use client"` directives. Confirm React 19 and that your bundler honors the `package.json` `"exports"` field.
+
+**Styles leak from a parent layout.**
+The library uses `position: fixed; inset: 0` on the desktop root. Make sure no parent forces `overflow: hidden` on the entire viewport before the desktop mounts.
+
+**Custom event collisions.**
+The library dispatches events on the namespace `react-ui-os:*`. If your app uses the same prefix, override the storage adapter prefix:
+
+```ts
+import { createLocalStorageAdapter } from "@react-ui-os/core";
+
+const storage = createLocalStorageAdapter("acme-os");
+<Desktop apps={apps} theme={theme} storage={storage} />;
+```

@@ -1,0 +1,60 @@
+---
+title: Introduction
+description: What react-ui-os is, where it fits, and when to pick it.
+---
+
+react-ui-os is a React component library that ships a working OS-style desktop in one line. Drop in `<Desktop apps={apps} theme={theme} />` and your page is a desktop: wallpaper, dock, draggable windows with macOS-style traffic lights, Spotlight, Settings, a Finder-style file explorer.
+
+## What's in the box
+
+- **A window manager** with focus tracking, drag, resize, maximize, minimize-to-dock genie animation, stable per-app instance ids.
+- **A theme system** with build-time switching and a runtime Settings panel for end-user tweaks (the active theme declares which tokens are user-customizable).
+- **Spotlight**, a Cmd-K command palette that fuzzy-searches across registered apps and system windows.
+- **Settings** as a real desktop window that renders the active theme's `customizable` schema.
+- **A FileExplorer** primitive with the macOS Finder interaction model: multi-select, Shift-range, right-click context menu, F2 rename.
+- **State-earned desktop folders** so the desktop icon for a folder only appears once the user has put something in it.
+- **Two themes** out of the box: `theme-default` (unbranded baseline) and `theme-mintables` (cinematic frosted glass).
+
+## When to reach for it
+
+**Pick react-ui-os when:**
+
+- The product *is* the desktop metaphor — a tool that lives in a browser tab but reads like an application (a creative app, a maker tool, an admin shell, a workshop).
+- You want a coherent OS feeling instead of a webpage with chrome on top of it.
+- Multi-window workflows matter (compare two views side by side, keep a reference open while editing).
+
+**Don't pick react-ui-os when:**
+
+- You're building a content site or a marketing page. Reach for shadcn/ui or Tailwind UI instead.
+- You need form-heavy components (selects, date pickers, tables). The library has the desktop chrome; bring your own form primitives.
+- You can't ship JavaScript. The desktop is a runtime; SSR is supported but the desktop boots client-side.
+
+## Three depths of API
+
+The same primitives are reachable at three levels.
+
+```tsx
+// 1. One-line desktop — full default composition.
+<Desktop apps={apps} theme={defaultTheme} />
+
+// 2. Composable provider — pick which surfaces to render.
+<DesktopProvider apps={apps} theme={theme}>
+  <Wallpaper />
+  <MenuBar />
+  <WindowLayer />
+  <Dock />
+  <Spotlight />
+</DesktopProvider>
+
+// 3. Hooks — drive the system from anywhere.
+const { openWindow, focusedWindow } = useWindowManager();
+const theme = useTheme();
+```
+
+The 80% case is depth 1. Step down only when you need to.
+
+## Next steps
+
+- [Install](/installation/) the packages and stand up your first desktop.
+- [Quickstart](/quickstart/) walks through three demo apps end-to-end.
+- The [Desktop](/components/desktop/) reference is the model the other component pages follow.

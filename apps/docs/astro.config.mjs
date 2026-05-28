@@ -1,14 +1,61 @@
 import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
+import starlight from "@astrojs/starlight";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://react-ui-os.dev",
-  integrations: [react(), mdx()],
+  integrations: [
+    starlight({
+      title: "react-ui-os",
+      description:
+        "A React component library that ships a working OS-style desktop in one line.",
+      logo: undefined,
+      social: [
+        {
+          icon: "github",
+          label: "GitHub",
+          href: "https://github.com/saschb2b/react-ui-os",
+        },
+      ],
+      customCss: ["./src/styles/brand.css"],
+      sidebar: [
+        {
+          label: "Start here",
+          items: [
+            { label: "Introduction", link: "/introduction/" },
+            { label: "Installation", link: "/installation/" },
+            { label: "Quickstart", link: "/quickstart/" },
+          ],
+        },
+        {
+          label: "Components",
+          items: [{ autogenerate: { directory: "components" } }],
+        },
+        {
+          label: "API",
+          items: [{ autogenerate: { directory: "api" } }],
+        },
+        {
+          label: "Themes",
+          items: [{ autogenerate: { directory: "themes" } }],
+        },
+        {
+          label: "Showcase",
+          items: [{ label: "Playground", link: "/playground/" }],
+        },
+      ],
+      components: {
+        // Use Starlight defaults for now. Layout slots will be overridden
+        // here once we want the LivePreview to appear in the head of the
+        // landing page automatically.
+      },
+    }),
+    react(),
+    mdx(),
+  ],
   vite: {
-    // Match the playground: pick the `source` condition so workspace
-    // packages resolve to src/ during dev, no rebuild needed.
     resolve: {
       conditions: ["source"],
     },

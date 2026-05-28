@@ -1,0 +1,106 @@
+---
+/**
+ * Embeddable live demo of react-ui-os. Renders an iframe pointing at the
+ * dedicated /playground route so the running library can be dropped inline
+ * into any docs page. The card chrome (border, radius, header) makes it
+ * read clearly as "a contained preview" rather than the page itself.
+ */
+interface Props {
+  /** Override the iframe src — useful for component-specific demos later. */
+  src?: string;
+  /** CSS height. Defaults to 460px. */
+  height?: string;
+  /** Optional card label shown above the preview. */
+  label?: string;
+}
+
+const { src = "/playground", height = "460px", label = "Live preview" } =
+  Astro.props;
+---
+
+<figure class="rui-live-preview">
+  <header class="rui-live-preview__bar">
+    <span class="rui-live-preview__dots" aria-hidden>
+      <span></span>
+      <span></span>
+      <span></span>
+    </span>
+    <span class="rui-live-preview__label">{label}</span>
+    <a class="rui-live-preview__open" href={src} target="_blank" rel="noreferrer">
+      Open in new tab ↗
+    </a>
+  </header>
+  <iframe
+    src={src}
+    title={label}
+    loading="lazy"
+    style={`height: ${height};`}
+    class="rui-live-preview__frame"
+  ></iframe>
+</figure>
+
+<style>
+  .rui-live-preview {
+    margin: 1.5rem 0;
+    border-radius: 12px;
+    border: 1px solid var(--sl-color-gray-5);
+    overflow: hidden;
+    background: var(--sl-color-black);
+    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.45);
+  }
+
+  .rui-live-preview__bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--sl-color-gray-6);
+    border-bottom: 1px solid var(--sl-color-gray-5);
+    font-size: 0.78rem;
+  }
+
+  .rui-live-preview__dots {
+    display: inline-flex;
+    gap: 4px;
+  }
+
+  .rui-live-preview__dots span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--sl-color-gray-4);
+  }
+
+  .rui-live-preview__dots span:nth-child(1) {
+    background: #ff5f57;
+  }
+  .rui-live-preview__dots span:nth-child(2) {
+    background: #febc2e;
+  }
+  .rui-live-preview__dots span:nth-child(3) {
+    background: #28c840;
+  }
+
+  .rui-live-preview__label {
+    color: var(--sl-color-gray-3);
+    flex: 1;
+    text-align: center;
+  }
+
+  .rui-live-preview__open {
+    color: var(--sl-color-accent);
+    text-decoration: none;
+    font-size: 0.72rem;
+  }
+
+  .rui-live-preview__open:hover {
+    text-decoration: underline;
+  }
+
+  .rui-live-preview__frame {
+    display: block;
+    width: 100%;
+    border: 0;
+    background: var(--sl-color-black);
+  }
+</style>

@@ -1,0 +1,107 @@
+---
+title: Desktop
+description: The one-line entry point. Wraps the provider stack and composes wallpaper, menu bar, dock, window layer, keyboard shortcuts, and Spotlight.
+sidebar:
+  order: 1
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+The `Desktop` component is the one-line entry point. It wraps the provider stack and composes the default surfaces. Use it when you want the full chrome; drop down to `DesktopProvider` when you need to pick and choose.
+
+<LivePreview label="Desktop in action" height="420px" />
+
+## Import
+
+```tsx
+import { Desktop } from "@react-ui-os/desktop";
+import { defaultTheme } from "@react-ui-os/theme-default";
+```
+
+## Usage
+
+```tsx
+import type { App } from "@react-ui-os/core";
+
+const apps: App[] = [
+  { id: "notes", name: "Notes", content: () => <h1>Notes</h1> },
+];
+
+<Desktop apps={apps} theme={defaultTheme} brand="acme" />;
+```
+
+## Anatomy
+
+`Desktop` composes these surfaces in order. To swap any of them, use `DesktopProvider` and write your own composition.
+
+```tsx
+<DesktopProvider apps={apps} theme={theme} storage={storage}>
+  <Wallpaper />
+  <MenuBar brand={brand} />
+  <DesktopIcons />
+  <WindowLayer />
+  <Dock />
+  <KeyboardShortcuts />
+  <Spotlight />
+</DesktopProvider>
+```
+
+## Props
+
+| Prop      | Type                  | Default          | Description                                                                                                                                                                  |
+| --------- | --------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps`    | `App[]`               | **required**     | The app registry. Order matters: Cmd-1..9 maps to indices, dock tiles render in this order.                                                                                  |
+| `theme`   | `OsTheme`             | **required**     | The active theme. Pass `defaultTheme` or call `createMintablesTheme(...)`.                                                                                                   |
+| `brand`   | `string`              | `"react-ui-os"`  | Label shown on the left of the menu bar.                                                                                                                                     |
+| `storage` | `StorageAdapter`      | `localStorage`  | Backend for user preferences and state-earned folders. Defaults to a `localStorage`-backed adapter; swap for a server adapter to sync across devices.                        |
+
+## Examples
+
+### A single-app desktop
+
+```tsx
+const apps = [{ id: "hello", name: "Hello", content: () => <h1>Hello</h1> }];
+
+<Desktop apps={apps} theme={defaultTheme} />;
+```
+
+### With a custom brand and the Mintables theme
+
+```tsx
+import { createMintablesTheme } from "@react-ui-os/theme-mintables";
+
+const theme = createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
+
+<Desktop apps={apps} theme={theme} brand="acme.studio" />;
+```
+
+### With a custom storage backend
+
+Server-backed prefs so a user's accent + dock position follow them across devices:
+
+```tsx
+import type { StorageAdapter } from "@react-ui-os/core";
+
+const remoteStorage: StorageAdapter = {
+  get: (key) => fetchPref(key),
+  set: (key, value) => savePref(key, value),
+  remove: (key) => deletePref(key),
+  subscribe: (listener) => sse("/prefs", listener),
+};
+
+<Desktop apps={apps} theme={theme} storage={remoteStorage} />;
+```
+
+## Accessibility
+
+- The menu bar is rendered as a `<header>` and the dock as a `<nav aria-label="App dock">`.
+- Every window is wrapped in `role="region"` with an `aria-label` of "`<Name>` window".
+- Traffic lights have `aria-label` values of "Close", "Minimize", "Maximize".
+- The Spotlight palette is `role="dialog" aria-modal="true"` with a labelled listbox.
+- Reduced-motion preferences disable the wallpaper parallax.
+
+## See also
+
+- [DesktopProvider](/api/usewindowmanager/) — the lift-the-hood mode.
+- [Themes overview](/themes/overview/) — the skeleton vs. the look.
+- [Spotlight](/components/spotlight/) — the Cmd-K command palette.

@@ -1,0 +1,35 @@
+/* Brand override for Starlight's defaults. Keeps the docs honest by
+   leaning on the framework's tokens rather than fighting them, but tints
+   the accent and softens corners to match the rest of react-ui-os. */
+
+:root {
+  --sl-color-accent-low: #1e2a3b;
+  --sl-color-accent: #5cb6b9;
+  --sl-color-accent-high: #a7e8eb;
+  --sl-color-white: #f1f3f8;
+  --sl-color-gray-1: #e6e8ee;
+  --sl-color-gray-2: #c9ccd3;
+  --sl-color-gray-3: #9aa0ac;
+  --sl-color-gray-4: #6c7280;
+  --sl-color-gray-5: #3c424e;
+  --sl-color-gray-6: #25292f;
+  --sl-color-black: #0a0c1a;
+}
+
+/* Make code blocks feel a touch warmer and round the cards a bit more. */
+.sl-markdown-content pre {
+  border-radius: 10px;
+}
+
+.sl-markdown-content :not(pre) > code {
+  font-size: 0.9em;
+}
+
+/* Hero landing: align with the desktop aesthetic without overpowering. */
+.hero {
+  padding-bottom: 24px;
+}
+
+.hero h1 {
+  letter-spacing: -0.01em;
+}

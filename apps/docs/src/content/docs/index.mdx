@@ -1,0 +1,39 @@
+---
+title: react-ui-os
+description: A React component library that ships a working OS-style desktop in one line.
+template: splash
+hero:
+  tagline: A working OS-style desktop in one React component. Apps as data. Themes as token bags. Spotlight, Settings, and a Finder-style file explorer included.
+  actions:
+    - text: Read the docs
+      link: /introduction/
+      icon: right-arrow
+      variant: primary
+    - text: Open playground
+      link: /playground
+      icon: external
+      variant: minimal
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+<LivePreview label="react-ui-os playground" height="520px" />
+
+## Why this exists
+
+Most React UI libraries ship fifty components and let you wire them. That instinct produces tidy webapps. It does not produce a coherent OS feeling, because nobody wants to wire fifty pieces into a desktop and keep them consistent. **react-ui-os inverts the contract.** You register apps. The library composes the system. One object describing an app lights up the dock, the menu bar, Spotlight, and the keyboard shortcuts at once.
+
+## What you get in one tag
+
+```tsx
+import { Desktop } from "@react-ui-os/desktop";
+import { defaultTheme } from "@react-ui-os/theme-default";
+
+const apps = [
+  { id: "notes", name: "Notes", content: () => <h1>Hello, desktop.</h1> },
+];
+
+<Desktop apps={apps} theme={defaultTheme} />;
+```
+
+Wallpaper. Dock. Draggable resizable windows with macOS-style traffic lights. Focus tracking. Minimize-to-dock genie animation. Cmd-K Spotlight. Cmd-, Settings. All from that one tag.

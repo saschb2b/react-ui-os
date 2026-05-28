@@ -11,13 +11,14 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.0.0",
-    "@astrojs/react": "^4.1.0",
+    "@astrojs/mdx": "^6.0.1",
+    "@astrojs/react": "^5.0.6",
+    "@astrojs/starlight": "^0.39.2",
     "@react-ui-os/core": "workspace:*",
     "@react-ui-os/desktop": "workspace:*",
     "@react-ui-os/theme-default": "workspace:*",
     "@react-ui-os/theme-mintables": "workspace:*",
-    "astro": "^5.1.0",
+    "astro": "^6.4.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
