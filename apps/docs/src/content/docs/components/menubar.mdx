@@ -5,7 +5,11 @@ sidebar:
   order: 4
 ---
 
+import LivePreview from "~/components/LivePreview.astro";
+
 `MenuBar` renders the top 28 px of the desktop. It is system chrome — application-specific actions belong inside the window, not here. Hidden when `theme.chrome.menuBar` is `"none"`.
+
+<LivePreview label="The menu bar tracking the focused window" height="320px" />
 
 ## Import
 

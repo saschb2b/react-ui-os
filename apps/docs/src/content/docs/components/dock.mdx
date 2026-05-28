@@ -5,7 +5,11 @@ sidebar:
   order: 3
 ---
 
+import LivePreview from "~/components/LivePreview.astro";
+
 The dock renders one tile per registered app. Clicking a tile toggles the app's window: open if not running, focus + restore if minimized or unfocused, otherwise minimize. Hidden when `theme.chrome.dockPosition` is `"hidden"`.
+
+<LivePreview label="The dock in action" height="380px" />
 
 ## Import
 

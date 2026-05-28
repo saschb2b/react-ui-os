@@ -5,7 +5,11 @@ sidebar:
   order: 6
 ---
 
+import LivePreview from "~/components/LivePreview.astro";
+
 `Settings` is a system window opened by `Cmd-,` (macOS convention), by typing "settings" into Spotlight, or programmatically via `openWindow({ kind: "system", systemId: "settings" })`. It reads `theme.customizable` and renders the appropriate editor per field kind.
+
+<LivePreview label="Press Cmd-, to open Settings and tweak the theme live" height="420px" />
 
 ## Import
 

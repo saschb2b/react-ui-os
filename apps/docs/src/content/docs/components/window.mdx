@@ -5,7 +5,11 @@ sidebar:
   order: 2
 ---
 
+import LivePreview from "~/components/LivePreview.astro";
+
 You will rarely instantiate `<Window>` directly. The [WindowLayer](#see-also) compositor renders one per entry in the window manager's state, and the window manager opens them via `openWindow(...)`. The component is exported for the rare case where you compose your own layer.
+
+<LivePreview label="Drag, resize, focus, minimize" height="380px" />
 
 ## Import
 

@@ -5,7 +5,11 @@ sidebar:
   order: 7
 ---
 
+import LivePreview from "~/components/LivePreview.astro";
+
 `FileExplorer` is a generic primitive. Hosts pass an `items` array mapped to `ExplorerItem`, optional `actions`, an `onOpen`, and (for editable lists) an `onRename`. The explorer owns selection, view mode, sort, search, rename, and the right-click context menu.
+
+<LivePreview label="Open Recents from the dock, try multi-select" height="420px" />
 
 ## Import
 

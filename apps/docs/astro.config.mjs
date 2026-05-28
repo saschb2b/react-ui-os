@@ -43,7 +43,10 @@ export default defineConfig({
         },
         {
           label: "Showcase",
-          items: [{ label: "Playground", link: "/playground/" }],
+          items: [
+            { label: "Showcase", link: "/showcase/" },
+            { label: "Playground", link: "/playground/" },
+          ],
         },
       ],
       components: {
