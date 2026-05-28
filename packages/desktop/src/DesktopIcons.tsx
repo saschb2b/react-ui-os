@@ -6,6 +6,7 @@ import { useDesktopContext, useTheme } from "./desktop-context";
 import { FolderSvg } from "./folder-svg";
 import {
   listSystemWindows,
+  resolveSystemWindowName,
   type SystemWindowDef,
 } from "./system-windows";
 import { MENU_BAR_HEIGHT } from "./util/layout";
@@ -89,6 +90,9 @@ function DesktopShortcut({
 }) {
   const theme = useTheme();
   const Icon = def.desktopIcon ?? FolderSvg;
+  // The desktop shortcut opens the no-args instance of the system window,
+  // so the icon label uses the name with `undefined` args.
+  const label = resolveSystemWindowName(def);
   return (
     <button
       type="button"
@@ -100,7 +104,7 @@ function DesktopShortcut({
         e.currentTarget.blur();
       }}
       data-desktop-icon-id={systemId}
-      title={def.name}
+      title={label}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -137,7 +141,7 @@ function DesktopShortcut({
           textOverflow: "ellipsis",
         }}
       >
-        {def.name}
+        {label}
       </span>
     </button>
   );

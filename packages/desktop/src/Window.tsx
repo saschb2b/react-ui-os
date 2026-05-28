@@ -12,7 +12,7 @@ import type { OpenWindow } from "@react-ui-os/core";
 import { useApp, useTheme } from "./desktop-context";
 import { getDockTileRect } from "./Dock";
 import { clampWindowToWorkArea } from "./util/clamp";
-import { getSystemWindow } from "./system-windows";
+import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { getMenuBarHeight, getWorkArea } from "./util/layout";
 
 const TITLE_BAR_HEIGHT = 32;
@@ -78,11 +78,13 @@ export function Window({ win }: WindowProps) {
     win.payload.kind === "system"
       ? getSystemWindow(win.payload.systemId)
       : undefined;
+  const systemArgs =
+    win.payload.kind === "system" ? win.payload.args : undefined;
 
   const title =
     win.payload.kind === "app"
       ? (app?.name ?? "Window")
-      : (systemDef?.name ?? "Window");
+      : (systemDef ? resolveSystemWindowName(systemDef, systemArgs) : "Window");
   const accent =
     win.payload.kind === "app"
       ? (app?.accent ?? theme.palette.accent)
@@ -336,7 +338,7 @@ export function Window({ win }: WindowProps) {
         {app ? (
           <app.content appId={app.id} focused={focused} />
         ) : systemDef ? (
-          <systemDef.content focused={focused} />
+          <systemDef.content focused={focused} args={systemArgs} />
         ) : null}
       </div>
       {!maximized && (

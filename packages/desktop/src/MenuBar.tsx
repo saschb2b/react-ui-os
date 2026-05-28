@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useWindowManager } from "@react-ui-os/core";
 import { useApp, useTheme } from "./desktop-context";
-import { getSystemWindow } from "./system-windows";
+import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { MENU_BAR_HEIGHT } from "./util/layout";
 
 export { MENU_BAR_HEIGHT };
@@ -25,7 +25,13 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
     focusedWindow?.payload.kind === "system"
       ? getSystemWindow(focusedWindow.payload.systemId)
       : undefined;
-  const focusedName = focusedApp?.name ?? focusedSystem?.name;
+  const focusedSystemArgs =
+    focusedWindow?.payload.kind === "system"
+      ? focusedWindow.payload.args
+      : undefined;
+  const focusedName =
+    focusedApp?.name ??
+    (focusedSystem ? resolveSystemWindowName(focusedSystem, focusedSystemArgs) : undefined);
 
   if (theme.chrome.menuBar !== "top") return null;
 

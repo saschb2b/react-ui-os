@@ -26,7 +26,9 @@ export {
   getSystemWindow,
   listSystemWindows,
   registerSystemWindow,
+  resolveSystemWindowName,
   type SystemWindowDef,
+  type SystemWindowContentProps,
 } from "./system-windows";
 export {
   useDesktopContext,

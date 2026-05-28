@@ -1,18 +1,33 @@
 import type { ComponentType } from "react";
-import type { StorageAdapter } from "@react-ui-os/core";
+import type { StorageAdapter, SystemWindowArgs } from "@react-ui-os/core";
 import { Settings } from "./Settings";
 
+export interface SystemWindowContentProps {
+  focused: boolean;
+  /**
+   * Args passed via `openWindow({ kind: "system", systemId, args })`. Use
+   * these when one system window definition handles multiple instances
+   * (e.g. a single "Component" window powered by a `name` arg).
+   */
+  args?: SystemWindowArgs;
+}
+
 export interface SystemWindowDef {
-  /** Title shown in the title bar and menu bar. */
-  name: string;
+  /**
+   * Title shown in the title bar and menu bar. When a string, every
+   * instance of this system window shares the title. When a function, the
+   * title is derived per-instance from the args (useful for "Component:
+   * Spotlight" vs "Component: Window").
+   */
+  name: string | ((args?: SystemWindowArgs) => string);
   /** Optional one-line subtitle for Spotlight. */
   tagline?: string;
   /** Accent color used by the top-edge highlight. */
   accent?: string;
   /** Default window bounds when first opened. */
   defaultBounds: { w: number; h: number };
-  /** Window body component. */
-  content: ComponentType<{ focused: boolean }>;
+  /** Window body component. Receives the optional args alongside focus. */
+  content: ComponentType<SystemWindowContentProps>;
   /**
    * Controls whether this system window surfaces as a desktop shortcut icon.
    *
@@ -67,4 +82,15 @@ export function listSystemWindows(): Array<
     systemId,
     ...def,
   }));
+}
+
+/**
+ * Resolve the display name for a (possibly args-dependent) system window
+ * definition. Used by the title bar, the menu bar, and Spotlight.
+ */
+export function resolveSystemWindowName(
+  def: SystemWindowDef,
+  args?: SystemWindowArgs,
+): string {
+  return typeof def.name === "function" ? def.name(args) : def.name;
 }

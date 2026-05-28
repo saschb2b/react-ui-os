@@ -119,6 +119,71 @@ describe("windowManagerReducer", () => {
     );
   });
 
+  it("system windows with the same args collapse to one slot", () => {
+    expect(
+      windowIdOf({
+        kind: "system",
+        systemId: "component",
+        args: { name: "Window" },
+      }),
+    ).toBe(
+      windowIdOf({
+        kind: "system",
+        systemId: "component",
+        args: { name: "Window" },
+      }),
+    );
+  });
+
+  it("system windows with different args produce different ids", () => {
+    const a = windowIdOf({
+      kind: "system",
+      systemId: "component",
+      args: { name: "Window" },
+    });
+    const b = windowIdOf({
+      kind: "system",
+      systemId: "component",
+      args: { name: "Spotlight" },
+    });
+    expect(a).not.toBe(b);
+  });
+
+  it("system window args are key-order-independent", () => {
+    const a = windowIdOf({
+      kind: "system",
+      systemId: "x",
+      args: { a: 1, b: 2 },
+    });
+    const b = windowIdOf({
+      kind: "system",
+      systemId: "x",
+      args: { b: 2, a: 1 },
+    });
+    expect(a).toBe(b);
+  });
+
+  it("empty args object is equivalent to no args", () => {
+    expect(windowIdOf({ kind: "system", systemId: "x", args: {} })).toBe(
+      windowIdOf({ kind: "system", systemId: "x" }),
+    );
+  });
+
+  it("opens two system windows with distinct args side by side", () => {
+    const s = run(
+      {
+        type: "OPEN",
+        payload: { kind: "system", systemId: "component", args: { name: "Window" } },
+      },
+      {
+        type: "OPEN",
+        payload: { kind: "system", systemId: "component", args: { name: "Spotlight" } },
+      },
+    );
+    expect(s.windows).toHaveLength(2);
+    expect(s.focusedId).toBe("system:component:name=Spotlight");
+  });
+
   it("CLOSE of an unknown id is a no-op", () => {
     const s = run(
       { type: "OPEN", payload: { kind: "app", appId: "a" } },

@@ -13,7 +13,11 @@ import type { App } from "@react-ui-os/core";
 import { useWindowManager } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { SPOTLIGHT_OPEN_EVENT } from "./events";
-import { listSystemWindows, type SystemWindowDef } from "./system-windows";
+import {
+  listSystemWindows,
+  resolveSystemWindowName,
+  type SystemWindowDef,
+} from "./system-windows";
 
 type Result =
   | { kind: "app"; key: string; name: string; tagline?: string; accent?: string; app: App }
@@ -128,7 +132,10 @@ export function Spotlight() {
     const systemResults: Result[] = listSystemWindows().map((sys) => ({
       kind: "system",
       key: `system:${sys.systemId}`,
-      name: sys.name,
+      // Spotlight surfaces the no-args version of a system window. Apps
+      // that want to expose per-instance entries (one per Component arg,
+      // say) will plug in via the upcoming spotlight-sources API.
+      name: resolveSystemWindowName(sys),
       tagline: sys.tagline,
       accent: sys.accent,
       systemId: sys.systemId,

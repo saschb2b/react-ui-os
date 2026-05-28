@@ -1,4 +1,23 @@
 import type { App } from "@react-ui-os/core";
+import { useWindowManager } from "@react-ui-os/core";
+import { registerSystemWindow } from "@react-ui-os/desktop";
+import {
+  ComponentReference,
+  componentNames,
+  componentReferenceTitle,
+} from "./component-reference";
+
+// Register a single Component reference system window. Args carry the
+// component name; the new WindowPayload args extension lets two of these
+// coexist (one per name) because windowIdOf encodes the args.
+registerSystemWindow("component", {
+  name: (args) =>
+    componentReferenceTitle(args as { name?: unknown } | undefined),
+  tagline: "API reference",
+  accent: "#7c66f5",
+  defaultBounds: { w: 520, h: 380 },
+  content: ComponentReference,
+});
 
 function GetStartedContent() {
   return (
@@ -31,32 +50,48 @@ import { defaultTheme } from "@react-ui-os/theme-default";
 }
 
 function ComponentsContent() {
+  const { openWindow } = useWindowManager();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <h2 style={{ margin: 0, fontSize: 18 }}>Components</h2>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        The library is the chrome around your apps. Pick a component for the
-        full API. (Per-component windows land once multi-instance system
-        payloads are wired up.)
+        Click any component to open its API in its own window. Two windows
+        for two components can sit side by side: the library uses the new
+        SystemWindowArgs to address each instance distinctly.
       </p>
-      <ul
+      <div
         style={{
-          margin: 0,
-          paddingLeft: 18,
-          opacity: 0.78,
-          lineHeight: 1.6,
-          fontSize: 13,
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+          gap: 6,
         }}
       >
-        <li>Desktop</li>
-        <li>Dock</li>
-        <li>MenuBar</li>
-        <li>Window</li>
-        <li>Spotlight</li>
-        <li>Settings</li>
-        <li>FileExplorer</li>
-        <li>DesktopIcons</li>
-      </ul>
+        {componentNames.map((name) => (
+          <button
+            key={name}
+            type="button"
+            onClick={() => {
+              openWindow(
+                { kind: "system", systemId: "component", args: { name } },
+                { x: 120 + componentNames.indexOf(name) * 32, y: 100, w: 520, h: 380 },
+              );
+            }}
+            style={{
+              padding: "8px 10px",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: 6,
+              background: "rgba(255,255,255,0.04)",
+              color: "inherit",
+              cursor: "pointer",
+              textAlign: "left",
+              fontFamily: "inherit",
+              fontSize: 12,
+            }}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

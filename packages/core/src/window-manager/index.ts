@@ -1,5 +1,6 @@
 export type {
   OpenWindow,
+  SystemWindowArgs,
   WindowBounds,
   WindowManagerAction,
   WindowManagerActions,

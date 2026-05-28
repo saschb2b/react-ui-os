@@ -1,13 +1,25 @@
 import type { Dispatch } from "react";
 
 /**
- * What a window is showing. `app` windows host a user-registered app; `system`
- * windows host built-in surfaces (Settings, file explorers, etc.) that the
- * library will introduce in later phases.
+ * Args attached to a system-window payload. Restricted to JSON-serializable
+ * primitives so the window id stays stable and deep-linkable across reloads.
+ */
+export type SystemWindowArgs = Record<string, string | number | boolean>;
+
+/**
+ * What a window is showing.
+ *
+ *   `app`     hosts a user-registered app from the apps list. One slot per
+ *             `appId`, just like a macOS app instance.
+ *   `system`  hosts a built-in surface (Settings, file explorers, etc.).
+ *             Multiple instances per `systemId` are possible by passing
+ *             distinct `args` — for example, a docs site can open a
+ *             "Component" system window with `args: { name: "Spotlight" }`
+ *             and another with `args: { name: "Window" }` side by side.
  */
 export type WindowPayload =
   | { kind: "app"; appId: string }
-  | { kind: "system"; systemId: string };
+  | { kind: "system"; systemId: string; args?: SystemWindowArgs };
 
 export type WindowState = "normal" | "minimized" | "maximized";
 
@@ -42,11 +54,24 @@ export interface WindowManagerState {
 /**
  * Stable id from payload. Opening the same app twice focuses the existing
  * window rather than spawning a duplicate, mirroring macOS app-instance
- * behavior. `system` windows behave the same per `systemId`.
+ * behavior.
+ *
+ * For system windows: when `args` is absent (or empty), there is a single
+ * slot per `systemId` (Settings, the active folder window, etc.). When
+ * `args` is present, the id includes a stable serialization of the keys
+ * so two distinct argument sets produce two distinct windows. The args
+ * are also encoded in the same order regardless of insertion order so
+ * `{ name: "Window" }` and `{ name: "Window" }` always collide.
  */
 export function windowIdOf(payload: WindowPayload): string {
   if (payload.kind === "app") return `app:${payload.appId}`;
-  return `system:${payload.systemId}`;
+  const base = `system:${payload.systemId}`;
+  if (!payload.args) return base;
+  const entries = Object.entries(payload.args);
+  if (entries.length === 0) return base;
+  entries.sort(([a], [b]) => a.localeCompare(b));
+  const argsKey = entries.map(([k, v]) => `${k}=${String(v)}`).join(",");
+  return `${base}:${argsKey}`;
 }
 
 export interface WindowManagerActions {
