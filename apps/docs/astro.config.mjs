@@ -68,6 +68,10 @@ export default defineConfig({
           items: [{ autogenerate: { directory: "themes" } }],
         },
         {
+          label: "Architecture",
+          items: [{ autogenerate: { directory: "architecture" } }],
+        },
+        {
           label: "Recipes",
           items: [{ autogenerate: { directory: "recipes" } }],
         },

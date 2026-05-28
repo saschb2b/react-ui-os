@@ -42,24 +42,36 @@ packages/
       Desktop.tsx                # one-line API
       DesktopProvider.tsx        # lift-the-hood mode
       Wallpaper.tsx
-      MenuBar.tsx
-      Dock.tsx
-      WindowLayer.tsx
-      Window.tsx
-      Spotlight.tsx
-      Settings.tsx
+      MenuBar.tsx                # brand · focused-app · workspaces · status tray · clock
+      Dock.tsx                   # per-app indicator dot + unread badge
+      WindowLayer.tsx            # filters windows by active workspace
+      Window.tsx                 # drag with snap preview + HUD
+      Spotlight.tsx              # apps + system windows + external sources
+      Settings.tsx               # renders Slider / Toggle per customizable field
       FileExplorer.tsx
       DesktopIcons.tsx
+      AppSwitcher.tsx            # Cmd/Ctrl+Tab MRU overlay
+      MissionControl.tsx         # F3 grid of every visible window
+      NotificationToasts.tsx     # top-right stack
+      NotificationCenter.tsx     # right-edge slide-in sheet
+      desktop-backdrop.tsx       # right-click-the-wallpaper system menu
       keyboard-shortcuts.tsx
       desktop-context.tsx
       system-windows.ts
       spotlight-sources.ts       # registerSpotlightSource registry
-      events.ts                  # SPOTLIGHT_OPEN_EVENT
+      status-items.ts            # registerStatusItem registry
+      events.ts                  # SPOTLIGHT_OPEN_EVENT, NOTIFICATION_CENTER_TOGGLE_EVENT
       style-injector.tsx
+      context-menu/              # ContextMenu + Anchor + module store
+      snap/                      # snap zone math + SnapPreview
+      hud/                       # showHud + HudOverlay
+      tooltip/                   # Tooltip primitive
+      primitives/                # Slider, Toggle
       util/
       index.ts
   theme-default/                 # @react-ui-os/theme-default
   theme-mintables/               # @react-ui-os/theme-mintables
+  theme-saas/                    # @react-ui-os/theme-saas (left dock, no menu bar)
 .github/workflows/
   ci.yml                         # typecheck/test/build on push + PR
   docs.yml                       # Pages deploy on push to main
@@ -150,6 +162,51 @@ type SpotlightSource = (query: string) => SpotlightResult[];
 ```
 
 `registerSpotlightSource(id, source)` lets any feature contribute results to the Cmd-K palette beyond apps and system windows. Sources are queried on every keystroke; misbehaving sources are caught so they don't tear down the palette.
+
+### `StatusItem`
+
+```ts
+interface StatusItem {
+  id: string;
+  icon: ReactNode;
+  tooltip?: string;
+  badge?: string | number;
+  shortcut?: string;
+  onClick?: () => void;
+  order?: number;
+}
+```
+
+`registerStatusItem({ id, icon, ... })` adds a widget to the menu-bar right cluster (between workspaces and the clock). Battery, sync state, online dot, current track — anything that should live in the system chrome rather than in an app window. Re-registering the same id replaces the previous record so a host component can update its badge without remount churn.
+
+## The imperative-store pattern
+
+Four library systems share the same shape: a **module-level vanilla store** + a **component mounted by `<Desktop>` that subscribes via `useSyncExternalStore`** + an **imperative function callable from any code**. This is how features that span "anywhere in the app" stay decoupled from any provider hierarchy. Pattern files:
+
+| System            | Imperative call                | Renderer mounted by `<Desktop>` | Store                                      |
+| ----------------- | ------------------------------ | ------------------------------- | ------------------------------------------ |
+| Notifications     | `notify({ ... })`              | `<NotificationToasts>` + `<NotificationCenter>` | `core/notifications/store.ts`     |
+| Context menu      | `openContextMenu({ x, y, ... })` | `<ContextMenu>`                 | `desktop/context-menu/store.ts`            |
+| Window snap       | `setSnapPreview(...)`          | `<SnapPreview>`                 | `desktop/snap/snap-store.ts`               |
+| HUD               | `showHud({ title, ... })`      | `<HudOverlay>`                  | `desktop/hud/hud-store.ts`                 |
+| Status tray       | `registerStatusItem(...)`      | `<StatusItems>` inside `<MenuBar>` | `desktop/status-items.ts`               |
+| Spotlight source  | `registerSpotlightSource(...)` | inside `<Spotlight>`            | `desktop/spotlight-sources.ts`             |
+
+Reasons:
+
+1. **No prop drilling.** A fetch handler in a deep app can call `notify({...})` without threading a dispatcher down.
+2. **Cross-package.** `notify` lives in `core`, the renderer in `desktop`. Stores in `core` are React-free for that reason.
+3. **Single source of truth.** Two consumers can't accidentally render two notification stacks.
+
+When adding a new "appears system-wide" feature, follow this shape. Don't reach for a new context provider unless the state legitimately belongs to a subtree.
+
+## Workspaces
+
+Window manager state includes `workspaces: string[]` and `activeWorkspaceId: string`. Every `OpenWindow` has a `workspaceId`. `WindowLayer` filters by the active workspace — switching is an O(n) hide rather than mount/unmount, so window state survives. `FOCUS` on a window from another workspace pulls the user to that workspace (matches the macOS "click a dock tile, jump to that space" behavior).
+
+Defaults: three workspaces, seeded at boot. Actions: `switchWorkspace`, `moveWindowToWorkspace`, `addWorkspace`, `removeWorkspace`. `removeWorkspace` refuses to drop the last and migrates orphan windows to the first remaining workspace.
+
+Keyboard: `Ctrl + Alt + ←/→` switch; `Ctrl + Alt + Shift + ←/→` bring the focused window with you. Window title-bar right-click exposes "Move to Workspace N".
 
 ## Package boundaries
 

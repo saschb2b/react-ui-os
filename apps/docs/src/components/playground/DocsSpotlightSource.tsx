@@ -5,7 +5,7 @@ interface DocsPage {
   id: string;
   name: string;
   path: string;
-  kind: "intro" | "component" | "api" | "theme" | "recipe" | "showcase" | "release";
+  kind: "intro" | "component" | "api" | "theme" | "architecture" | "recipe" | "showcase" | "release";
 }
 
 const DOCS_PAGES: DocsPage[] = [
@@ -38,6 +38,7 @@ const DOCS_PAGES: DocsPage[] = [
   { id: "themes-overview", name: "Themes overview", path: "/themes/overview/", kind: "theme" },
   { id: "themes-customizable", name: "Customizable schema", path: "/themes/customizable/", kind: "theme" },
   { id: "themes-writing", name: "Writing a theme", path: "/themes/writing/", kind: "theme" },
+  { id: "patterns", name: "Patterns", path: "/architecture/patterns/", kind: "architecture" },
   { id: "recipes", name: "Recipes", path: "/recipes/overview/", kind: "recipe" },
   { id: "showcase", name: "Showcase", path: "/showcase/", kind: "showcase" },
   { id: "changelog", name: "Changelog", path: "/changelog/", kind: "release" },
@@ -48,6 +49,7 @@ const KIND_LABELS: Record<DocsPage["kind"], string> = {
   component: "Docs · Component",
   api: "Docs · API",
   theme: "Docs · Themes",
+  architecture: "Docs · Architecture",
   recipe: "Docs · Recipes",
   showcase: "Docs · Showcase",
   release: "Docs · Releases",
@@ -58,6 +60,7 @@ const KIND_ACCENTS: Record<DocsPage["kind"], string> = {
   component: "#7c66f5",
   api: "#a855f7",
   theme: "#f59e0b",
+  architecture: "#64748b",
   recipe: "#0ea5e9",
   showcase: "#22c55e",
   release: "#ec4899",
