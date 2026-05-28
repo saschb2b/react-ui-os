@@ -20,9 +20,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup pnpm
+        # Version comes from the root package.json `packageManager` field
+        # (pnpm@10.x). Specifying `version:` here too is now rejected by
+        # action-setup as a conflict — keep package.json as the single
+        # source of truth.
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node
         uses: actions/setup-node@v4
