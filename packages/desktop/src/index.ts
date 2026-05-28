@@ -22,6 +22,7 @@ export {
   type HudPayload,
 } from "./hud";
 export { Tooltip } from "./tooltip";
+export { Slider, Toggle } from "./primitives";
 export {
   registerStatusItem,
   unregisterStatusItem,

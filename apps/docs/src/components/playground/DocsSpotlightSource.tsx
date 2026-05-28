@@ -27,6 +27,7 @@ const DOCS_PAGES: DocsPage[] = [
   { id: "workspaces", name: "Workspaces", path: "/components/workspaces/", kind: "component" },
   { id: "tooltip", name: "Tooltip", path: "/components/tooltip/", kind: "component" },
   { id: "statusitems", name: "Status items", path: "/components/statusitems/", kind: "component" },
+  { id: "primitives", name: "Slider + Toggle", path: "/components/primitives/", kind: "component" },
   { id: "fileexplorer", name: "FileExplorer", path: "/components/fileexplorer/", kind: "component" },
   { id: "desktopicons", name: "DesktopIcons", path: "/components/desktopicons/", kind: "component" },
   { id: "usewindowmanager", name: "useWindowManager", path: "/api/usewindowmanager/", kind: "api" },

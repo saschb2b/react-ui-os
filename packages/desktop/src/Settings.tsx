@@ -11,6 +11,7 @@ import type {
 } from "@react-ui-os/core";
 import { getPath } from "@react-ui-os/core";
 import { useBaseTheme, useSettings, useTheme } from "./desktop-context";
+import { Slider, Toggle } from "./primitives";
 
 /**
  * Settings system app body. Reads the active theme's `customizable` schema
@@ -374,33 +375,16 @@ function RangeControl({
   value: number;
   onChange: (value: unknown) => void;
 }) {
-  const theme = useTheme();
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-      <input
-        type="range"
-        min={field.min}
-        max={field.max}
-        step={field.step}
-        value={value}
-        onChange={(e) => {
-          onChange(Number(e.target.value));
-        }}
-        style={{ flex: 1, accentColor: theme.palette.accent }}
-      />
-      <span
-        style={{
-          fontVariantNumeric: "tabular-nums",
-          fontSize: 12,
-          color: theme.palette.textSecondary,
-          minWidth: 48,
-          textAlign: "right",
-        }}
-      >
-        {value}
-        {field.unit ?? ""}
-      </span>
-    </div>
+    <Slider
+      value={value}
+      min={field.min}
+      max={field.max}
+      step={field.step}
+      onChange={(v) => onChange(v)}
+      unit={field.unit}
+      ariaLabel={field.label}
+    />
   );
 }
 
@@ -461,41 +445,11 @@ function ToggleControl({
   value: boolean;
   onChange: (value: unknown) => void;
 }) {
-  void field;
-  const theme = useTheme();
   return (
-    <button
-      type="button"
-      onClick={() => {
-        onChange(!value);
-      }}
-      role="switch"
-      aria-checked={value}
-      style={{
-        width: 36,
-        height: 20,
-        borderRadius: 10,
-        border: "none",
-        background: value ? theme.palette.accent : theme.palette.border,
-        position: "relative",
-        cursor: "pointer",
-        padding: 0,
-        transition: "background-color 140ms ease",
-      }}
-    >
-      <span
-        style={{
-          position: "absolute",
-          top: 2,
-          left: value ? 18 : 2,
-          width: 16,
-          height: 16,
-          borderRadius: 8,
-          background: "#fff",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.35)",
-          transition: "left 140ms ease",
-        }}
-      />
-    </button>
+    <Toggle
+      checked={value}
+      onChange={(next) => onChange(next)}
+      ariaLabel={field.label}
+    />
   );
 }

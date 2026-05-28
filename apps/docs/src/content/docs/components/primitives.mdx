@@ -1,0 +1,96 @@
+---
+title: Form primitives
+description: Themed Slider and Toggle. Used by the Settings panel; exported so app windows can use them too.
+sidebar:
+  order: 16
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+Native `<input type="range">` and `<input type="checkbox">` work but look like the browser put them there, not like the OS did. The library ships themed wrappers — `<Slider>` and `<Toggle>` — that match the rest of the desktop. They're the primitives the built-in Settings panel uses, exported so consumers can use them in their own app windows.
+
+<LivePreview src="?demo=settings" label="Open Settings to see Slider and Toggle in their native habitat" height="460px" />
+
+## Import
+
+```tsx
+import { Slider, Toggle } from "@react-ui-os/desktop";
+```
+
+## `<Slider>`
+
+```tsx
+<Slider
+  value={radius}
+  min={0}
+  max={24}
+  step={2}
+  onChange={setRadius}
+  label="Corner radius"
+  unit="px"
+/>
+```
+
+| Prop        | Type                       | Default | Description                                                       |
+| ----------- | -------------------------- | ------- | ----------------------------------------------------------------- |
+| `value`     | `number`                   | —       | Current value.                                                    |
+| `min`       | `number`                   | —       | Lower bound.                                                      |
+| `max`       | `number`                   | —       | Upper bound.                                                      |
+| `step`      | `number`                   | `1`     | Tick size.                                                        |
+| `onChange`  | `(next: number) => void`   | —       | Fired on every change. Receives the new numeric value.            |
+| `label`     | `string`                   | —       | Rendered above the track. Pair with `aria-label` if absent.       |
+| `unit`      | `string`                   | —       | Appended to the right-side readout (`px`, `ms`, `%`).             |
+| `hideValue` | `boolean`                  | `false` | Hide the numeric readout.                                         |
+| `accent`    | `string`                   | theme   | Track-fill color override.                                        |
+| `disabled`  | `boolean`                  | `false` | Greys out + blocks interaction.                                   |
+| `ariaLabel` | `string`                   | —       | Screen-reader label when no visible `label`.                      |
+
+Built on a real native `<input type="range">` so arrow keys, Page Up/Down, Home/End, and screen-reader value announcements all work out of the box. The styling is layered over the input via per-browser pseudo-selectors so the muscle memory + accessibility don't go anywhere.
+
+## `<Toggle>`
+
+```tsx
+<Toggle
+  checked={parallax}
+  onChange={setParallax}
+  label="Wallpaper parallax"
+  description="Cursor-driven shift on the wallpaper layer"
+/>
+```
+
+| Prop          | Type                       | Default | Description                                                  |
+| ------------- | -------------------------- | ------- | ------------------------------------------------------------ |
+| `checked`     | `boolean`                  | —       | Current state.                                               |
+| `onChange`    | `(next: boolean) => void`  | —       | Fired on click.                                              |
+| `label`       | `string`                   | —       | Rendered to the left of the switch.                          |
+| `description` | `string`                   | —       | Helper line under the label.                                 |
+| `accent`      | `string`                   | theme   | "On" color override.                                         |
+| `disabled`    | `boolean`                  | `false` | Greys out + blocks interaction.                              |
+| `ariaLabel`   | `string`                   | —       | Screen-reader label when no visible `label`.                 |
+
+The visible button carries `role="switch"` + `aria-checked` so screen readers announce the state correctly. Animation comes from the same easing token the rest of the library uses.
+
+## Where the library uses them
+
+The built-in Settings panel renders one Slider per `range` field and one Toggle per `toggle` field in the active theme's [`customizable` schema](/themes/customizable/). Swapping a hand-written native input for these is a one-line change in your own surfaces:
+
+```tsx
+// Before
+<input type="range" value={v} onChange={(e) => setV(+e.target.value)} />
+
+// After
+<Slider value={v} min={0} max={100} onChange={setV} unit="%" />
+```
+
+## Accessibility
+
+- Slider exposes `aria-valuetext` with the formatted value (including unit). Screen readers read "30 px" rather than "30".
+- Toggle is a `<button role="switch">` — VoiceOver, NVDA, and JAWS all announce it as an actual switch.
+- Both honor `disabled` and visually communicate the state.
+- Focus rings on the Slider thumb use the theme accent for visibility.
+
+## See also
+
+- [Settings](/components/settings/) — the canonical consumer.
+- [Customizable schema](/themes/customizable/) — declares which tokens get a Slider vs Toggle.
+- [Themes overview](/themes/overview/) — token categories that map to these primitives.
