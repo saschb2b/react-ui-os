@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useWindowManager } from "@react-ui-os/core";
-import { useDesktopContext, useTheme } from "./desktop-context";
+import { useApps, useDesktopContext, useTheme } from "./desktop-context";
 import { FolderSvg } from "./folder-svg";
 import {
   listSystemWindows,
   resolveSystemWindowName,
   type SystemWindowDef,
 } from "./system-windows";
+import { pickInitialBounds } from "./util/initial-bounds";
 import { MENU_BAR_HEIGHT } from "./util/layout";
 
 interface VisibleIcon {
@@ -30,6 +31,7 @@ const EDGE_INSET = 14;
  */
 export function DesktopIcons() {
   const theme = useTheme();
+  const apps = useApps();
   const { storage } = useDesktopContext();
   const { openWindow } = useWindowManager();
   const [visible, setVisible] = useState<VisibleIcon[]>(() =>
@@ -71,7 +73,8 @@ export function DesktopIcons() {
           systemId={systemId}
           def={def}
           onOpen={() => {
-            openWindow({ kind: "system", systemId });
+            const payload = { kind: "system" as const, systemId };
+            openWindow(payload, pickInitialBounds(payload, theme, apps));
           }}
         />
       ))}

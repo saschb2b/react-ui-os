@@ -4,6 +4,11 @@
  * dedicated /playground route so the running library can be dropped inline
  * into any docs page. The card chrome (border, radius, header) makes it
  * read clearly as "a contained preview" rather than the page itself.
+ *
+ * `wide` breaks out of the Starlight content column so the desktop chrome
+ * has room to breathe. Defaults are tuned so a normal embed shows the
+ * menu bar, a centered window, and the full dock without the bottom edge
+ * being clipped by the iframe.
  */
 interface Props {
   /**
@@ -11,13 +16,25 @@ interface Props {
    * catch-all playground. Pass `?demo=spotlight` to deep-link into a feature.
    */
   src?: string;
-  /** CSS height. Defaults to 460px. */
+  /** CSS height. Defaults to 560px. */
   height?: string;
   /** Optional card label shown above the preview. */
   label?: string;
+  /**
+   * Break out of the Starlight content column to give the desktop full
+   * viewport width. Defaults to `true` because every existing embed
+   * shows OS chrome and reads cramped inside the article column. Set
+   * `wide={false}` to keep an embed constrained to article width.
+   */
+  wide?: boolean;
 }
 
-const { src = "", height = "460px", label = "Live preview" } = Astro.props;
+const {
+  src = "",
+  height = "560px",
+  label = "Live preview",
+  wide = true,
+} = Astro.props;
 
 // Resolve against the deploy's base URL so the iframe works locally, under
 // the /react-ui-os/ Pages prefix, and behind a custom domain.
@@ -27,9 +44,11 @@ const base = import.meta.env.BASE_URL.endsWith("/")
 const resolvedSrc = src.startsWith("?")
   ? `${base}playground${src}`
   : `${base}playground${src ? `/${src.replace(/^\//, "")}` : ""}`;
+
+const figureClass = `rui-live-preview${wide ? " rui-live-preview--wide" : ""}`;
 ---
 
-<figure class="rui-live-preview">
+<figure class={figureClass}>
   <header class="rui-live-preview__bar">
     <span class="rui-live-preview__dots" aria-hidden>
       <span></span>
@@ -58,6 +77,27 @@ const resolvedSrc = src.startsWith("?")
     overflow: hidden;
     background: var(--sl-color-black);
     box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.45);
+  }
+
+  /*
+   * Break out of the Starlight content column. Article content tops out
+   * around 800 px; widening to ~1200 px gives the desktop chrome the
+   * horizontal room it needs so the dock and menu-bar widgets don't feel
+   * cramped. The calc(50% - 50vw + 16px) trick recenters the figure under
+   * the article — leaves a small gutter so we don't bump into the TOC.
+   */
+  .rui-live-preview--wide {
+    width: min(1200px, calc(100vw - 32px));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+
+  @media (max-width: 1100px) {
+    .rui-live-preview--wide {
+      width: calc(100% + 32px);
+      margin-left: -16px;
+      transform: none;
+    }
   }
 
   .rui-live-preview__bar {

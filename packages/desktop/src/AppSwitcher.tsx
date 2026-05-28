@@ -13,6 +13,7 @@ import {
   type App,
 } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
+import { pickInitialBounds } from "./util/initial-bounds";
 
 /**
  * Cmd/Ctrl + Tab application switcher. Holds while the modifier is down,
@@ -60,14 +61,21 @@ export function AppSwitcher() {
       const id = windowIdOf({ kind: "app", appId: target.id });
       const win = windows.find((w) => w.id === id);
       if (!win) {
-        openWindow({ kind: "app", appId: target.id });
+        openWindow(
+          { kind: "app", appId: target.id },
+          pickInitialBounds(
+            { kind: "app", appId: target.id },
+            theme,
+            apps,
+          ),
+        );
       } else if (win.state === "minimized") {
         restoreWindow(id);
       } else {
         focusWindow(id);
       }
     },
-    [candidates, focusWindow, openWindow, restoreWindow, windows],
+    [apps, candidates, focusWindow, openWindow, restoreWindow, theme, windows],
   );
 
   // Modifier-state machine: open on Cmd/Ctrl+Tab, cycle on Tab, commit on

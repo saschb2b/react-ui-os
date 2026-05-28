@@ -2,11 +2,13 @@
 
 import { useEffect } from "react";
 import { useWindowManager } from "@react-ui-os/core";
+import { useApps, useTheme } from "./desktop-context";
 import {
   closeContextMenu,
   openContextMenu,
   type ContextMenuItem,
 } from "./context-menu";
+import { pickInitialBounds } from "./util/initial-bounds";
 import {
   NOTIFICATION_CENTER_TOGGLE_EVENT,
   SPOTLIGHT_OPEN_EVENT,
@@ -43,6 +45,8 @@ export function DesktopBackdrop({
   buildItems,
 }: DesktopBackdropProps = {}) {
   const { windows, minimizeWindow, openWindow } = useWindowManager();
+  const theme = useTheme();
+  const apps = useApps();
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -89,7 +93,8 @@ export function DesktopBackdrop({
           label: "System Settings",
           shortcut: "⌘,",
           onSelect: () => {
-            openWindow({ kind: "system", systemId: "settings" });
+            const payload = { kind: "system" as const, systemId: "settings" };
+            openWindow(payload, pickInitialBounds(payload, theme, apps));
           },
         },
         {
@@ -126,7 +131,7 @@ export function DesktopBackdrop({
       // toggles the backdrop off.
       closeContextMenu();
     };
-  }, [windows, minimizeWindow, openWindow, extraItems, buildItems]);
+  }, [windows, minimizeWindow, openWindow, theme, apps, extraItems, buildItems]);
 
   return null;
 }

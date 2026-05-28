@@ -13,6 +13,7 @@ import {
   type ContextMenuItem,
 } from "./context-menu";
 import { Tooltip } from "./tooltip";
+import { pickInitialBounds } from "./util/initial-bounds";
 import {
   DOCK_EDGE_OFFSET,
   DOCK_GAP,
@@ -88,6 +89,7 @@ function DockTile({
   position: "bottom" | "left" | "hidden";
 }) {
   const theme = useTheme();
+  const apps = useApps();
   const {
     windows,
     focusedWindow,
@@ -110,7 +112,11 @@ function DockTile({
     if (!win) {
       items.push({
         label: `Open ${app.name}`,
-        onSelect: () => openWindow({ kind: "app", appId: app.id }),
+        onSelect: () =>
+          openWindow(
+            { kind: "app", appId: app.id },
+            pickInitialBounds({ kind: "app", appId: app.id }, theme, apps),
+          ),
       });
     } else {
       items.push({
@@ -151,7 +157,10 @@ function DockTile({
 
   const handleClick = () => {
     if (!win) {
-      openWindow({ kind: "app", appId: app.id });
+      openWindow(
+        { kind: "app", appId: app.id },
+        pickInitialBounds({ kind: "app", appId: app.id }, theme, apps),
+      );
       return;
     }
     if (isMinimized) {

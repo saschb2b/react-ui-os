@@ -6,6 +6,7 @@ import { useApps, useTheme } from "./desktop-context";
 import { SPOTLIGHT_OPEN_EVENT } from "./events";
 import { rectForZone, type SnapZone } from "./snap";
 import { showHud } from "./hud";
+import { pickInitialBounds } from "./util/initial-bounds";
 import { getWorkArea } from "./util/layout";
 
 /**
@@ -68,7 +69,8 @@ export function KeyboardShortcuts() {
       // Cmd-, opens Settings as a system window (macOS convention).
       if (mod && e.key === ",") {
         e.preventDefault();
-        openWindow({ kind: "system", systemId: "settings" });
+        const payload = { kind: "system" as const, systemId: "settings" };
+        openWindow(payload, pickInitialBounds(payload, theme, apps));
         return;
       }
 
@@ -101,7 +103,8 @@ export function KeyboardShortcuts() {
         const id = windowIdOf({ kind: "app", appId: app.id });
         const win = windowById(id);
         if (!win) {
-          openWindow({ kind: "app", appId: app.id });
+          const payload = { kind: "app" as const, appId: app.id };
+          openWindow(payload, pickInitialBounds(payload, theme, apps));
           return;
         }
         if (win.state === "minimized") {
