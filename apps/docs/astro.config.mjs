@@ -9,6 +9,11 @@ import starlight from "@astrojs/starlight";
 const SITE = process.env.ASTRO_SITE ?? "https://saschb2b.github.io";
 const BASE = process.env.ASTRO_BASE ?? "/react-ui-os";
 
+// Social card image used by every page. Using the desktop wallpaper as the
+// stand-in until a dedicated branded card is rendered — see Changelog
+// roadmap. The image lives at apps/docs/public/wallpaper.jpg.
+const SOCIAL_IMAGE = `${SITE}${BASE}/wallpaper.jpg`;
+
 // https://astro.build/config
 export default defineConfig({
   site: SITE,
@@ -19,6 +24,20 @@ export default defineConfig({
       description:
         "A React component library that ships a working OS-style desktop in one line.",
       logo: undefined,
+      head: [
+        // Open Graph — Slack, LinkedIn, iMessage.
+        { tag: "meta", attrs: { property: "og:type", content: "website" } },
+        { tag: "meta", attrs: { property: "og:image", content: SOCIAL_IMAGE } },
+        { tag: "meta", attrs: { property: "og:image:width", content: "3840" } },
+        { tag: "meta", attrs: { property: "og:image:height", content: "2160" } },
+        { tag: "meta", attrs: { property: "og:image:alt", content: "react-ui-os desktop wallpaper" } },
+        // Twitter / X.
+        { tag: "meta", attrs: { name: "twitter:card", content: "summary_large_image" } },
+        { tag: "meta", attrs: { name: "twitter:image", content: SOCIAL_IMAGE } },
+        { tag: "meta", attrs: { name: "twitter:image:alt", content: "react-ui-os desktop wallpaper" } },
+        // Theme color picks up the dock accent in browser chrome.
+        { tag: "meta", attrs: { name: "theme-color", content: "#7c66f5" } },
+      ],
       social: [
         {
           icon: "github",

@@ -180,8 +180,17 @@ export function Spotlight() {
             kindLabel: r.kindLabel,
             onActivate: r.onActivate,
           }));
-        } catch {
-          // A misbehaving source should not bring down Spotlight.
+        } catch (err) {
+          // A misbehaving source should not bring down Spotlight. We log in
+          // development so the consumer can see *why* their source isn't
+          // appearing; production silently drops the source for that call.
+          if (
+            typeof process !== "undefined" &&
+            process.env?.NODE_ENV !== "production"
+          ) {
+            // eslint-disable-next-line no-console
+            console.warn("[react-ui-os] Spotlight source threw:", err);
+          }
           return [];
         }
       },
