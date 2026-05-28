@@ -1,10 +1,39 @@
 import type { CSSProperties } from "react";
 import type { App } from "@react-ui-os/core";
 import { notify } from "@react-ui-os/core";
-import { registerSystemWindow } from "@react-ui-os/desktop";
+import {
+  registerStatusItem,
+  registerSystemWindow,
+} from "@react-ui-os/desktop";
 import { useDesktopContext } from "@react-ui-os/desktop";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
+
+// Demo status item: a small "online" dot in the menu bar tray. Real
+// products would surface battery, sync state, or a current track here.
+registerStatusItem({
+  id: "demo-online",
+  icon: (
+    <svg viewBox="0 0 12 12" width="10" height="10" aria-hidden>
+      <circle cx="6" cy="6" r="4" fill="#22c55e" />
+    </svg>
+  ),
+  tooltip: "Online",
+  order: 50,
+});
+
+// A clickable demo: rings a toast so visitors connect "menu-bar widget"
+// with the rest of the library.
+registerStatusItem({
+  id: "demo-ring",
+  icon: <span style={{ fontSize: 13, lineHeight: 1 }}>♪</span>,
+  tooltip: "Tap to chime",
+  shortcut: "demo",
+  order: 60,
+  onClick: () => {
+    notify({ title: "Ding", body: "A status-item click fired this.", level: "info" });
+  },
+});
 
 // State-earned Recents folder: the desktop icon appears once the user
 // has added an entry from Hello, disappears when the last is deleted.

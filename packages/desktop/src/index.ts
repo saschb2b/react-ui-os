@@ -23,6 +23,13 @@ export {
 } from "./hud";
 export { Tooltip } from "./tooltip";
 export {
+  registerStatusItem,
+  unregisterStatusItem,
+  listStatusItems,
+  subscribeStatusItems,
+  type StatusItem,
+} from "./status-items";
+export {
   ContextMenu,
   ContextMenuAnchor,
   openContextMenu,

@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useNotifications, useWindowManager } from "@react-ui-os/core";
 import { useApp, useTheme } from "./desktop-context";
 import { NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
+import {
+  listStatusItems,
+  subscribeStatusItems,
+  type StatusItem,
+} from "./status-items";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { Tooltip } from "./tooltip";
 import { MENU_BAR_HEIGHT } from "./util/layout";
@@ -77,9 +82,123 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <WorkspaceIndicator />
+        <StatusItems />
         <SystemClock color={theme.palette.textSecondary} accent={theme.palette.accent} />
       </div>
     </header>
+  );
+}
+
+function StatusItems() {
+  const theme = useTheme();
+  const items = useSyncExternalStore(
+    subscribeStatusItems,
+    listStatusItems,
+    listStatusItems,
+  );
+  if (items.length === 0) return null;
+  return (
+    <div
+      role="toolbar"
+      aria-label="Status tray"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+      }}
+    >
+      {items.map((item) => (
+        <StatusItemView
+          key={item.id}
+          item={item}
+          color={theme.palette.textSecondary}
+          accent={theme.palette.accent}
+        />
+      ))}
+    </div>
+  );
+}
+
+function StatusItemView({
+  item,
+  color,
+  accent,
+}: {
+  item: StatusItem;
+  color: string;
+  accent: string;
+}) {
+  const body = (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color,
+        position: "relative",
+        width: 22,
+        height: 22,
+      }}
+    >
+      {item.icon}
+      {item.badge !== undefined && item.badge !== "" && item.badge !== 0 && (
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: -2,
+            right: -4,
+            minWidth: 12,
+            height: 12,
+            borderRadius: 6,
+            background: accent,
+            color: "#0d1226",
+            fontSize: 9,
+            fontWeight: 700,
+            padding: "0 3px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 1,
+          }}
+        >
+          {String(item.badge)}
+        </span>
+      )}
+    </span>
+  );
+  const wrapped = (
+    <button
+      type="button"
+      onClick={item.onClick}
+      disabled={!item.onClick}
+      aria-label={item.tooltip ?? item.id}
+      style={{
+        appearance: "none",
+        background: "transparent",
+        border: 0,
+        padding: 2,
+        cursor: item.onClick ? "pointer" : "default",
+        borderRadius: 4,
+        display: "inline-flex",
+        color,
+      }}
+      onMouseEnter={(e) => {
+        if (!item.onClick) return;
+        e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+      }}
+    >
+      {body}
+    </button>
+  );
+  if (!item.tooltip) return wrapped;
+  return (
+    <Tooltip text={item.tooltip} shortcut={item.shortcut} placement="bottom">
+      {wrapped}
+    </Tooltip>
   );
 }
 

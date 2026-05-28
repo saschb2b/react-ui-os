@@ -1,0 +1,91 @@
+---
+title: Status items
+description: Plug-in points for the right side of the menu bar. Battery indicators, sync state, current track, online dots — anything that needs a permanent home next to the clock.
+sidebar:
+  order: 15
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+Status items are the small widgets in the menu bar's right cluster. The library hard-codes none of them — the registry is a plug-in point. Each registered item gets a slot between the workspace pips and the clock; click handlers, tooltips, and badges all wire through the same primitives every other library surface uses.
+
+<LivePreview src="?demo=dock" label="Notice the green dot and the ♪ next to the clock — both registered via registerStatusItem" height="460px" />
+
+## Import
+
+```tsx
+import {
+  registerStatusItem,
+  unregisterStatusItem,
+  type StatusItem,
+} from "@react-ui-os/desktop";
+```
+
+## Register an item
+
+```tsx
+const unsub = registerStatusItem({
+  id: "battery",
+  icon: <BatteryIcon level={0.78} />,
+  tooltip: "Battery 78% — 3h 12m remaining",
+  badge: 78,        // shows a small "78" pill on the icon
+  onClick: openBatteryPopover,
+  order: 50,        // lower = further from the clock
+});
+```
+
+`registerStatusItem` returns an unsubscribe. Re-registering the same id replaces the previous record, so a host component can update its badge or icon without churn.
+
+## StatusItem
+
+| Field      | Type                          | Description                                                     |
+| ---------- | ----------------------------- | --------------------------------------------------------------- |
+| `id`       | `string`                      | Stable id used as the React key and the dedup token.            |
+| `icon`     | `ReactNode`                   | Visible icon — `~14 px`. Use your icon kit.                     |
+| `tooltip`  | `string`                      | Hover tooltip body.                                             |
+| `badge`    | `string \| number`            | Small pill rendered on top of the icon. Falsy values hide it.   |
+| `shortcut` | `string`                      | Decorative shortcut hint in the tooltip ("⌃⇧Space").            |
+| `onClick`  | `() => void`                  | Activation handler. If omitted, the item is non-interactive.    |
+| `order`    | `number`                      | Render order. Lower = further from the clock. Default `100`.    |
+
+## When to use vs `<Tooltip>` alone
+
+- Reach for `registerStatusItem` when the widget should be **persistent** and **system-wide** — it lives in the menu bar regardless of which app is focused.
+- Reach for `<Tooltip>` directly when you're decorating an in-window button or any element that doesn't belong in the system chrome.
+
+## Pattern: dynamic widget
+
+When the widget's contents change (battery percentage, sync progress), have its host component re-register on every change:
+
+```tsx
+import { useEffect } from "react";
+import { registerStatusItem } from "@react-ui-os/desktop";
+
+export function BatteryStatusItem() {
+  const level = useBatteryLevel();
+  useEffect(() => {
+    return registerStatusItem({
+      id: "battery",
+      icon: <BatteryIcon level={level} />,
+      tooltip: `Battery ${String(Math.round(level * 100))}%`,
+      badge: Math.round(level * 100),
+      order: 50,
+    });
+  }, [level]);
+  return null;
+}
+```
+
+Mount `<BatteryStatusItem />` once anywhere inside `<DesktopProvider>` — the registry handles the rest.
+
+## Accessibility
+
+- The tray is `role="toolbar" aria-label="Status tray"`.
+- Each item is a `<button>` with the tooltip text as its `aria-label`. Even keyboard-only users get the same hint hover users see.
+- Items without an `onClick` render as disabled buttons so tabbing skips them but they still announce.
+
+## See also
+
+- [`Tooltip`](/components/tooltip/) — what the status item uses for hover hints.
+- [`registerSpotlightSource`](/api/registerspotlightsource/) — the same plug-in shape, for a different surface.
+- [Notifications](/components/notifications/) — for messages that should appear and fade, not persist.
