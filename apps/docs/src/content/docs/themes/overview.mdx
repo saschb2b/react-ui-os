@@ -1,6 +1,6 @@
 ---
 title: Overview
-description: The skeleton is one thing. The look is a theme. react-ui-os ships a neutral baseline plus a cinematic Mintables theme, and you can write your own.
+description: The skeleton is one thing. The look is a theme. react-ui-os ships three reference themes — neutral baseline, cinematic Mintables, SaaS light — and you can write your own.
 sidebar:
   order: 1
 ---
@@ -59,21 +59,21 @@ This is the part that does not exist in component libraries. It is what lets a S
 
 ## Themes that ship
 
-| Package                       | Stance                                                                                                              |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `@react-ui-os/theme-default`  | Unbranded baseline. Dark, neutral palette, no wallpaper, full macOS chrome. Use when you want to feel the skeleton. |
-| `@react-ui-os/theme-mintables` | Cinematic frosted glass. Deep blur, teal accent, parallax + vignette wallpaper, traffic lights.                   |
+| Package                        | Stance                                                                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@react-ui-os/theme-default`   | Unbranded baseline. Dark, neutral palette, no wallpaper, full macOS chrome. Use when you want to feel the skeleton.                          |
+| `@react-ui-os/theme-mintables` | Cinematic frosted glass. Deep blur, teal accent, parallax + vignette wallpaper, traffic lights.                                              |
+| `@react-ui-os/theme-saas`      | Neutral light workspace. Dock on the left, menu bar hidden, modest blur. Exercises `chrome.dockPosition: "left"` and `chrome.menuBar: "none"`. |
 
 ## Picking a theme
 
 ```tsx
 import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
+import { createSaasTheme } from "@react-ui-os/theme-saas";
 
-// Build-time choice.
-const theme = process.env.NODE_ENV === "production"
-  ? createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" })
-  : defaultTheme;
+// Build-time choice. Swap the right side for whichever stance fits.
+const theme = createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
 
 <Desktop apps={apps} theme={theme} />;
 ```

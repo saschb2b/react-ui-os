@@ -7,6 +7,7 @@ import {
 } from "@react-ui-os/desktop";
 import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
+import { createSaasTheme } from "@react-ui-os/theme-saas";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
 
@@ -40,8 +41,9 @@ function HelloContent({ focused }: { focused: boolean }) {
         jumps between apps.
       </p>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
-        Try the other theme: append <kbd>?theme=mintables</kbd> to the URL and
-        reload.
+        Try a different theme: append <kbd>?theme=mintables</kbd> or{" "}
+        <kbd>?theme=saas</kbd> to the URL and reload. SaaS pins the dock to
+        the left edge and hides the menu bar.
       </p>
       <div
         style={{
@@ -138,11 +140,15 @@ const apps: OsApp[] = [
   },
 ];
 
-function readThemeFromUrl(): "default" | "mintables" {
+type ThemeChoice = "default" | "mintables" | "saas";
+
+function readThemeFromUrl(): ThemeChoice {
   if (typeof window === "undefined") return "default";
   const params = new URLSearchParams(window.location.search);
   const requested = params.get("theme");
-  return requested === "mintables" ? "mintables" : "default";
+  if (requested === "mintables") return "mintables";
+  if (requested === "saas") return "saas";
+  return "default";
 }
 
 export default function App() {
@@ -150,6 +156,9 @@ export default function App() {
   const theme = useMemo<OsTheme>(() => {
     if (themeChoice === "mintables") {
       return createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
+    }
+    if (themeChoice === "saas") {
+      return createSaasTheme();
     }
     return defaultTheme;
   }, [themeChoice]);
