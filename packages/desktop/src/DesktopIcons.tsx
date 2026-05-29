@@ -9,6 +9,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { useWindowManager } from "@react-ui-os/core";
+import { openContextMenu } from "./context-menu";
 import { useApps, useDesktopContext, useTheme } from "./desktop-context";
 import { FolderSvg } from "./folder-svg";
 import {
@@ -181,6 +182,25 @@ export function DesktopIcons() {
           onOpen={() => {
             openIcon(systemId);
           }}
+          onContextMenu={(x, y) => {
+            setSelectedId(systemId);
+            listboxRef.current?.focus();
+            openContextMenu({
+              x,
+              y,
+              ariaLabel: resolveSystemWindowName(def),
+              items: [
+                {
+                  label: "Open",
+                  shortcut: "↵",
+                  onSelect: () => {
+                    openIcon(systemId);
+                  },
+                },
+              ],
+              returnFocusTo: listboxRef.current,
+            });
+          }}
         />
       ))}
     </div>
@@ -193,12 +213,14 @@ function DesktopShortcut({
   selected,
   onSelect,
   onOpen,
+  onContextMenu,
 }: {
   systemId: string;
   def: SystemWindowDef;
   selected: boolean;
   onSelect: () => void;
   onOpen: () => void;
+  onContextMenu: (x: number, y: number) => void;
 }) {
   const theme = useTheme();
   const Icon = def.desktopIcon ?? FolderSvg;
@@ -209,6 +231,15 @@ function DesktopShortcut({
     e.stopPropagation();
     onSelect();
   };
+  const handleContextMenu = (e: ReactMouseEvent<HTMLDivElement>) => {
+    // Keep the right-click from bubbling to the document-level
+    // DesktopBackdrop handler, so the icon shows its own menu instead of
+    // the generic desktop menu. Right-clicks in the column gaps still
+    // fall through to the desktop menu, matching macOS.
+    e.preventDefault();
+    e.stopPropagation();
+    onContextMenu(e.clientX, e.clientY);
+  };
   return (
     <div
       role="option"
@@ -218,6 +249,7 @@ function DesktopShortcut({
       title={label}
       onClick={handleClick}
       onDoubleClick={onOpen}
+      onContextMenu={handleContextMenu}
       style={{
         display: "flex",
         flexDirection: "column",
