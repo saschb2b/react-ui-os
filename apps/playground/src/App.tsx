@@ -6,6 +6,11 @@ import { createMintablesTheme } from "@react-ui-os/theme-mintables";
 import { createSaasTheme } from "@react-ui-os/theme-saas";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
+import { calculatorApp } from "./apps/calculator";
+import { notesApp } from "./apps/notes";
+import { clockApp } from "./apps/clock";
+import { remindersApp } from "./apps/reminders";
+import { sketchApp } from "./apps/sketch";
 
 // Register the Recents system window once at module load. The desktop
 // icon for it surfaces only when `hasRecents(storage)` returns true, so
@@ -83,30 +88,6 @@ function HelloContent({ focused }: { focused: boolean }) {
   );
 }
 
-function NotesContent() {
-  return (
-    <div>
-      <h2 style={{ margin: "0 0 8px" }}>Notes</h2>
-      <p style={{ margin: 0, opacity: 0.78 }}>
-        Plain notes app. Open me by clicking my dock tile, by pressing <kbd>Cmd-2</kbd>,
-        or by typing "notes" into Spotlight.
-      </p>
-    </div>
-  );
-}
-
-function CalculatorContent() {
-  return (
-    <div>
-      <h2 style={{ margin: "0 0 8px" }}>Calculator</h2>
-      <p style={{ margin: 0, opacity: 0.78 }}>
-        Three apps gives Spotlight something to search. Try <kbd>Cmd-K</kbd> then
-        "calc".
-      </p>
-    </div>
-  );
-}
-
 const apps: OsApp[] = [
   {
     id: "hello",
@@ -116,22 +97,11 @@ const apps: OsApp[] = [
     content: HelloContent,
     defaultBounds: { w: 580, h: 460 },
   },
-  {
-    id: "notes",
-    name: "Notes",
-    tagline: "Plain-text scratchpad",
-    accent: "#f59e0b",
-    content: NotesContent,
-    defaultBounds: { w: 480, h: 300 },
-  },
-  {
-    id: "calculator",
-    name: "Calculator",
-    tagline: "Arithmetic and conversions",
-    accent: "#22c55e",
-    content: CalculatorContent,
-    defaultBounds: { w: 320, h: 360 },
-  },
+  notesApp,
+  calculatorApp,
+  clockApp,
+  remindersApp,
+  sketchApp,
 ];
 
 type ThemeChoice = "default" | "mintables" | "saas";
