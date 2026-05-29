@@ -189,6 +189,7 @@ export function MissionControl() {
               workspaces={state.workspaces}
               activeId={state.activeWorkspaceId}
               onSwitch={switchWorkspace}
+              windows={windows}
               wallpaperSrc={theme.wallpaper.src}
               theme={theme}
             />
@@ -246,15 +247,21 @@ function SpacesBar({
   workspaces,
   activeId,
   onSwitch,
+  windows,
   wallpaperSrc,
   theme,
 }: {
   workspaces: string[];
   activeId: string;
   onSwitch: (id: string) => void;
+  windows: OpenWindow[];
   wallpaperSrc: string | undefined;
   theme: ReturnType<typeof useTheme>;
 }) {
+  // Viewport used to place the miniature window outlines inside each space
+  // thumbnail, so the Spaces bar shows which windows live where (like macOS).
+  const vw = typeof window === "undefined" ? 1600 : window.innerWidth || 1600;
+  const vh = typeof window === "undefined" ? 900 : window.innerHeight || 900;
   return (
     <div
       role="tablist"
@@ -269,6 +276,9 @@ function SpacesBar({
     >
       {workspaces.map((id, i) => {
         const active = id === activeId;
+        const spaceWindows = windows.filter(
+          (w) => w.workspaceId === id && w.state !== "minimized",
+        );
         return (
           <button
             key={id}
@@ -304,6 +314,8 @@ function SpacesBar({
             <span
               aria-hidden
               style={{
+                position: "relative",
+                display: "block",
                 width: 124,
                 height: 74,
                 borderRadius: theme.shape.small,
@@ -314,8 +326,26 @@ function SpacesBar({
                   ? `center / cover no-repeat url("${wallpaperSrc}")`
                   : theme.palette.background,
                 boxShadow: "0 6px 16px -8px rgba(0,0,0,0.5)",
+                overflow: "hidden",
               }}
-            />
+            >
+              {spaceWindows.map((w) => (
+                <span
+                  key={w.id}
+                  style={{
+                    position: "absolute",
+                    left: `${String(Math.max(0, (w.x / vw) * 100))}%`,
+                    top: `${String(Math.max(0, (w.y / vh) * 100))}%`,
+                    width: `${String((w.w / vw) * 100)}%`,
+                    height: `${String((w.h / vh) * 100)}%`,
+                    background: "rgba(255,255,255,0.16)",
+                    border: "1px solid rgba(255,255,255,0.4)",
+                    borderRadius: 2,
+                    boxSizing: "border-box",
+                  }}
+                />
+              ))}
+            </span>
             <span
               style={{
                 fontSize: 12,
