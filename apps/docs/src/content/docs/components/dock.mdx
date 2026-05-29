@@ -7,11 +7,11 @@ sidebar:
 
 import LivePreview from "~/components/LivePreview.astro";
 
-The dock renders one tile per registered app. Clicking a tile toggles the app's window: open if not running, focus + restore if minimized or unfocused, otherwise minimize. Hidden when `theme.chrome.dockPosition` is `"hidden"`.
+The dock renders one tile per registered app. Hovering magnifies the icon under the cursor and falls its neighbors off, the macOS fisheye, and shows the app name in a label above it. Clicking a tile toggles the app's window: open if not running, focus + restore if minimized or unfocused, otherwise minimize. Hidden when `theme.chrome.dockPosition` is `"hidden"`.
 
 <LivePreview
   src="?demo=dock"
-  label="Three apps open, indicator dots reflect focus"
+  label="Hover to magnify the icons; the dots reflect focus"
   height="380px"
 />
 
@@ -31,9 +31,15 @@ The dock honors `theme.chrome.dockPosition`:
 
 | Value      | Layout                                                                                 |
 | ---------- | -------------------------------------------------------------------------------------- |
-| `"bottom"` | Horizontal pill centered at the bottom edge with hover-lift on `translateY`.           |
-| `"left"`   | Vertical rail centered on the left edge with hover-lift on `translateX`.               |
+| `"bottom"` | Horizontal pill centered at the bottom edge; magnified icons grow upward.              |
+| `"left"`   | Vertical rail centered on the left edge; magnified icons grow inward.                  |
 | `"hidden"` | Returns `null`. Apps are reachable via Spotlight, keyboard shortcuts, or `openWindow`. |
+
+## Magnification
+
+Hovering tracks the cursor and magnifies the icon beneath it, with its neighbors falling off smoothly over a fixed influence radius, like the macOS dock fisheye. The panel's cross-axis is pinned so magnified icons overflow above (or beside) it rather than ballooning the panel, and the dock makes room by widening. The app name shows in a label centered above the magnified icon.
+
+Each tile's size is a pure function of the cursor's distance to that tile's resting center, anchored to the dock center, so there is no layout-measurement feedback. The values follow the common macOS approximation (a 110 px radius and a 2.25x peak), tuned here to a gentler 1.8x for a 56 px base tile.
 
 ## Tile appearance
 
