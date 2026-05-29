@@ -43,7 +43,7 @@ const MINI_TITLE_BAR_H = 30;
 export function MissionControl() {
   const theme = useTheme();
   const apps = useApps();
-  const { state, windows, focusWindow, restoreWindow, switchWorkspace } =
+  const { state, windows, focusWindow, restoreWindow, switchWorkspace, addWorkspace } =
     useWindowManager();
 
   const [phase, setPhase] = useState<Phase>("closed");
@@ -230,6 +230,7 @@ export function MissionControl() {
               workspaces={state.workspaces}
               activeId={state.activeWorkspaceId}
               onSwitch={switchWorkspace}
+              onAdd={addWorkspace}
               windows={windows}
               wallpaperSrc={theme.wallpaper.src}
               theme={theme}
@@ -304,6 +305,7 @@ function SpacesBar({
   workspaces,
   activeId,
   onSwitch,
+  onAdd,
   windows,
   wallpaperSrc,
   theme,
@@ -311,6 +313,7 @@ function SpacesBar({
   workspaces: string[];
   activeId: string;
   onSwitch: (id: string) => void;
+  onAdd: () => void;
   windows: OpenWindow[];
   wallpaperSrc: string | undefined;
   theme: ReturnType<typeof useTheme>;
@@ -415,6 +418,61 @@ function SpacesBar({
           </button>
         );
       })}
+      <button
+        type="button"
+        data-mc-space
+        aria-label="Add a space"
+        onClick={() => {
+          onAdd();
+        }}
+        onPointerEnter={(e) => {
+          e.currentTarget.style.opacity = "1";
+        }}
+        onPointerLeave={(e) => {
+          e.currentTarget.style.opacity = "0.5";
+        }}
+        style={{
+          appearance: "none",
+          border: "none",
+          background: "transparent",
+          padding: 0,
+          cursor: "pointer",
+          fontFamily: "inherit",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 6,
+          opacity: 0.5,
+          transition: `opacity ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+        }}
+      >
+        <span
+          aria-hidden
+          style={{
+            display: "grid",
+            placeItems: "center",
+            width: 124,
+            height: 74,
+            borderRadius: theme.shape.small,
+            border: `1px dashed ${theme.palette.border}`,
+            color: theme.palette.textSecondary,
+            fontSize: 28,
+            fontWeight: 300,
+            lineHeight: 1,
+          }}
+        >
+          +
+        </span>
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: theme.palette.textSecondary,
+          }}
+        >
+          Add
+        </span>
+      </button>
     </div>
   );
 }
