@@ -377,7 +377,7 @@ function SpacesBar({
                 height: 74,
                 borderRadius: theme.shape.small,
                 border: active
-                  ? "2px solid rgba(255,255,255,0.85)"
+                  ? `2px solid ${theme.palette.textPrimary}`
                   : `1px solid ${theme.palette.border}`,
                 background: wallpaperSrc
                   ? `center / cover no-repeat url("${wallpaperSrc}")`
@@ -395,8 +395,8 @@ function SpacesBar({
                     top: `${String(Math.max(0, (w.y / vh) * 100))}%`,
                     width: `${String((w.w / vw) * 100)}%`,
                     height: `${String((w.h / vh) * 100)}%`,
-                    background: "rgba(255,255,255,0.16)",
-                    border: "1px solid rgba(255,255,255,0.4)",
+                    background: theme.palette.border,
+                    border: `1px solid ${theme.palette.textSecondary}`,
                     borderRadius: 2,
                     boxSizing: "border-box",
                   }}
@@ -476,7 +476,7 @@ function Card({
           width: frameW,
           height: frameH,
           borderRadius: theme.shape.windowRadius,
-          border: `1px solid ${highlight ? "rgba(255,255,255,0.5)" : theme.palette.border}`,
+          border: `1px solid ${highlight ? theme.palette.textSecondary : theme.palette.border}`,
           background: theme.palette.surface,
           overflow: "hidden",
           transform: highlight ? "scale(1.03)" : "scale(1)",
