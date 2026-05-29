@@ -24,6 +24,12 @@ const THUMB_MAX_H = 280;
 const THUMB_MAX_SCALE = 0.9;
 const MINI_TITLE_BAR_H = 30;
 
+/** DOM id for a card's focusable overlay button, so the keyboard selection
+ * can move real focus onto it and screen readers announce the window. */
+function cardFocusId(winId: string): string {
+  return `rui-mc-card-${winId}`;
+}
+
 /**
  * Mission Control: press F3 (or Ctrl+Up on non-Mac keyboards) and every open
  * window spreads into a non-overlapping set of preview cards. Click a card to
@@ -71,8 +77,8 @@ export function MissionControl() {
   );
   const visibleRef = useRef(visible);
   visibleRef.current = visible;
-  const keyIndexRef = useRef(keyIndex);
-  keyIndexRef.current = keyIndex;
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -110,22 +116,15 @@ export function MissionControl() {
         );
         return;
       }
-      if (e.key === "Enter" || e.key === " ") {
-        const idx = keyIndexRef.current;
-        const w = idx >= 0 ? vis[idx] : undefined;
-        if (w) {
-          e.preventDefault();
-          if (w.state === "minimized") restoreWindow(w.id);
-          else focusWindow(w.id);
-          setPhase("leave");
-        }
-      }
+      // Enter / Space activate the keyboard selection through the focused
+      // card's own button (see the keyIndex focus effect), so there is no
+      // window-level activation branch here.
     };
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("keydown", onKey);
     };
-  }, [focusWindow, restoreWindow]);
+  }, []);
 
   // Phase machine (animations are state machines, not effects): "enter" paints
   // the collapsed state for one frame, then flips to "open" so the CSS
@@ -156,6 +155,31 @@ export function MissionControl() {
     if (phase === "closed") setKeyIndex(-1);
   }, [phase]);
 
+  // Modal focus: pull focus into the dialog when it opens and hand it back to
+  // the previously focused element when it closes, so keyboard users aren't
+  // stranded on the desktop behind the overlay.
+  useEffect(() => {
+    if (phase === "enter") {
+      previousFocusRef.current =
+        typeof document !== "undefined"
+          ? (document.activeElement as HTMLElement | null)
+          : null;
+      dialogRef.current?.focus();
+    } else if (phase === "closed") {
+      const prev = previousFocusRef.current;
+      previousFocusRef.current = null;
+      if (prev && typeof prev.focus === "function") prev.focus();
+    }
+  }, [phase]);
+
+  // Follow the arrow-key selection with real DOM focus so assistive tech
+  // announces the highlighted window's card.
+  useEffect(() => {
+    if (keyIndex < 0 || typeof document === "undefined") return;
+    const win = visibleRef.current[keyIndex];
+    if (win) document.getElementById(cardFocusId(win.id))?.focus();
+  }, [keyIndex]);
+
   if (phase === "closed") return null;
 
   const expanded = phase === "open";
@@ -170,8 +194,10 @@ export function MissionControl() {
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-label="Mission Control"
+      tabIndex={-1}
       onClick={(e) => {
         // A click on empty space collapses Mission Control; clicks on a card
         // or a space chip are handled by those controls.
@@ -188,6 +214,7 @@ export function MissionControl() {
         justifyContent: "center",
         padding: "clamp(16px, 5vmin, 56px)",
         boxSizing: "border-box",
+        outline: "none",
       }}
     >
       <div
@@ -559,6 +586,7 @@ function Card({
         </div>
         <button
           type="button"
+          id={cardFocusId(win.id)}
           onClick={onPick}
           aria-label={label}
           onPointerEnter={() => {
