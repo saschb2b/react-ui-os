@@ -254,6 +254,14 @@ export function Spotlight() {
 
   const handlePaletteKey = useCallback(
     (e: ReactKeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "Tab") {
+        // The palette is a modal (aria-modal). The search input is its only
+        // focusable element, so trap Tab and Shift+Tab on it rather than
+        // letting focus escape to the desktop behind the overlay.
+        e.preventDefault();
+        inputRef.current?.focus();
+        return;
+      }
       if (e.key === "ArrowDown") {
         e.preventDefault();
         e.stopPropagation();
