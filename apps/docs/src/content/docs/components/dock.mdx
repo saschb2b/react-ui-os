@@ -39,7 +39,7 @@ The dock honors `theme.chrome.dockPosition`:
 
 Hovering tracks the cursor and magnifies the icon beneath it, with its neighbors falling off smoothly over a fixed influence radius, like the macOS dock fisheye. The panel's cross-axis is pinned so magnified icons overflow above (or beside) it rather than ballooning the panel, and the dock makes room by widening. The app name shows in a label centered above the magnified icon.
 
-Each tile's size is a pure function of the cursor's distance to that tile's resting center, anchored to the dock center, so there is no layout-measurement feedback. The values follow the common macOS approximation (a 110 px radius and a 2.25x peak), tuned here to a gentler 1.8x for a 56 px base tile.
+Each tile's size eases toward a target derived from the cursor's distance to that tile's resting center (anchored to the dock center, so there is no layout-measurement feedback). The easing has no overshoot, the overdamped-spring character of the macOS dock, so nothing snaps. The values follow the common macOS approximation (a 110 px radius and a 2.25x peak), kept gentler here at 1.5x of a 56 px base tile.
 
 ## Tile appearance
 

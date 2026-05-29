@@ -1,6 +1,12 @@
 "use client";
 
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import {
   markAllNotificationsRead,
   useNotifications,
@@ -18,13 +24,22 @@ export { DOCK_HEIGHT, DOCK_WIDTH } from "./util/layout";
 
 // Cursor-tracking magnification, the macOS dock's signature gesture: the icon
 // under the cursor grows, its neighbors fall off over a fixed influence radius,
-// and the dock makes room. The well-known macOS approximation uses a ~110 px
-// radius and a 2.25x peak; we use a gentler peak over a slightly wider radius
-// so a 56 px tile tops out near 100 px.
+// and the dock makes room.
+//
+// The reference smooths every size change with an overdamped spring (mass 0.1,
+// stiffness 170, damping 12), which is what keeps it from feeling abrupt. We
+// reproduce that character: each frame, every tile's size eases toward its
+// cursor-driven target (exponential smoothing, no overshoot, like an overdamped
+// spring), and the box and icon scale together from the same value so nothing
+// snaps. The peak is kept gentle (1.5x of a 56 px tile, ~84 px) so it reads like
+// the macOS default rather than the slider maximum.
 // Sources: macOS System Settings > Desktop & Dock > Magnification;
 // https://buildui.com/recipes/magnified-dock
-const MAG_SCALE = 1.8;
-const MAG_DISTANCE = 130;
+const MAG_SCALE = 1.5;
+const MAG_DISTANCE = 140;
+// Time constant of the size easing, in seconds. ~50 ms reads as responsive but
+// smooth, settling in roughly 150 ms.
+const SMOOTH_TAU = 0.05;
 
 /**
  * App dock. Direction follows `theme.chrome.dockPosition`:
@@ -33,9 +48,9 @@ const MAG_DISTANCE = 130;
  *   "left"    vertical rail centered on the left edge
  *   "hidden"  returns null
  *
- * Hovering magnifies the icons under the cursor (the macOS fisheye). Clicking a
- * tile toggles: open if not running, focus + restore if minimized or unfocused,
- * otherwise minimize.
+ * Hovering magnifies the icons under the cursor (the macOS fisheye) with a
+ * smooth, spring-like response. Clicking a tile toggles: open if not running,
+ * focus + restore if minimized or unfocused, otherwise minimize.
  */
 export function Dock() {
   const theme = useTheme();
@@ -44,72 +59,121 @@ export function Dock() {
   const metrics = getChromeMetrics(mode);
   const position = theme.chrome.dockPosition;
 
-  const [cursor, setCursor] = useState<number | null>(null);
-  const targetRef = useRef<number | null>(null);
-  const rafRef = useRef<number | null>(null);
-
-  if (position === "hidden") return null;
-
   const isLeft = position === "left";
   const base = metrics.dockTileSize;
   const span = base + metrics.dockGap;
   const count = apps.length;
-  // Fix the panel's cross-axis to its resting size so magnified tiles overflow
-  // above (or beside) it rather than ballooning the whole panel, like macOS.
+
+  const [sizes, setSizes] = useState<number[]>(() => apps.map(() => base));
+  const sizesRef = useRef<number[]>(sizes);
+  const cursorRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const lastRef = useRef(0);
+  // Latest geometry, refreshed every render so the animation loop (which is
+  // created once) always reads current values.
+  const geomRef = useRef({ count, base, span, isLeft });
+  geomRef.current = { count, base, span, isLeft };
+
+  const tick = useCallback((ts: number) => {
+    const dt = lastRef.current ? Math.min((ts - lastRef.current) / 1000, 0.05) : 0.016;
+    lastRef.current = ts;
+    const k = 1 - Math.exp(-dt / SMOOTH_TAU);
+    const g = geomRef.current;
+    const cursor = cursorRef.current;
+    const center =
+      typeof window === "undefined"
+        ? 0
+        : (g.isLeft ? window.innerHeight : window.innerWidth) / 2;
+    const prev = sizesRef.current;
+    let moving = false;
+    const next: number[] = [];
+    for (let i = 0; i < g.count; i++) {
+      let target = g.base;
+      if (cursor !== null) {
+        const off = (i - (g.count - 1) / 2) * g.span;
+        const d = Math.abs(cursor - center - off);
+        const t = Math.max(0, 1 - d / MAG_DISTANCE);
+        const ease = t * t * (3 - 2 * t);
+        target = g.base * (1 + (MAG_SCALE - 1) * ease);
+      }
+      const c0 = prev[i] ?? g.base;
+      let v = c0 + (target - c0) * k;
+      if (Math.abs(target - v) < 0.3) v = target;
+      else moving = true;
+      next.push(v);
+    }
+    sizesRef.current = next;
+    setSizes(next);
+    if (moving || cursorRef.current !== null) {
+      rafRef.current = requestAnimationFrame(tick);
+    } else {
+      rafRef.current = null;
+      lastRef.current = 0;
+    }
+  }, []);
+
+  const startLoop = useCallback(() => {
+    if (rafRef.current === null) {
+      lastRef.current = 0;
+      rafRef.current = requestAnimationFrame(tick);
+    }
+  }, [tick]);
+
+  // Keep the size array in sync if the app list changes.
+  useEffect(() => {
+    if (sizesRef.current.length !== count) {
+      const resized = Array.from(
+        { length: count },
+        (_, i) => sizesRef.current[i] ?? base,
+      );
+      sizesRef.current = resized;
+      setSizes(resized);
+    }
+  }, [count, base]);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  if (position === "hidden") return null;
+
   const crossSize = base + metrics.dockPadding * 2 + 2;
 
-  // Resting layout is symmetric around the dock center, which sits at the
-  // viewport center because the dock is centered. That makes each tile's size a
-  // pure function of the cursor with no layout-measurement feedback loop.
-  const viewportCenter =
-    typeof window === "undefined"
-      ? 0
-      : (isLeft ? window.innerHeight : window.innerWidth) / 2;
-  const tiles = apps.map((app, i) => {
-    if (cursor === null) return { app, size: base, dist: Infinity };
-    const restOffset = (i - (count - 1) / 2) * span;
-    const dist = Math.abs(cursor - viewportCenter - restOffset);
-    const t = Math.max(0, 1 - dist / MAG_DISTANCE);
-    const ease = t * t * (3 - 2 * t);
-    return { app, size: Math.round(base * (1 + (MAG_SCALE - 1) * ease)), dist };
-  });
+  const handleMove = (e: ReactPointerEvent) => {
+    cursorRef.current = isLeft ? e.clientY : e.clientX;
+    startLoop();
+  };
+  const handleLeave = () => {
+    cursorRef.current = null;
+    startLoop();
+  };
+
+  // Name label above the icon under the cursor, like macOS. Computed from the
+  // live (eased) sizes so it glides with the tiles.
+  const cursorNow = cursorRef.current;
   let focusedIndex = -1;
-  if (cursor !== null) {
-    let bestDist = Infinity;
-    tiles.forEach((t, i) => {
-      if (t.dist < bestDist) {
-        bestDist = t.dist;
+  let focusedDist = Infinity;
+  if (cursorNow !== null && typeof window !== "undefined") {
+    const center = (isLeft ? window.innerHeight : window.innerWidth) / 2;
+    apps.forEach((_, i) => {
+      const off = (i - (count - 1) / 2) * span;
+      const d = Math.abs(cursorNow - center - off);
+      if (d < focusedDist) {
+        focusedDist = d;
         focusedIndex = i;
       }
     });
   }
-  const focusedTile = focusedIndex >= 0 ? tiles[focusedIndex] : undefined;
-  // Name label appears above the icon under the cursor, like macOS.
-  const showLabel = focusedTile !== undefined && focusedTile.dist < MAG_DISTANCE * 0.55;
-  // Offset of the focused tile's center along the dock's main axis, from the
-  // nav's leading inner edge, using the live magnified sizes.
+  const focusedApp = focusedIndex >= 0 ? apps[focusedIndex] : undefined;
+  const showLabel = focusedApp !== undefined && focusedDist < MAG_DISTANCE * 0.55;
+  const focusedSize = focusedIndex >= 0 ? (sizes[focusedIndex] ?? base) : base;
   let labelOffset = metrics.dockPadding;
   for (let i = 0; i < focusedIndex; i++) {
-    const ti = tiles[i];
-    if (ti) labelOffset += ti.size + metrics.dockGap;
+    labelOffset += (sizes[i] ?? base) + metrics.dockGap;
   }
-  if (focusedTile) labelOffset += focusedTile.size / 2;
-
-  const handleMove = (e: ReactPointerEvent) => {
-    targetRef.current = isLeft ? e.clientY : e.clientX;
-    if (rafRef.current !== null) return;
-    rafRef.current = requestAnimationFrame(() => {
-      rafRef.current = null;
-      setCursor(targetRef.current);
-    });
-  };
-  const handleLeave = () => {
-    if (rafRef.current !== null) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
-    setCursor(null);
-  };
+  if (focusedIndex >= 0) labelOffset += focusedSize / 2;
 
   return (
     <nav
@@ -150,17 +214,16 @@ export function Dock() {
         userSelect: "none",
       }}
     >
-      {tiles.map(({ app, size }) => (
+      {apps.map((app, i) => (
         <DockTile
           key={app.id}
           app={app}
           position={position}
-          size={size}
+          size={Math.round(sizes[i] ?? base)}
           base={base}
-          magnifying={cursor !== null}
         />
       ))}
-      {showLabel && focusedTile ? (
+      {showLabel && focusedApp ? (
         <span
           aria-hidden
           style={{
@@ -168,12 +231,12 @@ export function Dock() {
             ...(isLeft
               ? {
                   top: labelOffset,
-                  left: metrics.dockPadding + focusedTile.size + 12,
+                  left: metrics.dockPadding + focusedSize + 12,
                   transform: "translateY(-50%)",
                 }
               : {
                   left: labelOffset,
-                  bottom: metrics.dockPadding + focusedTile.size + 12,
+                  bottom: metrics.dockPadding + focusedSize + 12,
                   transform: "translateX(-50%)",
                 }),
             pointerEvents: "none",
@@ -190,7 +253,7 @@ export function Dock() {
             boxShadow: "0 6px 16px -8px rgba(0,0,0,0.5)",
           }}
         >
-          {focusedTile.app.name}
+          {focusedApp.name}
         </span>
       ) : null}
     </nav>
@@ -202,13 +265,11 @@ function DockTile({
   position,
   size,
   base,
-  magnifying,
 }: {
   app: App;
   position: "bottom" | "left" | "hidden";
   size: number;
   base: number;
-  magnifying: boolean;
 }) {
   const theme = useTheme();
   const apps = useApps();
@@ -324,11 +385,6 @@ function DockTile({
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 6px rgba(0,0,0,0.35)",
         cursor: "pointer",
         color: "#fff",
-        // No transition while magnifying so the lens tracks the cursor at
-        // 60 fps; a transition only on release settles the icons back down.
-        transition: magnifying
-          ? "none"
-          : `width ${String(dur)}ms ease, height ${String(dur)}ms ease, border-radius ${String(dur)}ms ease`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -356,16 +412,8 @@ function DockTile({
           style={{
             position: "absolute",
             ...(isLeft
-              ? {
-                  right: -6,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                }
-              : {
-                  bottom: -6,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                }),
+              ? { right: -6, top: "50%", transform: "translateY(-50%)" }
+              : { bottom: -6, left: "50%", transform: "translateX(-50%)" }),
             width: 4,
             height: 4,
             borderRadius: "50%",
@@ -408,8 +456,8 @@ function DockTile({
 }
 
 // macOS-style launch bounce when a dock click opens an app. Uses the Web
-// Animations API so it composes with the magnification (which drives
-// width/height, not transform) and leaves no residual transform behind.
+// Animations API so it composes with the magnification (which drives the tile
+// size, not transform) and leaves no residual transform behind.
 function bounce(el: HTMLButtonElement | null, isLeft: boolean): void {
   if (!el || typeof el.animate !== "function") return;
   const up = isLeft ? "translateX(18px)" : "translateY(-18px)";
