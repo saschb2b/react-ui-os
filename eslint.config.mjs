@@ -26,6 +26,7 @@ export default [
         requestAnimationFrame: "readonly",
         cancelAnimationFrame: "readonly",
         localStorage: "readonly",
+        URLSearchParams: "readonly",
         CustomEvent: "readonly",
         KeyboardEvent: "readonly",
         PointerEvent: "readonly",
