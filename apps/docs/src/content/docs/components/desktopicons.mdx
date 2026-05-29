@@ -64,12 +64,17 @@ registerSystemWindow("downloads", {
 - When the last entry is deleted, it fades out.
 - The desktop never shows an empty-state pane for it, because the surface whose empty state you would design isn't there yet.
 
-## Click behavior
+## Interaction
 
-| Gesture      | Effect                                                                          |
-| ------------ | ------------------------------------------------------------------------------- |
-| Single click | Visual press (placeholder for a desktop selection model)                        |
-| Double click | Opens the matching system window via `openWindow({ kind: "system", systemId })` |
+The column mirrors the macOS desktop selection model (the same one [FileExplorer](/components/fileexplorer/) uses) and is a single ARIA listbox (`role="listbox"` + `role="option"` with `aria-selected`), so the whole column is one tab stop and assistive tech announces the active icon.
+
+| Gesture / key        | Effect                                                                          |
+| -------------------- | ------------------------------------------------------------------------------- |
+| Single click         | Selects the icon (accent highlight)                                             |
+| Double click / Enter | Opens the matching system window via `openWindow({ kind: "system", systemId })` |
+| ArrowUp / ArrowDown  | Moves the selection within the column                                           |
+| Home / End           | Selects the first / last icon                                                   |
+| Escape / click off   | Clears the selection                                                            |
 
 ## Position
 
