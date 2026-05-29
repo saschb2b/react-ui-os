@@ -54,6 +54,16 @@ type Result =
       onActivate: () => void;
     };
 
+// Stable ids wiring the input (an editable combobox) to its listbox popup
+// per the WAI-ARIA combobox pattern, so screen readers announce the active
+// option as the user arrows through results. Only one Spotlight is mounted
+// at a time, so module-constant ids are safe.
+// https://www.w3.org/WAI/ARIA/apg/patterns/combobox/
+const SPOTLIGHT_LISTBOX_ID = "rui-spotlight-listbox";
+function spotlightOptionId(index: number): string {
+  return `rui-spotlight-option-${String(index)}`;
+}
+
 /**
  * Cmd/Ctrl+K command palette. Self-contained: it owns its open/close
  * state, listens for both the keyboard shortcut and SPOTLIGHT_OPEN_EVENT,
@@ -340,6 +350,14 @@ export function Spotlight() {
         >
           <input
             ref={inputRef}
+            role="combobox"
+            aria-label="Search apps and commands"
+            aria-autocomplete="list"
+            aria-controls={SPOTLIGHT_LISTBOX_ID}
+            aria-expanded={results.length > 0}
+            aria-activedescendant={
+              results.length > 0 ? spotlightOptionId(selectedIndex) : undefined
+            }
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -360,6 +378,7 @@ export function Spotlight() {
         {/* Results */}
         <div
           ref={listRef}
+          id={SPOTLIGHT_LISTBOX_ID}
           role="listbox"
           aria-label="Spotlight results"
           style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "4px 0" }}
@@ -434,6 +453,7 @@ function ResultRow({
 
   return (
     <div
+      id={spotlightOptionId(index)}
       role="option"
       aria-selected={selected}
       data-spotlight-index={index}
