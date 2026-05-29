@@ -21,6 +21,13 @@ import {
 const MARGIN = 8;
 const MENU_WIDTH = 220;
 
+// Stable id per item so the menu container can point aria-activedescendant at
+// the highlighted row, letting assistive tech announce it as arrows move the
+// selection. https://www.w3.org/WAI/ARIA/apg/patterns/menu/
+function menuItemId(index: number): string {
+  return `rui-context-menu-item-${String(index)}`;
+}
+
 /**
  * The visual surface for the context-menu store. Mount this once inside
  * `<DesktopProvider>` and any code can pop up a menu via
@@ -72,6 +79,22 @@ function Surface({ state }: { state: ContextMenuState }) {
     y: state.y,
   });
   const items = state.items;
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  // Move focus into the menu on open (so the global key handler's selection
+  // has a focused host and assistive tech reports the menu), and return it to
+  // the previously focused element on close.
+  useEffect(() => {
+    previousFocusRef.current =
+      typeof document !== "undefined"
+        ? (document.activeElement as HTMLElement | null)
+        : null;
+    menuRef.current?.focus();
+    return () => {
+      const prev = previousFocusRef.current;
+      if (prev && typeof prev.focus === "function") prev.focus();
+    };
+  }, []);
 
   // Flip / clamp the menu after measuring so it never spills off-screen.
   useLayoutEffect(() => {
@@ -91,7 +114,9 @@ function Surface({ state }: { state: ContextMenuState }) {
     setPosition({ x, y });
   }, [state.x, state.y, items.length]);
 
-  // Keyboard nav: focus first selectable item on mount, arrows traverse.
+  // Keyboard nav: arrows move the highlighted item, starting at the first
+  // selectable one. The menu container holds DOM focus and reports the active
+  // item via aria-activedescendant, so this only tracks an index.
   const navItems = items
     .map((item, idx) => ({ item, idx }))
     .filter(({ item }) => !item.separator && !item.disabled);
@@ -168,8 +193,10 @@ function Surface({ state }: { state: ContextMenuState }) {
       <div
         ref={menuRef}
         role="menu"
+        tabIndex={-1}
         aria-label={state.ariaLabel ?? "Context menu"}
-        style={surface}
+        aria-activedescendant={focusIdx >= 0 ? menuItemId(focusIdx) : undefined}
+        style={{ ...surface, outline: "none" }}
       >
         {items.map((item, idx) => {
           if (item.separator) {
@@ -189,6 +216,7 @@ function Surface({ state }: { state: ContextMenuState }) {
           return (
             <Row
               key={`${item.label ?? "item"}-${String(idx)}`}
+              id={menuItemId(idx)}
               item={item}
               focused={focused}
               onFocus={() => setFocusIdx(idx)}
@@ -201,10 +229,12 @@ function Surface({ state }: { state: ContextMenuState }) {
 }
 
 function Row({
+  id,
   item,
   focused,
   onFocus,
 }: {
+  id: string;
   item: ContextMenuItem;
   focused: boolean;
   onFocus: () => void;
@@ -221,7 +251,9 @@ function Row({
   return (
     <button
       type="button"
+      id={id}
       role="menuitem"
+      tabIndex={-1}
       disabled={item.disabled}
       onMouseEnter={onFocus}
       onClick={() => activate(item)}
