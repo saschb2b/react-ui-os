@@ -2,6 +2,15 @@
 
 A React component library that ships a working OS-style desktop. Apps are data; themes are token bags; the library does the composition. This document is the architecture reference for anyone (human or AI agent) extending the library.
 
+## Build on the shoulders of giants
+
+This is an OS. Almost every behavior we ship (motion timings and magnitudes, interaction models, keyboard maps, default sizes, easing curves, layout heuristics) has already been solved and tuned by the platforms we imitate: macOS, iOS, Windows, GNOME. Look up how they did it and match it. Never assume, never guess, and never tune by trial and error.
+
+- Before implementing or changing a system behavior, research the reference implementation and find the real values or model. Cite the source in the commit message or a code comment so the next person can verify it.
+- "It feels about right" is not a basis. A specific, sourced number or documented behavior is.
+- Deviating from the reference is allowed, but only deliberately and with a stated reason. An accidental deviation is a bug.
+- When the reference turns out to work differently from what you assumed, that discovery is the point. (Case in point: our wallpaper parallax is cursor-driven, but macOS has no such effect at all, and iOS parallax is tilt-driven and far subtler than a first guess. We only learned that by looking it up, after a round of guessing produced a version that made people dizzy.)
+
 ## Tech stack
 
 - **TypeScript strict, ESM + CJS dual bundles** via tsup.
