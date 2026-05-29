@@ -3,7 +3,27 @@
 import { useEffect, useRef } from "react";
 import { useTheme } from "./desktop-context";
 
-const PARALLAX_AMPLITUDE_PX = 14;
+// How far the wallpaper drifts from center to edge, in CSS px. Deliberately
+// tiny: this is a depth cue, not a moving wallpaper. Apple's parallax is
+// tilt-driven, where the device stays mostly still so the image barely shifts;
+// a cursor sweeps the whole screen continuously, so the same amplitude reads as
+// far more motion. We keep it well under Apple's tilt-range offsets to match
+// the "barely there" feel and avoid the motion-sickness a larger drift causes.
+const PARALLAX_AMPLITUDE_PX = 8;
+// The image is oversized by this factor so the drift never exposes a bare edge.
+// 1.04 leaves ~2% of headroom on every side, comfortably more than the small
+// amplitude above even on short windows, while keeping the wallpaper from
+// looking conspicuously zoomed.
+const BASE_SCALE = 1.04;
+// Critically damped spring (damping ratio = 1): a weighted ease-in / ease-out
+// settle with no bounce. Integrated against real elapsed time so the motion is
+// identical at 60Hz and 120Hz. A snappy settle keeps the wallpaper at rest most
+// of the time rather than perpetually drifting, which also reads as calmer.
+const STIFFNESS = 100;
+const DAMPING = 2 * Math.sqrt(STIFFNESS);
+// Clamp the per-frame step so returning to a backgrounded tab (where rAF has
+// been paused for seconds) eases in from rest rather than snapping across.
+const MAX_STEP_S = 1 / 30;
 
 /**
  * Full-bleed wallpaper layer. The palette background paints under the image
@@ -27,22 +47,59 @@ export function Wallpaper() {
       return;
     }
 
+    const el = imageRef.current;
+    if (!el) return;
+
     let raf = 0;
+    let last = 0;
     let targetX = 0;
     let targetY = 0;
-    let currentX = 0;
-    let currentY = 0;
+    let x = 0;
+    let y = 0;
+    let vx = 0;
+    let vy = 0;
 
-    const tick = () => {
-      // Spring toward the target so the shift feels weighted, not 1:1.
-      currentX += (targetX - currentX) * 0.08;
-      currentY += (targetY - currentY) * 0.08;
-      const el = imageRef.current;
-      if (el) {
-        el.style.transform = `scale(1.05) translate3d(${String(
-          currentX.toFixed(2),
-        )}px, ${String(currentY.toFixed(2))}px, 0)`;
+    const render = () => {
+      el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(
+        2,
+      )}px, 0) scale(${String(BASE_SCALE)})`;
+    };
+
+    const tick = (now: number) => {
+      // First frame after waking has no reference point: glide from rest.
+      const dt = last ? Math.min((now - last) / 1000, MAX_STEP_S) : 0;
+      last = now;
+
+      // Semi-implicit Euler: advance velocity from the spring force, then
+      // position from the new velocity. Stable and cheap for stiff springs.
+      vx += (-STIFFNESS * (x - targetX) - DAMPING * vx) * dt;
+      vy += (-STIFFNESS * (y - targetY) - DAMPING * vy) * dt;
+      x += vx * dt;
+      y += vy * dt;
+      render();
+
+      // Park the loop once the spring has effectively settled. A pointer move
+      // or a recenter wakes it again, so idle desktops cost zero frames.
+      const atRest =
+        Math.abs(x - targetX) < 0.05 &&
+        Math.abs(y - targetY) < 0.05 &&
+        Math.abs(vx) < 2 &&
+        Math.abs(vy) < 2;
+      if (atRest) {
+        x = targetX;
+        y = targetY;
+        vx = 0;
+        vy = 0;
+        render();
+        raf = 0;
+        return;
       }
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const wake = () => {
+      if (raf) return;
+      last = 0;
       raf = window.requestAnimationFrame(tick);
     };
 
@@ -50,17 +107,29 @@ export function Wallpaper() {
       const w = window.innerWidth;
       const h = window.innerHeight;
       // Center is 0, edges are ±PARALLAX_AMPLITUDE_PX. Flip the sign so the
-      // wallpaper drifts opposite the cursor, like a window into a deeper
-      // scene.
+      // wallpaper drifts opposite the cursor, like a window onto a scene set
+      // behind the glass.
       targetX = -((e.clientX / w) * 2 - 1) * PARALLAX_AMPLITUDE_PX;
       targetY = -((e.clientY / h) * 2 - 1) * PARALLAX_AMPLITUDE_PX;
+      wake();
     };
 
-    raf = window.requestAnimationFrame(tick);
+    // Ease home when the cursor leaves the viewport or the window loses focus,
+    // rather than freezing wherever the drift happened to be.
+    const recenter = () => {
+      targetX = 0;
+      targetY = 0;
+      wake();
+    };
+
     window.addEventListener("pointermove", onMove);
+    document.documentElement.addEventListener("pointerleave", recenter);
+    window.addEventListener("blur", recenter);
     return () => {
       window.removeEventListener("pointermove", onMove);
-      window.cancelAnimationFrame(raf);
+      document.documentElement.removeEventListener("pointerleave", recenter);
+      window.removeEventListener("blur", recenter);
+      if (raf) window.cancelAnimationFrame(raf);
     };
   }, [wallpaper.parallax, wallpaper.src]);
 
@@ -83,7 +152,7 @@ export function Wallpaper() {
             position: "absolute",
             inset: 0,
             // Slightly oversized so parallax shifts don't reveal a hard edge.
-            transform: wallpaper.parallax ? "scale(1.05)" : "none",
+            transform: wallpaper.parallax ? `scale(${String(BASE_SCALE)})` : "none",
             backgroundImage: `url(${wallpaper.src})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
