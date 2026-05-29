@@ -73,6 +73,13 @@ export type {
 } from "./FileExplorer";
 export { DesktopIcons } from "./DesktopIcons";
 export { FolderSvg } from "./folder-svg";
+// Canonical "where should a new window open" helper. Every built-in surface
+// (Dock, Spotlight, keyboard shortcuts) passes its result as the second arg to
+// openWindow so the window is centered and clamped to the work area. Consumers
+// that open windows programmatically should do the same; calling openWindow
+// without bounds falls back to a fixed default that can overflow small
+// viewports (a docs iframe, a phone).
+export { pickInitialBounds } from "./util/initial-bounds";
 export {
   systemWindows,
   getSystemWindow,

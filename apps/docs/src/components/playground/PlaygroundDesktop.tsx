@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import type { OsTheme } from "@react-ui-os/core";
 import { Desktop } from "@react-ui-os/desktop";
 import { notify, useWindowManager } from "@react-ui-os/core";
+import type { WindowPayload } from "@react-ui-os/core";
 import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
 import { createSaasTheme } from "@react-ui-os/theme-saas";
@@ -9,6 +10,9 @@ import { docsApps } from "./apps";
 import {
   NOTIFICATION_CENTER_TOGGLE_EVENT,
   SPOTLIGHT_OPEN_EVENT,
+  pickInitialBounds,
+  useApps,
+  useTheme,
 } from "@react-ui-os/desktop";
 import { DocsSpotlightSource } from "./DocsSpotlightSource";
 
@@ -42,11 +46,19 @@ function readThemeChoice(): ThemeChoice {
  */
 function DemoActivator() {
   const { openWindow } = useWindowManager();
+  const theme = useTheme();
+  const apps = useApps();
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const demo = params.get("demo");
     if (!demo) return;
+
+    // Open windows the way every built-in surface does: centered and clamped
+    // to the work area via pickInitialBounds. The bare openWindow(payload)
+    // would fall back to a fixed 720x480 default that overflows this iframe.
+    const open = (payload: WindowPayload) =>
+      openWindow(payload, pickInitialBounds(payload, theme, apps));
 
     const t = window.setTimeout(() => {
       switch (demo) {
@@ -54,16 +66,16 @@ function DemoActivator() {
           window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT));
           break;
         case "settings":
-          openWindow({ kind: "system", systemId: "settings" });
+          open({ kind: "system", systemId: "settings" });
           break;
         case "window":
         case "menubar":
-          openWindow({ kind: "app", appId: "hello" });
+          open({ kind: "app", appId: "hello" });
           break;
         case "dock":
-          openWindow({ kind: "app", appId: "hello" });
-          openWindow({ kind: "app", appId: "notes" });
-          openWindow({ kind: "app", appId: "calculator" });
+          open({ kind: "app", appId: "hello" });
+          open({ kind: "app", appId: "notes" });
+          open({ kind: "app", appId: "calculator" });
           break;
         case "notifications":
         case "notification-center": {
@@ -117,7 +129,7 @@ function DemoActivator() {
             }),
           );
           window.setTimeout(() => {
-            openWindow({ kind: "system", systemId: "recents" });
+            open({ kind: "system", systemId: "recents" });
           }, 80);
           break;
         }
@@ -127,7 +139,7 @@ function DemoActivator() {
     return () => {
       window.clearTimeout(t);
     };
-  }, [openWindow]);
+  }, [openWindow, theme, apps]);
 
   return null;
 }
