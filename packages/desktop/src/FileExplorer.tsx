@@ -12,6 +12,11 @@ import {
   type ReactNode,
 } from "react";
 import { useTheme } from "./desktop-context";
+import {
+  filterAndSortItems,
+  type SortDir,
+  type SortField,
+} from "./util/explorer-sort";
 
 /* ─── Types ──────────────────────────────────────────────────── */
 
@@ -80,8 +85,6 @@ export interface FileExplorerProps<T extends ExplorerItem = ExplorerItem> {
 }
 
 type ViewMode = "icons" | "list";
-type SortField = "date" | "name" | "kind";
-type SortDir = "asc" | "desc";
 
 interface ContextMenuTarget {
   x: number;
@@ -133,26 +136,10 @@ export function FileExplorer<T extends ExplorerItem>({
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [menu, setMenu] = useState<ContextMenuTarget | null>(null);
 
-  const filtered = useMemo<T[]>(() => {
-    const q = query.trim().toLowerCase();
-    const matches = q
-      ? items.filter(
-          (it) =>
-            it.name.toLowerCase().includes(q) ||
-            (it.kind ?? "").toLowerCase().includes(q),
-        )
-      : items.slice();
-    matches.sort((a, b) => {
-      const cmp =
-        sort === "name"
-          ? a.name.localeCompare(b.name)
-          : sort === "kind"
-            ? (a.kind ?? "").localeCompare(b.kind ?? "")
-            : (a.timestamp ?? 0) - (b.timestamp ?? 0);
-      return dir === "asc" ? cmp : -cmp;
-    });
-    return matches;
-  }, [items, query, sort, dir]);
+  const filtered = useMemo<T[]>(
+    () => filterAndSortItems(items, { query, sort, dir }),
+    [items, query, sort, dir],
+  );
 
   const selectedItems = useMemo<T[]>(
     () => filtered.filter((it) => selectedIds.has(it.id)),
