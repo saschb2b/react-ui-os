@@ -63,16 +63,11 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
         userSelect: "none",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <strong style={{ letterSpacing: 0.2 }}>{brand}</strong>
         {focusedName && (
-          <span
-            style={{
-              color: theme.palette.textSecondary,
-              borderLeft: `1px solid ${theme.palette.border}`,
-              paddingLeft: 8,
-            }}
-          >
+          // macOS emphasizes the active app with a bold, full-contrast name.
+          <span style={{ fontWeight: 600, color: theme.palette.textPrimary }}>
             {focusedName}
           </span>
         )}
@@ -90,7 +85,6 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
 }
 
 function StatusItems() {
-  const theme = useTheme();
   const items = useSyncExternalStore(
     subscribeStatusItems,
     listStatusItems,
@@ -104,30 +98,23 @@ function StatusItems() {
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 4,
+        gap: 2,
       }}
     >
       {items.map((item) => (
-        <StatusItemView
-          key={item.id}
-          item={item}
-          color={theme.palette.textSecondary}
-          accent={theme.palette.accent}
-        />
+        <StatusItemView key={item.id} item={item} />
       ))}
     </div>
   );
 }
 
-function StatusItemView({
-  item,
-  color,
-  accent,
-}: {
-  item: StatusItem;
-  color: string;
-  accent: string;
-}) {
+function StatusItemView({ item }: { item: StatusItem }) {
+  const theme = useTheme();
+  const color = theme.palette.textSecondary;
+  const accent = theme.palette.accent;
+  // Theme-adaptive hover highlight (a translucent tint of the text color), so
+  // it reads on light and dark menu bars alike. macOS shows a rounded highlight.
+  const hover = `${theme.palette.textPrimary}1a`;
   const body = (
     <span
       style={{
@@ -136,8 +123,8 @@ function StatusItemView({
         justifyContent: "center",
         color,
         position: "relative",
-        width: 22,
-        height: 22,
+        width: 18,
+        height: 18,
       }}
     >
       {item.icon}
@@ -146,8 +133,8 @@ function StatusItemView({
           aria-hidden
           style={{
             position: "absolute",
-            top: -2,
-            right: -4,
+            top: -3,
+            right: -5,
             minWidth: 12,
             height: 12,
             borderRadius: 6,
@@ -177,15 +164,16 @@ function StatusItemView({
         appearance: "none",
         background: "transparent",
         border: 0,
-        padding: 2,
+        padding: "3px 5px",
         cursor: item.onClick ? "pointer" : "default",
-        borderRadius: 4,
+        borderRadius: theme.shape.small,
         display: "inline-flex",
         color,
+        transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
       }}
       onMouseEnter={(e) => {
         if (!item.onClick) return;
-        e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+        e.currentTarget.style.background = hover;
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = "transparent";
@@ -268,6 +256,8 @@ function WorkspaceIndicator() {
 }
 
 function SystemClock({ color, accent }: { color: string; accent: string }) {
+  const theme = useTheme();
+  const hover = `${theme.palette.textPrimary}1a`;
   const { unreadCount } = useNotifications();
   const [now, setNow] = useState<Date | null>(null);
 
@@ -320,17 +310,18 @@ function SystemClock({ color, accent }: { color: string; accent: string }) {
           color,
           fontFamily: "inherit",
           fontSize: 12,
-          padding: "3px 6px",
+          padding: "3px 8px",
           cursor: "pointer",
           display: "inline-flex",
           alignItems: "center",
           gap: 6,
-          borderRadius: 6,
+          borderRadius: theme.shape.small,
           position: "relative",
           fontVariantNumeric: "tabular-nums",
+          transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+          e.currentTarget.style.background = hover;
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.background = "transparent";

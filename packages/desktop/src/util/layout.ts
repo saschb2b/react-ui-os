@@ -20,7 +20,8 @@ export interface ChromeMetrics {
 }
 
 const REGULAR_METRICS = {
-  menuBarHeight: 28,
+  // macOS Big Sur+ menu bar is 24pt; match it.
+  menuBarHeight: 24,
   dockTileSize: 56,
   dockGap: 10,
   dockPadding: 10,
@@ -29,7 +30,7 @@ const REGULAR_METRICS = {
 } as const;
 
 const COMPACT_METRICS = {
-  menuBarHeight: 24,
+  menuBarHeight: 22,
   dockTileSize: 40,
   dockGap: 6,
   dockPadding: 6,
