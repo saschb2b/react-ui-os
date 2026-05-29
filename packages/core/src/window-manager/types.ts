@@ -48,6 +48,16 @@ export interface OpenWindow {
    * filtered by the window layer, so internal state survives.
    */
   workspaceId: string;
+  /**
+   * True when the window was opened without explicit bounds, so it currently
+   * holds the placeholder DEFAULT_BOUNDS. core is viewport-agnostic and cannot
+   * size a window to the screen, so it records the intent ("place this for
+   * me") with this flag. The desktop layer, which knows the viewport and the
+   * theme's chrome, resolves it to centered, work-area-clamped bounds on first
+   * mount and clears the flag via SET_BOUNDS. Surfaces that pass their own
+   * bounds (via pickInitialBounds) arrive with the flag already off.
+   */
+  autoBounds?: boolean;
 }
 
 export interface WindowManagerState {

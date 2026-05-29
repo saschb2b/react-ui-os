@@ -184,6 +184,31 @@ describe("windowManagerReducer", () => {
     expect(s.focusedId).toBe("system:component:name=Spotlight");
   });
 
+  it("flags a bare open as autoBounds and clears it on SET_BOUNDS", () => {
+    const s = run({ type: "OPEN", payload: { kind: "app", appId: "a" } });
+    expect(s.windows[0]?.autoBounds).toBe(true);
+    const s2 = windowManagerReducer(s, {
+      type: "SET_BOUNDS",
+      id: "app:a",
+      x: 10,
+      y: 20,
+      w: 300,
+      h: 200,
+    });
+    expect(s2.windows[0]?.autoBounds).toBe(false);
+    expect(s2.windows[0]?.w).toBe(300);
+  });
+
+  it("does not flag an open that supplies explicit bounds", () => {
+    const s = run({
+      type: "OPEN",
+      payload: { kind: "app", appId: "a" },
+      initialBounds: { x: 1, y: 2, w: 3, h: 4 },
+    });
+    expect(s.windows[0]?.autoBounds).toBe(false);
+    expect(s.windows[0]?.x).toBe(1);
+  });
+
   it("CLOSE of an unknown id is a no-op", () => {
     const s = run(
       { type: "OPEN", payload: { kind: "app", appId: "a" } },

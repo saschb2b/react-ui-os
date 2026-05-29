@@ -3,15 +3,17 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { useWindowManager } from "@react-ui-os/core";
 import type { OpenWindow } from "@react-ui-os/core";
-import { useApp, useTheme } from "./desktop-context";
+import { useApp, useApps, useTheme } from "./desktop-context";
 import { getDockTileRect } from "./Dock";
 import { clampWindowToWorkArea } from "./util/clamp";
+import { pickInitialBounds } from "./util/initial-bounds";
 import {
   openContextMenu,
   type ContextMenuItem,
@@ -95,6 +97,7 @@ interface ResizeState {
  */
 export function Window({ win }: WindowProps) {
   const theme = useTheme();
+  const apps = useApps();
   const wm = useWindowManager();
   const {
     focusedWindow,
@@ -143,6 +146,19 @@ export function Window({ win }: WindowProps) {
       window.clearTimeout(id);
     };
   }, [theme.motion.windowOpenDurationMs]);
+
+  // Place a window that was opened without explicit bounds. core flags these
+  // (autoBounds) because it can't see the viewport; we resolve them here to
+  // the same centered, work-area-clamped bounds every surface uses, so a bare
+  // openWindow(payload) can never spawn an off-screen or oversized window.
+  // useLayoutEffect runs before paint, so the first painted frame is already
+  // at the correct size: no flash. setBounds clears the flag, so a later
+  // remount (workspace switch) won't re-place a window the user has moved.
+  useLayoutEffect(() => {
+    if (!win.autoBounds) return;
+    const b = pickInitialBounds(win.payload, theme, apps);
+    setBounds(win.id, b.x, b.y, b.w, b.h);
+  }, [win.autoBounds, win.id, win.payload, theme, apps, setBounds]);
 
   const handleClose = useCallback(() => {
     setPhase("closing");

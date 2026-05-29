@@ -41,6 +41,10 @@ export function windowManagerReducer(
           state: "normal",
         });
       }
+      // When no bounds are passed, store the placeholder DEFAULT_BOUNDS and
+      // flag the window so the desktop layer (which knows the viewport) can
+      // place it on first mount. See OpenWindow.autoBounds.
+      const hasExplicitBounds = action.initialBounds != null;
       const bounds = action.initialBounds ?? DEFAULT_BOUNDS;
       const z = state.nextZ;
       const win: OpenWindow = {
@@ -53,6 +57,7 @@ export function windowManagerReducer(
         h: bounds.h,
         z,
         workspaceId: state.activeWorkspaceId,
+        autoBounds: !hasExplicitBounds,
       };
       return bumpZ({
         ...state,
@@ -125,7 +130,17 @@ export function windowManagerReducer(
         ...state,
         windows: state.windows.map((w) =>
           w.id === action.id
-            ? { ...w, x: action.x, y: action.y, w: action.w, h: action.h }
+            ? {
+                ...w,
+                x: action.x,
+                y: action.y,
+                w: action.w,
+                h: action.h,
+                // The window now has real, placed bounds — drop the auto flag
+                // so a later remount (e.g. workspace switch) won't re-place it
+                // and undo a user's drag.
+                autoBounds: false,
+              }
             : w,
         ),
       };
