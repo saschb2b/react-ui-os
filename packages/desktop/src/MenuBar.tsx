@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { useNotifications, useWindowManager } from "@react-ui-os/core";
-import { useApp, useTheme } from "./desktop-context";
+import { notify, useNotifications, useWindowManager } from "@react-ui-os/core";
+import { useApp, useApps, useTheme } from "./desktop-context";
+import { openContextMenu } from "./context-menu";
 import { NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
+import { pickInitialBounds } from "./util/initial-bounds";
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { Tooltip } from "./tooltip";
@@ -21,7 +23,8 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
   const theme = useTheme();
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
-  const { focusedWindow } = useWindowManager();
+  const apps = useApps();
+  const { focusedWindow, openWindow } = useWindowManager();
   const focusedApp = useApp(
     focusedWindow?.payload.kind === "app" ? focusedWindow.payload.appId : "__none__",
   );
@@ -38,6 +41,36 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
       : undefined);
 
   if (theme.chrome.menuBar !== "top") return null;
+
+  // The brand acts as the macOS Apple menu: a system menu anchored at top-left.
+  const openBrandMenu = (e: React.MouseEvent) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    openContextMenu({
+      x: r.left,
+      y: r.bottom + 4,
+      ariaLabel: `${brand} menu`,
+      items: [
+        {
+          label: `About ${brand}`,
+          onSelect: () =>
+            notify({
+              title: brand,
+              body: "An OS-style desktop, built with react-ui-os.",
+              level: "info",
+            }),
+        },
+        { separator: true },
+        {
+          label: "Settings…",
+          shortcut: "⌘,",
+          onSelect: () => {
+            const payload = { kind: "system" as const, systemId: "settings" };
+            openWindow(payload, pickInitialBounds(payload, theme, apps));
+          },
+        },
+      ],
+    });
+  };
 
   return (
     <header
@@ -63,8 +96,36 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
         userSelect: "none",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <strong style={{ letterSpacing: 0.2 }}>{brand}</strong>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <button
+          type="button"
+          onClick={openBrandMenu}
+          aria-haspopup="menu"
+          aria-label={`${brand} menu`}
+          style={{
+            appearance: "none",
+            background: "transparent",
+            border: 0,
+            margin: 0,
+            padding: "3px 7px",
+            borderRadius: theme.shape.small,
+            color: theme.palette.textPrimary,
+            fontFamily: "inherit",
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: 0.2,
+            cursor: "pointer",
+            transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = `${theme.palette.textPrimary}1a`;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
+        >
+          {brand}
+        </button>
         {focusedName && (
           // macOS emphasizes the active app with a bold, full-contrast name.
           <span style={{ fontWeight: 600, color: theme.palette.textPrimary }}>
