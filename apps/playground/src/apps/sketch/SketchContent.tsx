@@ -11,7 +11,6 @@ import {
 import type { AppContentProps } from "@react-ui-os/core";
 import { useTheme } from "@react-ui-os/desktop";
 import { Toolbar } from "./Toolbar";
-import type { CanvasEl } from "./dom-types";
 import { useSketchCanvas, type SketchTool } from "./useSketchCanvas";
 
 export function SketchContent({ focused }: AppContentProps) {
@@ -25,7 +24,7 @@ export function SketchContent({ focused }: AppContentProps) {
   apiRef.current = api;
 
   const pointFrom = useCallback(
-    (e: ReactPointerEvent<CanvasEl>) => {
+    (e: ReactPointerEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
       if (!canvas) return null;
       const rect = canvas.getBoundingClientRect();
@@ -35,7 +34,7 @@ export function SketchContent({ focused }: AppContentProps) {
   );
 
   const onPointerDown = useCallback(
-    (e: ReactPointerEvent<CanvasEl>) => {
+    (e: ReactPointerEvent<HTMLCanvasElement>) => {
       if (e.button !== 0 && e.pointerType === "mouse") return;
       const p = pointFrom(e);
       if (!p) return;
@@ -46,7 +45,7 @@ export function SketchContent({ focused }: AppContentProps) {
   );
 
   const onPointerMove = useCallback(
-    (e: ReactPointerEvent<CanvasEl>) => {
+    (e: ReactPointerEvent<HTMLCanvasElement>) => {
       const p = pointFrom(e);
       if (!p) return;
       api.move(p);
@@ -55,7 +54,7 @@ export function SketchContent({ focused }: AppContentProps) {
   );
 
   const onPointerUp = useCallback(
-    (e: ReactPointerEvent<CanvasEl>) => {
+    (e: ReactPointerEvent<HTMLCanvasElement>) => {
       if (e.currentTarget.hasPointerCapture(e.pointerId)) {
         e.currentTarget.releasePointerCapture(e.pointerId);
       }

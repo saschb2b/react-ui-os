@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Canvas2D, CanvasEl, CanvasImageData } from "./dom-types";
 
 /** Tool a stroke is drawn with. Eraser clears back to transparent. */
 export type SketchTool = "brush" | "eraser";
@@ -53,9 +52,9 @@ interface SketchOptions {
  * re-binding pointer handlers.
  */
 export function useSketchCanvas(opts: SketchOptions) {
-  const canvasRef = useRef<CanvasEl | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const ctxRef = useRef<Canvas2D | null>(null);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const optsRef = useRef(opts);
   optsRef.current = opts;
 
@@ -65,8 +64,8 @@ export function useSketchCanvas(opts: SketchOptions) {
   const drawingRef = useRef(false);
 
   // Bounded snapshot stacks. Each entry is a full-resolution bitmap.
-  const undoStack = useRef<CanvasImageData[]>([]);
-  const redoStack = useRef<CanvasImageData[]>([]);
+  const undoStack = useRef<ImageData[]>([]);
+  const redoStack = useRef<ImageData[]>([]);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
 
@@ -75,7 +74,7 @@ export function useSketchCanvas(opts: SketchOptions) {
     setCanRedo(redoStack.current.length > 0);
   }, []);
 
-  const snapshot = useCallback((): CanvasImageData | null => {
+  const snapshot = useCallback((): ImageData | null => {
     const ctx = ctxRef.current;
     const canvas = canvasRef.current;
     if (!ctx || !canvas) return null;
@@ -91,7 +90,7 @@ export function useSketchCanvas(opts: SketchOptions) {
     syncFlags();
   }, [snapshot, syncFlags]);
 
-  const restore = useCallback((img: CanvasImageData) => {
+  const restore = useCallback((img: ImageData) => {
     const ctx = ctxRef.current;
     if (!ctx) return;
     ctx.putImageData(img, 0, 0);
@@ -116,7 +115,7 @@ export function useSketchCanvas(opts: SketchOptions) {
     if (canvas.width === nextW && canvas.height === nextH) return;
 
     // Copy current pixels before the backing store is reallocated.
-    let prior: CanvasEl | null = null;
+    let prior: HTMLCanvasElement | null = null;
     if (canvas.width > 0 && canvas.height > 0) {
       prior = document.createElement("canvas");
       prior.width = canvas.width;
@@ -150,8 +149,8 @@ export function useSketchCanvas(opts: SketchOptions) {
   useEffect(() => {
     resize();
     const wrap = wrapRef.current;
-    if (!wrap || typeof window === "undefined" || !window.ResizeObserver) return;
-    const ro = new window.ResizeObserver(() => {
+    if (!wrap || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
       resize();
     });
     ro.observe(wrap);
