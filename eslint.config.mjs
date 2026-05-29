@@ -21,6 +21,10 @@ export default [
         document: "readonly",
         navigator: "readonly",
         console: "readonly",
+        // The React namespace is referenced in type positions (React.MouseEvent)
+        // without a value import. TS resolves it from @types/react; no-undef
+        // can't see that, so allowlist it like the other ambient names.
+        React: "readonly",
         setTimeout: "readonly",
         clearTimeout: "readonly",
         requestAnimationFrame: "readonly",
