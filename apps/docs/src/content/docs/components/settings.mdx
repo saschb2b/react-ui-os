@@ -1,6 +1,6 @@
 ---
 title: Settings
-description: A real desktop window (not a dialog) that reads the active theme's customizable schema and renders one editor per field.
+description: "A real desktop window (not a dialog) that reads the active theme's customizable schema and renders an editor per field, in a category sidebar plus grouped rows like modern settings apps."
 sidebar:
   order: 6
 ---
@@ -25,17 +25,21 @@ In normal use you never instantiate `<Settings>` directly. The library registers
 ## How it works
 
 1. The active theme declares a `customizable` map: keys are dotted paths into the theme (e.g. `"palette.accent"`), values describe the field kind.
-2. Opening Settings reads that schema and renders one row per entry, grouped by `section`.
+2. Opening Settings groups entries by `section` into a left sidebar; selecting a section renders its fields as grouped rows in the content pane.
 3. Edits write to the storage adapter under `settings:<themeId>`.
 4. The effective-theme overlay applies the change immediately; the rest of the desktop reads tokens via `useTheme()` and re-renders.
 5. Reload restores the user's overrides via the same storage adapter.
+
+## Layout
+
+The window follows the pattern modern settings apps converged on (macOS Ventura System Settings, Windows 11 Settings, GNOME Settings): a category sidebar on the left and a content pane of grouped rows on the right. Each row puts the field label and description on the left and its control on the right; sliders show their value inline, and wide controls (the wallpaper picker) stack beneath the label. The active category, the card surface, the row separators, and the hover highlights all read from `palette` tokens, so the window looks right on light and dark themes.
 
 ## Supported field kinds
 
 | Kind                 | Editor                                                                                |
 | -------------------- | ------------------------------------------------------------------------------------- |
 | `color-from-palette` | A row of color swatches. Selected swatch wears an outline.                            |
-| `image-pick`         | A thumbnail grid. Each option has an `src` and a `label`.                             |
+| `image-pick`         | A thumbnail grid (stacks beneath the label). Each option has an `src` and a `label`.  |
 | `range`              | A slider with `min` / `max` / `step` and a tabular-numeric readout (optional `unit`). |
 | `select`             | A segmented control where each `option` has a `value` and a `label`.                  |
 | `toggle`             | An iOS-style switch with a 36 × 20 rounded pill and a sliding thumb.                  |
@@ -44,8 +48,8 @@ In normal use you never instantiate `<Settings>` directly. The library registers
 
 The panel surfaces two reset buttons contextually:
 
-- **Per-field Reset** appears next to any field whose value is currently overridden.
-- **Reset all** appears in the header when at least one override exists.
+- **Per-field Reset** appears next to the control of any field whose value is currently overridden.
+- **Reset all** appears at the bottom of the sidebar when at least one override exists.
 
 Both write through `useSettings()` so any subscriber (the desktop itself, the dock, a custom inspector) re-renders.
 
