@@ -7,7 +7,7 @@
 // field rename to break the docs.
 //
 // Output shape:
-//   { generatedAt, types: { [TypeName]: TypeSpec } }
+//   { types: { [TypeName]: TypeSpec } }
 //
 // TypeSpec = {
 //   name, package, kind: "interface" | "alias",
@@ -204,7 +204,9 @@ function findDeclaration(sourceFile, name) {
 }
 
 function main() {
-  const out = { generatedAt: new Date().toISOString(), types: {} };
+  // No timestamp: the docs never read one, and stamping the wall clock on
+  // every run left this committed file perpetually dirty in git.
+  const out = { types: {} };
   const errors = [];
 
   for (const target of targets) {
