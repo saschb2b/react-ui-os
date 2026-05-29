@@ -1,13 +1,13 @@
 ---
 title: Mission Control
-description: Press F3 to see every open window at once, tiled in a grid. Click any to focus and dismiss.
+description: "Press F3 to spread the current space's windows into scaled previews, with a Spaces bar on top. Click one to focus, or use the arrow keys."
 sidebar:
   order: 11
 ---
 
 import LivePreview from "~/components/LivePreview.astro";
 
-Press `F3` (or `Ctrl + ↑` on non-Mac keyboards) and every open window slides into a tiled grid of large preview cards. Click a card and the corresponding window comes to the front; click empty space or press `Esc` and you return to the desktop unchanged.
+Press `F3` (or `Ctrl + ↑` on non-Mac keyboards) and every open window in the current space spreads into scaled preview cards, with a Spaces bar across the top. Click a card and that window comes to the front; click empty space or press `Esc` and you return to the desktop unchanged.
 
 <LivePreview
   src="?demo=dock"
@@ -15,25 +15,30 @@ Press `F3` (or `Ctrl + ↑` on non-Mac keyboards) and every open window slides i
   height="460px"
 />
 
-The cards aren't live thumbnails. They represent the window's chrome (title bar, traffic lights, accent stripe, aspect ratio) so the user can pick by shape and name at a glance. This avoids the cost of mirroring live DOM into a canvas while still giving the macOS-style "where is what" view.
+## Previews
+
+Each card is a scaled, live re-render of the real window: its title bar (traffic lights and title) plus the app's own content, with the app name on a readable label below. The preview mounts a second, inert copy of the content while Mission Control is open, so it shows the real UI (though not unsaved live state), and an error boundary keeps a misbehaving preview from taking the overlay down.
+
+Windows are fit into a shared size envelope, so a small utility and a large document end up at comparable, recognizable sizes. Each card keeps its window's aspect ratio.
+
+## Spaces
+
+The bar along the top shows every workspace as a desktop thumbnail, with miniature outlines of the windows that live in each one. The active space is highlighted. Click a thumbnail to switch spaces (Mission Control stays open and shows that space's windows), or the `+` to add a space. Mission Control shows only the active space's windows, matching macOS.
 
 ## Behavior
 
-| Action            | Effect                                  |
-| ----------------- | --------------------------------------- |
-| `F3`              | Toggle Mission Control                  |
-| `Ctrl + ↑`        | Same, handy on non-Mac keyboards        |
-| Click a card      | Bring that window to the front; dismiss |
-| Click empty space | Dismiss without changing focus          |
-| `Esc`             | Dismiss without changing focus          |
+| Action            | Effect                                     |
+| ----------------- | ------------------------------------------ |
+| `F3`              | Toggle Mission Control                     |
+| `Ctrl + ↑`        | Same, handy on non-Mac keyboards           |
+| `←` `→` `↑` `↓`   | Move the selection between windows         |
+| `Enter` / `Space` | Open the selected window                   |
+| Click a card      | Bring that window to the front and dismiss |
+| Click a space     | Switch to that space                       |
+| Click empty space | Dismiss without changing focus             |
+| `Esc`             | Dismiss without changing focus             |
 
-Only windows that aren't minimized are shown. Mission Control is "what's on screen right now," not "what's stashed in the dock." Use [the dock](/components/dock/) or [Spotlight](/components/spotlight/) to bring a minimized window back first.
-
-## Grid layout
-
-Cards lay out via CSS `grid-template-columns: auto-fit` between 220 px and 280 px wide. The number of columns is whatever the viewport can fit. The grid grows to use available width without sprawling cards to fill space they don't need.
-
-Each card's aspect ratio mirrors its window's aspect, clamped between 0.7 and 2.4 so a tall utility doesn't dominate next to a wide document.
+Minimized windows are not shown; they live in the dock. Use [the dock](/components/dock/) or [Spotlight](/components/spotlight/) to bring one back. The spread, the scrim, and the selection highlight honor `prefers-reduced-motion` and read from the active theme's tokens, so Mission Control looks right on light and dark themes alike.
 
 ## Composition
 
@@ -53,9 +58,9 @@ The component is mounted by `<Desktop>` by default. Drop down to `<DesktopProvid
 ## Accessibility
 
 - The overlay is `role="dialog" aria-label="Mission Control"`.
-- Each card is a real `<button>` with the window's name in its label. Screen readers announce "Hello window" rather than something synthetic.
-- Modal: Esc and click-outside both dismiss without changing focus.
-- The hint to keyboard users is built into the existing keyboard shortcut docs; no on-screen text needed because F3 is universally known.
+- Each card carries a transparent overlay `<button>` labelled with the window name, so it is keyboard- and screen-reader-reachable while the scaled preview itself is `inert`. The card is a `div`, not a button, because the live preview can contain its own buttons and a button cannot nest a button.
+- The Spaces bar is a `role="tablist"` of space buttons.
+- Arrow keys move the selection, Enter or Space opens it, and both `Esc` and a click outside dismiss without changing focus.
 
 ## See also
 
