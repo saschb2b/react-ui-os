@@ -46,20 +46,20 @@ const items: ExplorerItem[] = downloads.map((d) => ({
       onClick: (selected) => selected.forEach((s) => del(s.id)),
     },
   ]}
-/>
+/>;
 ```
 
 ## Props
 
-| Prop          | Type                                       | Default         | Description                                                                       |
-| ------------- | ------------------------------------------ | --------------- | --------------------------------------------------------------------------------- |
-| `items`       | `T[]` (extends `ExplorerItem`)             | **required**    | The list to render. Order is preserved; sort + filter are applied on top.         |
-| `onOpen`      | `(item: T) => void`                        | `undefined`     | Called on Enter or double-click. Receives the single item.                        |
-| `onRename`    | `(item: T, newName: string) => void`       | `undefined`     | Enables F2 + context-menu Rename. Receives the new name after Enter or blur.      |
-| `actions`     | `ExplorerAction<T>[]`                      | `[]`            | Toolbar + context-menu actions. See [Actions](#actions) below.                    |
-| `sidebar`     | `ExplorerSidebarSection[]`                 | `undefined`     | Optional Finder-style left rail. Hidden when not provided.                        |
-| `emptyState`  | `ReactNode`                                | `"Nothing here yet."` | Shown when `items.length === 0`.                                              |
-| `defaultView` | `"icons"` \| `"list"`                      | `"icons"`       | Initial view mode. The toolbar toggle is always available.                        |
+| Prop          | Type                                 | Default               | Description                                                                  |
+| ------------- | ------------------------------------ | --------------------- | ---------------------------------------------------------------------------- |
+| `items`       | `T[]` (extends `ExplorerItem`)       | **required**          | The list to render. Order is preserved; sort + filter are applied on top.    |
+| `onOpen`      | `(item: T) => void`                  | `undefined`           | Called on Enter or double-click. Receives the single item.                   |
+| `onRename`    | `(item: T, newName: string) => void` | `undefined`           | Enables F2 + context-menu Rename. Receives the new name after Enter or blur. |
+| `actions`     | `ExplorerAction<T>[]`                | `[]`                  | Toolbar + context-menu actions. See [Actions](#actions) below.               |
+| `sidebar`     | `ExplorerSidebarSection[]`           | `undefined`           | Optional Finder-style left rail. Hidden when not provided.                   |
+| `emptyState`  | `ReactNode`                          | `"Nothing here yet."` | Shown when `items.length === 0`.                                             |
+| `defaultView` | `"icons"` \| `"list"`                | `"icons"`             | Initial view mode. The toolbar toggle is always available.                   |
 
 ## `ExplorerItem` shape
 
@@ -67,11 +67,11 @@ const items: ExplorerItem[] = downloads.map((d) => ({
 interface ExplorerItem {
   id: string;
   name: string;
-  kind?: string;        // "Kind" cell in list view + sort field
-  timestamp?: number;   // epoch ms — drives the Date column + sort
-  subtitle?: string;    // optional one-line subtitle in icon view
-  meta?: string;        // optional right-aligned metadata in list view
-  icon?: ReactNode;     // tile icon in grid view
+  kind?: string; // "Kind" cell in list view + sort field
+  timestamp?: number; // epoch ms, drives the Date column + sort
+  subtitle?: string; // optional one-line subtitle in icon view
+  meta?: string; // optional right-aligned metadata in list view
+  icon?: ReactNode; // tile icon in grid view
   iconSmall?: ReactNode; // compact icon in list view (defaults to `icon`)
 }
 ```
@@ -84,9 +84,9 @@ interface ExplorerAction<T extends ExplorerItem = ExplorerItem> {
   label: string;
   icon?: ReactNode;
   onClick: (items: T[]) => void;
-  danger?: boolean;     // red label + divider in context menu
+  danger?: boolean; // red label + divider in context menu
   singleOnly?: boolean; // hidden when >1 items selected
-  shortcut?: string;    // keyboard hint in the context menu ("⌫", "F2")
+  shortcut?: string; // keyboard hint in the context menu ("⌫", "F2")
 }
 ```
 
@@ -118,20 +118,20 @@ Used to mirror Finder's "Favorites" rail. Hosts decide what activation does (rou
 
 The interaction model matches macOS Finder; drift from this only with a good reason.
 
-| Gesture / key              | Effect                                                              |
-| -------------------------- | ------------------------------------------------------------------- |
-| Click an item              | Replaces the selection                                              |
-| Cmd / Ctrl + click         | Toggles the item in/out                                             |
-| Shift + click              | Range-selects from the anchor                                       |
-| Click on empty space       | Clears the selection                                                |
-| Double-click               | `onOpen(item)`                                                      |
-| Right-click on an item     | Promotes (if not already selected), opens item context menu         |
-| Right-click on empty space | Opens "View as" / "Sort by" context menu                            |
-| `Enter`                    | Opens the single selected item                                      |
+| Gesture / key              | Effect                                                               |
+| -------------------------- | -------------------------------------------------------------------- |
+| Click an item              | Replaces the selection                                               |
+| Cmd / Ctrl + click         | Toggles the item in/out                                              |
+| Shift + click              | Range-selects from the anchor                                        |
+| Click on empty space       | Clears the selection                                                 |
+| Double-click               | `onOpen(item)`                                                       |
+| Right-click on an item     | Promotes (if not already selected), opens item context menu          |
+| Right-click on empty space | Opens "View as" / "Sort by" context menu                             |
+| `Enter`                    | Opens the single selected item                                       |
 | `F2`                       | Begins rename (stem pre-selected; Enter / blur commits, Esc cancels) |
-| `Delete` / `Backspace`     | Invokes the action with `id: "delete"` if present                   |
-| `Cmd` / `Ctrl + A`         | Selects all filtered items                                          |
-| `Escape`                   | Clears selection, closes menus, cancels rename                      |
+| `Delete` / `Backspace`     | Invokes the action with `id: "delete"` if present                    |
+| `Cmd` / `Ctrl + A`         | Selects all filtered items                                           |
+| `Escape`                   | Clears selection, closes menus, cancels rename                       |
 
 ## Self-healing selection
 

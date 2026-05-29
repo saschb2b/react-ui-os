@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /**
- * Module-level context-menu store. One active menu at a time — opening
+ * Module-level context-menu store. One active menu at a time. Opening
  * a new menu closes whatever was open before. Vanilla because callers
  * dispatch from anywhere (an onContextMenu handler, an effect, a
  * keyboard shortcut). React reads via useSyncExternalStore.
@@ -33,7 +33,7 @@ export interface ContextMenuState {
   items: ContextMenuItem[];
   /** Accessibility label for the menu container. */
   ariaLabel?: string;
-  /** Optional element that opened the menu — focus returns here on close. */
+  /** Optional element that opened the menu. Focus returns here on close. */
   returnFocusTo?: HTMLElement | null;
 }
 

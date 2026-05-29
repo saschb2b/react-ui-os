@@ -40,7 +40,7 @@ Durations in milliseconds, easings as CSS strings. Five values cover the system:
 
 ### `blur`
 
-`backdrop-filter` strings. The library bakes the *application* of blur into specific surfaces (menu bar, dock, Spotlight); themes decide *how much*. A SaaS-light theme can set both blur values to `"none"` and the components keep working.
+`backdrop-filter` strings. The library bakes the _application_ of blur into specific surfaces (menu bar, dock, Spotlight); themes decide _how much_. A SaaS-light theme can set both blur values to `"none"` and the components keep working.
 
 ### `wallpaper`
 
@@ -127,4 +127,4 @@ Never compete with the OS motion. If a theme adds extra animation to a component
 
 ## Reference reading
 
-The first long-form articulation of the OS-style approach this library is built on lives at [saschb2b.com/blog/web-app-as-desktop](https://saschb2b.com/blog/web-app-as-desktop). Read it before contributing if you have not seen the source material; it explains *why* the abstractions look the way they do.
+The first long-form articulation of the OS-style approach this library is built on lives at [saschb2b.com/blog/web-app-as-desktop](https://saschb2b.com/blog/web-app-as-desktop). Read it before contributing if you have not seen the source material; it explains _why_ the abstractions look the way they do.

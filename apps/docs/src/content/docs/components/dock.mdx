@@ -9,7 +9,11 @@ import LivePreview from "~/components/LivePreview.astro";
 
 The dock renders one tile per registered app. Clicking a tile toggles the app's window: open if not running, focus + restore if minimized or unfocused, otherwise minimize. Hidden when `theme.chrome.dockPosition` is `"hidden"`.
 
-<LivePreview src="?demo=dock" label="Three apps open — indicator dots reflect focus" height="380px" />
+<LivePreview
+  src="?demo=dock"
+  label="Three apps open, indicator dots reflect focus"
+  height="380px"
+/>
 
 ## Import
 
@@ -25,21 +29,21 @@ None. The dock reads everything it needs from `useApps()` and `useTheme()`.
 
 The dock honors `theme.chrome.dockPosition`:
 
-| Value      | Layout                                                                                  |
-| ---------- | --------------------------------------------------------------------------------------- |
-| `"bottom"` | Horizontal pill centered at the bottom edge with hover-lift on `translateY`.            |
-| `"left"`   | Vertical rail centered on the left edge with hover-lift on `translateX`.                |
-| `"hidden"` | Returns `null`. Apps are reachable via Spotlight, keyboard shortcuts, or `openWindow`.  |
+| Value      | Layout                                                                                 |
+| ---------- | -------------------------------------------------------------------------------------- |
+| `"bottom"` | Horizontal pill centered at the bottom edge with hover-lift on `translateY`.           |
+| `"left"`   | Vertical rail centered on the left edge with hover-lift on `translateX`.               |
+| `"hidden"` | Returns `null`. Apps are reachable via Spotlight, keyboard shortcuts, or `openWindow`. |
 
 ## Tile appearance
 
 Each tile renders the app's accent as a linear gradient with a top sheen. The library accepts three optional visual hooks per app:
 
-| Field            | Used by tile                                                                            |
-| ---------------- | --------------------------------------------------------------------------------------- |
-| `app.iconArt`    | A subject illustration painted on top of the gradient. Best for distinctive identities. |
-| `app.icon`       | A small Lucide-style icon component, fallback when `iconArt` is absent.                 |
-| `app.name`       | Initial letter shown if neither icon is provided.                                       |
+| Field         | Used by tile                                                                            |
+| ------------- | --------------------------------------------------------------------------------------- |
+| `app.iconArt` | A subject illustration painted on top of the gradient. Best for distinctive identities. |
+| `app.icon`    | A small Lucide-style icon component, fallback when `iconArt` is absent.                 |
+| `app.name`    | Initial letter shown if neither icon is provided.                                       |
 
 ## Indicator dot
 
@@ -62,10 +66,10 @@ Returns the live bounding rect of the named dock tile. Used internally by the mi
 
 ## Exports
 
-| Export         | Description                                                                                                          |
-| -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `DOCK_HEIGHT`  | Footprint when docked at the bottom (default 76 px). Useful for `position: fixed` layouts that need to clear it.     |
-| `DOCK_WIDTH`   | Footprint when docked on the left. Same purpose.                                                                     |
+| Export        | Description                                                                                                      |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `DOCK_HEIGHT` | Footprint when docked at the bottom (default 76 px). Useful for `position: fixed` layouts that need to clear it. |
+| `DOCK_WIDTH`  | Footprint when docked on the left. Same purpose.                                                                 |
 
 ## See also
 

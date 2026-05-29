@@ -22,7 +22,7 @@ jobs:
       - name: Setup pnpm
         # Version comes from the root package.json `packageManager` field
         # (pnpm@10.x). Specifying `version:` here too is now rejected by
-        # action-setup as a conflict — keep package.json as the single
+        # action-setup as a conflict. Keep package.json as the single
         # source of truth.
         uses: pnpm/action-setup@v4
 

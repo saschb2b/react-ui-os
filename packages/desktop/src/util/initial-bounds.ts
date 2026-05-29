@@ -1,9 +1,4 @@
-import type {
-  App,
-  OsTheme,
-  WindowBounds,
-  WindowPayload,
-} from "@react-ui-os/core";
+import type { App, OsTheme, WindowBounds, WindowPayload } from "@react-ui-os/core";
 import { getSystemWindow } from "../system-windows";
 import { getWorkArea } from "./layout";
 

@@ -9,7 +9,11 @@ import LivePreview from "~/components/LivePreview.astro";
 
 You will rarely instantiate `<Window>` directly. The [WindowLayer](#see-also) compositor renders one per entry in the window manager's state, and the window manager opens them via `openWindow(...)`. The component is exported for the rare case where you compose your own layer.
 
-<LivePreview src="?demo=window" label="A focused window — drag, resize, minimize" height="380px" />
+<LivePreview
+  src="?demo=window"
+  label="A focused window: drag, resize, minimize"
+  height="380px"
+/>
 
 ## Import
 
@@ -20,31 +24,31 @@ import type { OpenWindow } from "@react-ui-os/core";
 
 ## Props
 
-| Prop  | Type         | Description                                                                                                              |
-| ----- | ------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `win` | `OpenWindow` | The window manager's record for this instance. Carries id, payload (app or system), state, bounds, and z-index.          |
+| Prop  | Type         | Description                                                                                                     |
+| ----- | ------------ | --------------------------------------------------------------------------------------------------------------- |
+| `win` | `OpenWindow` | The window manager's record for this instance. Carries id, payload (app or system), state, bounds, and z-index. |
 
 ## Interaction model
 
-| Gesture                                | Behavior                                                                                  |
-| -------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Drag title bar                         | Moves the window. Transform written to DOM during the gesture; React state on `pointerup` |
-| Double-click title bar                 | Toggles maximize / restore                                                                |
-| Drag an edge                           | Resizes along that axis                                                                   |
-| Drag a corner                          | Resizes along both axes                                                                   |
-| Click traffic light: red               | Plays the close animation then dispatches `closeWindow(id)`                               |
-| Click traffic light: yellow            | Plays the genie minimize toward the matching dock tile                                    |
-| Click traffic light: green             | Toggles maximize                                                                          |
-| Click anywhere on the window           | Focuses it (z-bumps and updates `focusedId`)                                              |
-| Escape (when focused and maximized)    | Restores to the previous bounds                                                           |
+| Gesture                             | Behavior                                                                                  |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| Drag title bar                      | Moves the window. Transform written to DOM during the gesture; React state on `pointerup` |
+| Double-click title bar              | Toggles maximize / restore                                                                |
+| Drag an edge                        | Resizes along that axis                                                                   |
+| Drag a corner                       | Resizes along both axes                                                                   |
+| Click traffic light: red            | Plays the close animation then dispatches `closeWindow(id)`                               |
+| Click traffic light: yellow         | Plays the genie minimize toward the matching dock tile                                    |
+| Click traffic light: green          | Toggles maximize                                                                          |
+| Click anywhere on the window        | Focuses it (z-bumps and updates `focusedId`)                                              |
+| Escape (when focused and maximized) | Restores to the previous bounds                                                           |
 
 ## Animations
 
-| Phase     | Duration                  | Easing                  |
-| --------- | ------------------------- | ----------------------- |
-| Open      | `theme.motion.windowOpenDurationMs` | `theme.motion.windowOpenEasing` |
-| Close     | Same as open, reversed    | Same                    |
-| Minimize  | `theme.motion.genieDurationMs`      | `theme.motion.genieEasing`      |
+| Phase    | Duration                            | Easing                          |
+| -------- | ----------------------------------- | ------------------------------- |
+| Open     | `theme.motion.windowOpenDurationMs` | `theme.motion.windowOpenEasing` |
+| Close    | Same as open, reversed              | Same                            |
+| Minimize | `theme.motion.genieDurationMs`      | `theme.motion.genieEasing`      |
 
 The minimize animation reads the matching dock tile's `DOMRect` at gesture time, sets two CSS custom properties (`--genie-dx`, `--genie-dy`) on the window element, and plays a keyframe that scales it toward those coordinates. Each window flies to its own dock tile.
 

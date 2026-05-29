@@ -4,11 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { useNotifications, useWindowManager } from "@react-ui-os/core";
 import { useApp, useTheme } from "./desktop-context";
 import { NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
-import {
-  listStatusItems,
-  subscribeStatusItems,
-  type StatusItem,
-} from "./status-items";
+import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { Tooltip } from "./tooltip";
 import { getChromeMetrics, MENU_BAR_HEIGHT } from "./util/layout";
@@ -27,21 +23,19 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
   const metrics = getChromeMetrics(mode);
   const { focusedWindow } = useWindowManager();
   const focusedApp = useApp(
-    focusedWindow?.payload.kind === "app"
-      ? focusedWindow.payload.appId
-      : "__none__",
+    focusedWindow?.payload.kind === "app" ? focusedWindow.payload.appId : "__none__",
   );
   const focusedSystem =
     focusedWindow?.payload.kind === "system"
       ? getSystemWindow(focusedWindow.payload.systemId)
       : undefined;
   const focusedSystemArgs =
-    focusedWindow?.payload.kind === "system"
-      ? focusedWindow.payload.args
-      : undefined;
+    focusedWindow?.payload.kind === "system" ? focusedWindow.payload.args : undefined;
   const focusedName =
     focusedApp?.name ??
-    (focusedSystem ? resolveSystemWindowName(focusedSystem, focusedSystemArgs) : undefined);
+    (focusedSystem
+      ? resolveSystemWindowName(focusedSystem, focusedSystemArgs)
+      : undefined);
 
   if (theme.chrome.menuBar !== "top") return null;
 
@@ -86,7 +80,10 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <WorkspaceIndicator />
         <StatusItems />
-        <SystemClock color={theme.palette.textSecondary} accent={theme.palette.accent} />
+        <SystemClock
+          color={theme.palette.textSecondary}
+          accent={theme.palette.accent}
+        />
       </div>
     </header>
   );
@@ -210,7 +207,7 @@ function WorkspaceIndicator() {
   const { state, switchWorkspace } = useWindowManager();
   const workspaces = state.workspaces;
   const activeId = state.activeWorkspaceId;
-  // Hide the indicator when there's only one workspace — no signal to give.
+  // Hide the indicator when there's only one workspace, no signal to give.
   if (workspaces.length <= 1) return null;
   return (
     <div
@@ -232,40 +229,37 @@ function WorkspaceIndicator() {
             shortcut={`⌃⌥${idx === 0 ? "1" : idx === workspaces.length - 1 ? String(workspaces.length) : String(idx + 1)}`}
             placement="bottom"
           >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={isActive}
-            aria-label={`Workspace ${String(idx + 1)}`}
-            onClick={() => switchWorkspace(id)}
-            style={{
-              appearance: "none",
-              border: 0,
-              background: "transparent",
-              padding: 4,
-              cursor: "pointer",
-              borderRadius: 999,
-              display: "inline-flex",
-            }}
-          >
-            <span
-              aria-hidden
+            <button
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              aria-label={`Workspace ${String(idx + 1)}`}
+              onClick={() => switchWorkspace(id)}
               style={{
-                display: "inline-block",
-                width: isActive ? 14 : 6,
-                height: 6,
-                borderRadius: 3,
-                background: isActive
-                  ? theme.palette.accent
-                  : theme.palette.textSecondary,
-                opacity: isActive ? 1 : 0.55,
-                transition: "width 140ms ease, opacity 140ms ease",
-                boxShadow: isActive
-                  ? `0 0 6px ${theme.palette.accent}aa`
-                  : "none",
+                appearance: "none",
+                border: 0,
+                background: "transparent",
+                padding: 4,
+                cursor: "pointer",
+                borderRadius: 999,
+                display: "inline-flex",
               }}
-            />
-          </button>
+            >
+              <span
+                aria-hidden
+                style={{
+                  display: "inline-block",
+                  width: isActive ? 14 : 6,
+                  height: 6,
+                  borderRadius: 3,
+                  background: isActive
+                    ? theme.palette.accent
+                    : theme.palette.textSecondary,
+                  opacity: isActive ? 1 : 0.55,
+                  transition: "width 140ms ease, opacity 140ms ease",
+                }}
+              />
+            </button>
           </Tooltip>
         );
       })}
@@ -309,53 +303,52 @@ function SystemClock({ color, accent }: { color: string; accent: string }) {
       }
       placement="bottom"
     >
-    <button
-      type="button"
-      onClick={() => {
-        window.dispatchEvent(new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT));
-      }}
-      aria-label={
-        unreadCount > 0
-          ? `${String(unreadCount)} unread notifications. Open Notification Center.`
-          : "Open Notification Center"
-      }
-      style={{
-        appearance: "none",
-        background: "transparent",
-        border: 0,
-        color,
-        fontFamily: "inherit",
-        fontSize: 12,
-        padding: "3px 6px",
-        cursor: "pointer",
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        borderRadius: 6,
-        position: "relative",
-        fontVariantNumeric: "tabular-nums",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = "rgba(255,255,255,0.08)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "transparent";
-      }}
-    >
-      {unreadCount > 0 && (
-        <span
-          aria-hidden
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: "50%",
-            background: accent,
-            boxShadow: `0 0 6px ${accent}aa`,
-          }}
-        />
-      )}
-      {day} {time}
-    </button>
+      <button
+        type="button"
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT));
+        }}
+        aria-label={
+          unreadCount > 0
+            ? `${String(unreadCount)} unread notifications. Open Notification Center.`
+            : "Open Notification Center"
+        }
+        style={{
+          appearance: "none",
+          background: "transparent",
+          border: 0,
+          color,
+          fontFamily: "inherit",
+          fontSize: 12,
+          padding: "3px 6px",
+          cursor: "pointer",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          borderRadius: 6,
+          position: "relative",
+          fontVariantNumeric: "tabular-nums",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+        }}
+      >
+        {unreadCount > 0 && (
+          <span
+            aria-hidden
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: accent,
+            }}
+          />
+        )}
+        {day} {time}
+      </button>
     </Tooltip>
   );
 }

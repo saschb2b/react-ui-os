@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-28T23:45:03.067Z",
+  "generatedAt": "2026-05-29T10:38:31.498Z",
   "types": {
     "App": {
       "name": "App",
@@ -447,7 +447,7 @@
       "package": "@react-ui-os/desktop",
       "sourceFile": "packages/desktop/src/spotlight-sources.ts",
       "kind": "interface",
-      "description": "One result row contributed by a Spotlight source. Sources are how features\noutside the apps registry and the system-window registry surface in the\nCmd-K palette — recently opened docs pages, presets, downloads, bookmarks,\nor anything else the consumer wants to make findable.",
+      "description": "One result row contributed by a Spotlight source. Sources are how features\noutside the apps registry and the system-window registry surface in the\nCmd-K palette: recently opened docs pages, presets, downloads, bookmarks,\nor anything else the consumer wants to make findable.",
       "fields": [
         {
           "name": "id",

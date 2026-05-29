@@ -49,19 +49,13 @@ export {
   type SnapRect,
   type SnapState,
 } from "./snap";
-export {
-  SPOTLIGHT_OPEN_EVENT,
-  NOTIFICATION_CENTER_TOGGLE_EVENT,
-} from "./events";
+export { SPOTLIGHT_OPEN_EVENT, NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
 export {
   registerSpotlightSource,
   listSpotlightSources,
   subscribeSpotlightSources,
 } from "./spotlight-sources";
-export type {
-  SpotlightSource,
-  SpotlightResult,
-} from "./spotlight-sources";
+export type { SpotlightSource, SpotlightResult } from "./spotlight-sources";
 export { Settings } from "./Settings";
 export { FileExplorer } from "./FileExplorer";
 export type {

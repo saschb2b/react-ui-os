@@ -7,16 +7,13 @@ sidebar:
 
 import TypeTable from "~/components/TypeTable.astro";
 
-`registerSpotlightSource` lets a feature contribute rows to [Spotlight](/components/spotlight/) without going through the app registry or the system-window registry. Use it for docs pages, bookmarks, recent files, search-as-you-type API results — anything where activating a row should run a callback rather than open a window.
+`registerSpotlightSource` lets a feature contribute rows to [Spotlight](/components/spotlight/) without going through the app registry or the system-window registry. Use it for docs pages, bookmarks, recent files, search-as-you-type API results: anything where activating a row should run a callback rather than open a window.
 
 ## Import
 
 ```tsx
 import { registerSpotlightSource } from "@react-ui-os/desktop";
-import type {
-  SpotlightSource,
-  SpotlightResult,
-} from "@react-ui-os/desktop";
+import type { SpotlightSource, SpotlightResult } from "@react-ui-os/desktop";
 ```
 
 ## Signature
@@ -33,13 +30,13 @@ function registerSpotlightSource(id: string, source: SpotlightSource): () => voi
 
 <TypeTable name="SpotlightResult" hideDescription />
 
-`id` is a stable key — registering twice with the same id replaces the previous source. That makes it safe to call from a component that re-mounts.
+`id` is a stable key: registering twice with the same id replaces the previous source. That makes it safe to call from a component that re-mounts.
 
 The returned function unregisters the source. Call it in the cleanup of the `useEffect` that registered.
 
 ## What a source receives
 
-The `query` is the raw Spotlight input, already lowercased and trimmed. An empty query is the convention for "no input yet" — most sources return `[]` in that case so they do not flood the palette before the user has typed anything.
+The `query` is the raw Spotlight input, already lowercased and trimmed. An empty query is the convention for "no input yet"; most sources return `[]` in that case so they do not flood the palette before the user has typed anything.
 
 ```tsx
 useEffect(() => {
@@ -77,9 +74,9 @@ Every result row shows a small accent tile, a name, an optional tagline on the r
 
 ## Error safety
 
-Spotlight calls every registered source on every keystroke. A misbehaving source — one that throws while filtering — would otherwise take down the whole palette. To prevent that, sources are invoked inside a try/catch: throws are swallowed and the source contributes zero results for that keystroke. Errors are logged to the console in development.
+Spotlight calls every registered source on every keystroke. A misbehaving source (one that throws while filtering) would otherwise take down the whole palette. To prevent that, sources are invoked inside a try/catch: throws are swallowed and the source contributes zero results for that keystroke. Errors are logged to the console in development.
 
-This means you can register a source against unstable data without guarding every property access. But if a source consistently throws, the right fix is still to repair the source — not rely on the swallow.
+This means you can register a source against unstable data without guarding every property access. But if a source consistently throws, the right fix is still to repair the source, not rely on the swallow.
 
 ## Example: docs pages
 
@@ -129,12 +126,12 @@ Mount it inside `<Desktop>` as a child so any provider context (`useWindowManage
 
 ## When to prefer `registerSystemWindow` instead
 
-If activating the result should open a window that lives inside react-ui-os — chrome, traffic lights, dock indicator, minimize-to-genie, all of it — register a system window instead. Every entry in the system-window registry is automatically a Spotlight result, with `openWindow(...)` wired as the activator.
+If activating the result should open a window that lives inside react-ui-os (chrome, traffic lights, dock indicator, minimize-to-genie, all of it), register a system window instead. Every entry in the system-window registry is automatically a Spotlight result, with `openWindow(...)` wired as the activator.
 
 Reach for `registerSpotlightSource` when the activation is anything else: navigate, open a URL, dispatch an event, mutate app state.
 
 ## See also
 
-- [Spotlight](/components/spotlight/) — the palette itself.
-- [Desktop](/components/desktop/) — the entry point that mounts Spotlight by default.
-- [useWindowManager](/api/usewindowmanager/) — for sources whose `onActivate` opens a managed window.
+- [Spotlight](/components/spotlight/): the palette itself.
+- [Desktop](/components/desktop/): the entry point that mounts Spotlight by default.
+- [useWindowManager](/api/usewindowmanager/): for sources whose `onActivate` opens a managed window.

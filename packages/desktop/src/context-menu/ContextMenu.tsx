@@ -95,9 +95,7 @@ function Surface({ state }: { state: ContextMenuState }) {
   const navItems = items
     .map((item, idx) => ({ item, idx }))
     .filter(({ item }) => !item.separator && !item.disabled);
-  const [focusIdx, setFocusIdx] = useState<number>(
-    navItems[0]?.idx ?? -1,
-  );
+  const [focusIdx, setFocusIdx] = useState<number>(navItems[0]?.idx ?? -1);
 
   useEffect(() => {
     if (navItems.length === 0) return;
@@ -156,7 +154,7 @@ function Surface({ state }: { state: ContextMenuState }) {
       role="presentation"
       onClick={handleBackdrop}
       onContextMenu={(e) => {
-        // Don't close — let the new contextmenu event hit window listeners.
+        // Don't close. Let the new contextmenu event hit window listeners.
         // But suppress the native browser menu.
         e.preventDefault();
         closeContextMenu();

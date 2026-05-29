@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 /**
  * Status items are the small widgets that live in the right-hand cluster
  * of the menu bar. Battery indicators, network status, sync state, an
- * online dot, a current-track player — anything that lives outside the
+ * online dot, a current-track player, anything that lives outside the
  * app windows and needs a permanent home next to the clock.
  *
  * The contract mirrors `registerSpotlightSource`: register an item from
@@ -32,7 +32,7 @@ const items = new Map<string, StatusItem>();
 const listeners = new Set<() => void>();
 // Cached snapshot. `listStatusItems` is used as the getSnapshot for
 // useSyncExternalStore, so it MUST return the same array reference
-// between mutations — otherwise React detects an "always-different"
+// between mutations. Otherwise React detects an "always-different"
 // snapshot and bails with "result of getServerSnapshot should be
 // cached", which manifests as an infinite render loop.
 let cachedSnapshot: StatusItem[] = [];

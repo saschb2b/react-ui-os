@@ -1,17 +1,7 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type CSSProperties,
-} from "react";
-import {
-  useWindowManager,
-  windowIdOf,
-  type App,
-} from "@react-ui-os/core";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useWindowManager, windowIdOf, type App } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { pickInitialBounds } from "./util/initial-bounds";
 
@@ -23,7 +13,7 @@ import { pickInitialBounds } from "./util/initial-bounds";
  *
  * MRU order comes from window z-index: the highest z is the most recent
  * focus, so the first Cmd+Tab selects the second entry (Mac convention).
- * Apps without any open window aren't included — the switcher targets
+ * Apps without any open window aren't included. The switcher targets
  * running apps, not the launcher.
  */
 export function AppSwitcher() {
@@ -63,11 +53,7 @@ export function AppSwitcher() {
       if (!win) {
         openWindow(
           { kind: "app", appId: target.id },
-          pickInitialBounds(
-            { kind: "app", appId: target.id },
-            theme,
-            apps,
-          ),
+          pickInitialBounds({ kind: "app", appId: target.id }, theme, apps),
         );
       } else if (win.state === "minimized") {
         restoreWindow(id);
@@ -88,9 +74,7 @@ export function AppSwitcher() {
       const t = e.target as HTMLElement | null;
       if (
         t &&
-        (t.tagName === "INPUT" ||
-          t.tagName === "TEXTAREA" ||
-          t.isContentEditable)
+        (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)
       ) {
         return;
       }
@@ -121,7 +105,7 @@ export function AppSwitcher() {
     const handleUp = (e: KeyboardEvent) => {
       if (!open) return;
       // The switcher closes when the modifier itself is released. We do not
-      // try to detect "user let go of all keys" — that lets quick double-
+      // try to detect "user let go of all keys": that lets quick double-
       // tap Cmd+Tab cycles work the way every OS does it.
       if (e.key === "Meta" || e.key === "Control") {
         activate(index);
@@ -199,12 +183,7 @@ function Overlay({
           }}
         >
           {candidates.map((app, i) => (
-            <Tile
-              key={app.id}
-              app={app}
-              focused={i === index}
-              theme={theme}
-            />
+            <Tile key={app.id} app={app} focused={i === index} theme={theme} />
           ))}
         </div>
         <div

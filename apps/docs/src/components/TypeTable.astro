@@ -9,9 +9,9 @@
  *   <TypeTable name="StorageAdapter" />
  *
  * Optional props:
- *   - `hideDescription` — skips the type-level JSDoc paragraph above the
+ *   - `hideDescription`: skips the type-level JSDoc paragraph above the
  *     table when the surrounding prose already covers it.
- *   - `omit={['internalField']}` — drops fields by name.
+ *   - `omit={['internalField']}`: drops fields by name.
  */
 import types from "../data/types.json";
 
@@ -88,7 +88,7 @@ const repoBlob = "https://github.com/saschb2b/react-ui-os/blob/main";
                   <code>{field.type}</code>
                 </td>
                 <td class="rui-type-table__desc">
-                  {field.description ?? <span class="rui-type-table__muted">—</span>}
+                  {field.description ?? <span class="rui-type-table__muted">·</span>}
                 </td>
               </tr>
             ))}

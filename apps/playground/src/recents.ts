@@ -49,11 +49,7 @@ export function deleteRecent(storage: StorageAdapter, id: string): void {
   );
 }
 
-export function renameRecent(
-  storage: StorageAdapter,
-  id: string,
-  name: string,
-): void {
+export function renameRecent(storage: StorageAdapter, id: string, name: string): void {
   const trimmed = name.trim();
   if (!trimmed) return;
   storage.set(

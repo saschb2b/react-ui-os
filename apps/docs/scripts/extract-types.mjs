@@ -34,26 +34,98 @@ const outFile = resolve(__dirname, "..", "src", "data", "types.json");
 /** @type {Target[]} */
 const targets = [
   // Core / public-surface types
-  { name: "App", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "AppContentProps", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "OsTheme", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "OsThemePalette", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "OsThemeShape", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "OsThemeMotion", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "OsThemeBlur", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "OsThemeWallpaper", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "OsThemeChrome", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "CustomizableField", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "ColorFromPaletteField", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "RangeField", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "SelectField", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "ToggleField", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
-  { name: "ImagePickField", sourceFile: "packages/core/src/types.ts", package: "@react-ui-os/core" },
+  {
+    name: "App",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "AppContentProps",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "OsTheme",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "OsThemePalette",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "OsThemeShape",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "OsThemeMotion",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "OsThemeBlur",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "OsThemeWallpaper",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "OsThemeChrome",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "CustomizableField",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "ColorFromPaletteField",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "RangeField",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "SelectField",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "ToggleField",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
+  {
+    name: "ImagePickField",
+    sourceFile: "packages/core/src/types.ts",
+    package: "@react-ui-os/core",
+  },
   // Storage adapter
-  { name: "StorageAdapter", sourceFile: "packages/core/src/storage/types.ts", package: "@react-ui-os/core" },
+  {
+    name: "StorageAdapter",
+    sourceFile: "packages/core/src/storage/types.ts",
+    package: "@react-ui-os/core",
+  },
   // Desktop primitives
-  { name: "SpotlightResult", sourceFile: "packages/desktop/src/spotlight-sources.ts", package: "@react-ui-os/desktop" },
-  { name: "SpotlightSource", sourceFile: "packages/desktop/src/spotlight-sources.ts", package: "@react-ui-os/desktop" },
+  {
+    name: "SpotlightResult",
+    sourceFile: "packages/desktop/src/spotlight-sources.ts",
+    package: "@react-ui-os/desktop",
+  },
+  {
+    name: "SpotlightSource",
+    sourceFile: "packages/desktop/src/spotlight-sources.ts",
+    package: "@react-ui-os/desktop",
+  },
 ];
 
 function readJsDoc(node) {
@@ -76,9 +148,7 @@ function memberTypeText(member, sourceFile) {
     const typeParams = member.typeParameters
       ?.map((tp) => tp.getText(sourceFile))
       .join(", ");
-    const params = member.parameters
-      .map((p) => p.getText(sourceFile))
-      .join(", ");
+    const params = member.parameters.map((p) => p.getText(sourceFile)).join(", ");
     const ret = member.type ? member.type.getText(sourceFile) : "void";
     const generics = typeParams ? `<${typeParams}>` : "";
     return `${generics}(${params}) => ${ret}`;

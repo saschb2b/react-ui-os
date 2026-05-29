@@ -7,9 +7,13 @@ sidebar:
 
 import LivePreview from "~/components/LivePreview.astro";
 
-The default `title=""` attribute is fast to write and slow to render — the browser shows it after about 1500 ms, in its own un-themed font, with no shortcut hint, and no flipping if it would clip the viewport. `<Tooltip>` replaces it everywhere the library shows one and is available for consumer code to use the same way.
+The default `title=""` attribute is fast to write and slow to render; the browser shows it after about 1500 ms, in its own un-themed font, with no shortcut hint, and no flipping if it would clip the viewport. `<Tooltip>` replaces it everywhere the library shows one and is available for consumer code to use the same way.
 
-<LivePreview src="?demo=dock" label="Hover a dock tile or a workspace pip to see the themed tooltip" height="460px" />
+<LivePreview
+  src="?demo=dock"
+  label="Hover a dock tile or a workspace pip to see the themed tooltip"
+  height="460px"
+/>
 
 ## Import
 
@@ -27,20 +31,20 @@ import { Tooltip } from "@react-ui-os/desktop";
 </Tooltip>
 ```
 
-Tooltip clones its child to inject pointer / focus handlers. The child must be a single React element that accepts those handlers — a `<button>`, a `<div>`, a `<span>`, or anything that forwards them.
+Tooltip clones its child to inject pointer / focus handlers. The child must be a single React element that accepts those handlers: a `<button>`, a `<div>`, a `<span>`, or anything that forwards them.
 
 ## Props
 
-| Prop        | Type                                  | Default | Description                                              |
-| ----------- | ------------------------------------- | ------- | -------------------------------------------------------- |
-| `text`      | `string`                              | —       | Body line. Keep glanceable.                              |
-| `shortcut`  | `string`                              | —       | Optional right-aligned hint (`"⌘K"`, `"F2"`, `"↵"`).     |
-| `placement` | `"top" \| "bottom" \| "left" \| "right"` | `"top"` | Preferred edge. Flips automatically if it would clip.    |
-| `disabled`  | `boolean`                             | `false` | Suppress without unwrapping the child.                   |
+| Prop        | Type                                     | Default | Description                                           |
+| ----------- | ---------------------------------------- | ------- | ----------------------------------------------------- |
+| `text`      | `string`                                 | none    | Body line. Keep glanceable.                           |
+| `shortcut`  | `string`                                 | none    | Optional right-aligned hint (`"⌘K"`, `"F2"`, `"↵"`).  |
+| `placement` | `"top" \| "bottom" \| "left" \| "right"` | `"top"` | Preferred edge. Flips automatically if it would clip. |
+| `disabled`  | `boolean`                                | `false` | Suppress without unwrapping the child.                |
 
 ## Behavior
 
-- **Show delay:** ~480 ms first time, ~60 ms while warm. Once any tooltip has hidden in the last ~800 ms, the next one comes up almost instantly — moving the cursor between dock tiles doesn't re-pay the delay.
+- **Show delay:** ~480 ms first time, ~60 ms while warm. Once any tooltip has hidden in the last ~800 ms, the next one comes up almost instantly. Moving the cursor between dock tiles doesn't re-pay the delay.
 - **Hide:** pointer leave or blur. No persistent hover-on-tooltip behavior to avoid stuck states.
 - **Flipping:** the surface measures itself; if the preferred placement would overflow the viewport, it flips to the opposite edge. Final clamp keeps it on-screen no matter what.
 - **Focus access:** `<Tooltip>` listens for `onFocus` / `onBlur` too, so keyboard-only users see the same hint when they tab to an element.
@@ -56,11 +60,11 @@ Tooltip clones its child to inject pointer / focus handlers. The child must be a
 
 ## Accessibility
 
-- Surface is `role="tooltip"`. Screen readers read the original element's `aria-label` (or `title`, or text); the tooltip body is supplementary, not authoritative — keep `aria-label` semantically meaningful.
+- Surface is `role="tooltip"`. Screen readers read the original element's `aria-label` (or `title`, or text); the tooltip body is supplementary, not authoritative. Keep `aria-label` semantically meaningful.
 - Honoring focus events means keyboard navigation lights up the tooltip the same way hover does.
 - The `text` you pass is rendered as visible content; do **not** use it as the only label for an icon-only button. Add an `aria-label` to the button itself.
 
 ## See also
 
-- [ContextMenu](/components/contextmenu/) — for actionable hover, not just informational.
-- [HUD overlay](/components/hud/) — for momentary feedback after an action.
+- [ContextMenu](/components/contextmenu/): for actionable hover, not just informational.
+- [HUD overlay](/components/hud/): for momentary feedback after an action.

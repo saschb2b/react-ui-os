@@ -107,9 +107,7 @@ function DemoActivator() {
           });
           if (demo === "notification-center") {
             window.setTimeout(() => {
-              window.dispatchEvent(
-                new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT),
-              );
+              window.dispatchEvent(new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT));
             }, 400);
           }
           break;
@@ -117,9 +115,24 @@ function DemoActivator() {
         case "recents": {
           const now = Date.now();
           const items = [
-            { id: "demo-1", name: "Sketch.txt", kind: "txt", createdAt: now - 5 * 60000 },
-            { id: "demo-2", name: "Recipe.md", kind: "md", createdAt: now - 30 * 60000 },
-            { id: "demo-3", name: "Bookmark", kind: "url", createdAt: now - 60 * 60000 },
+            {
+              id: "demo-1",
+              name: "Sketch.txt",
+              kind: "txt",
+              createdAt: now - 5 * 60000,
+            },
+            {
+              id: "demo-2",
+              name: "Recipe.md",
+              kind: "md",
+              createdAt: now - 30 * 60000,
+            },
+            {
+              id: "demo-3",
+              name: "Bookmark",
+              kind: "url",
+              createdAt: now - 60 * 60000,
+            },
             { id: "demo-4", name: "Idea.md", kind: "md", createdAt: now - 90 * 60000 },
           ];
           window.localStorage.setItem("rui-os:recents", JSON.stringify(items));

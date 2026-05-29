@@ -16,9 +16,7 @@ function run(...actions: WindowManagerAction[]): WindowManagerState {
 describe("workspaces in windowManagerReducer", () => {
   it("seeds three workspaces and starts on the first", () => {
     expect(initialWindowManagerState.workspaces).toEqual(DEFAULT_WORKSPACES);
-    expect(initialWindowManagerState.activeWorkspaceId).toBe(
-      DEFAULT_WORKSPACES[0],
-    );
+    expect(initialWindowManagerState.activeWorkspaceId).toBe(DEFAULT_WORKSPACES[0]);
   });
 
   it("new windows inherit the active workspace", () => {
@@ -68,7 +66,7 @@ describe("workspaces in windowManagerReducer", () => {
       { type: "OPEN", payload: { kind: "app", appId: "b" } },
       { type: "MOVE_WINDOW_TO_WORKSPACE", id: "app:b", workspaceId: "2" },
     );
-    // b was focused (just opened) and just left workspace 1 — focus should
+    // b was focused (just opened) and just left workspace 1. Focus should
     // hand off to a, which is the only remaining window here.
     expect(s.focusedId).toBe("app:a");
   });

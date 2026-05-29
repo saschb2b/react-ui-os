@@ -40,13 +40,7 @@ export interface DesktopProps {
  * and Spotlight. Replace with `<DesktopProvider>` + your own layout when
  * you need finer control.
  */
-export function Desktop({
-  apps,
-  theme,
-  brand,
-  storage,
-  children,
-}: DesktopProps) {
+export function Desktop({ apps, theme, brand, storage, children }: DesktopProps) {
   return (
     <DesktopProvider apps={apps} theme={theme} storage={storage}>
       <div

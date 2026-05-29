@@ -1,10 +1,6 @@
 import { useMemo } from "react";
 import type { App as OsApp, OsTheme } from "@react-ui-os/core";
-import {
-  Desktop,
-  registerSystemWindow,
-  useDesktopContext,
-} from "@react-ui-os/desktop";
+import { Desktop, registerSystemWindow, useDesktopContext } from "@react-ui-os/desktop";
 import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
 import { createSaasTheme } from "@react-ui-os/theme-saas";
@@ -30,20 +26,18 @@ function HelloContent({ focused }: { focused: boolean }) {
     <div>
       <h2 style={{ margin: "0 0 8px" }}>Hello, desktop.</h2>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
-        Drag the title bar. Drag any edge or corner to resize. Double-click the
-        title bar (or click the green light) to maximize, then press Escape to
-        restore.
+        Drag the title bar. Drag any edge or corner to resize. Double-click the title
+        bar (or click the green light) to maximize, then press Escape to restore.
       </p>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
-        Press <kbd>Cmd-K</kbd> or <kbd>Ctrl-K</kbd> for Spotlight,{" "}
-        <kbd>Cmd-,</kbd> for Settings. <kbd>Cmd-W</kbd> closes,{" "}
-        <kbd>Cmd-M</kbd> minimizes, <kbd>Cmd-1</kbd>/<kbd>2</kbd>/<kbd>3</kbd>{" "}
-        jumps between apps.
+        Press <kbd>Cmd-K</kbd> or <kbd>Ctrl-K</kbd> for Spotlight, <kbd>Cmd-,</kbd> for
+        Settings. <kbd>Cmd-W</kbd> closes, <kbd>Cmd-M</kbd> minimizes, <kbd>Cmd-1</kbd>/
+        <kbd>2</kbd>/<kbd>3</kbd> jumps between apps.
       </p>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
         Try a different theme: append <kbd>?theme=mintables</kbd> or{" "}
-        <kbd>?theme=saas</kbd> to the URL and reload. SaaS pins the dock to
-        the left edge and hides the menu bar.
+        <kbd>?theme=saas</kbd> to the URL and reload. SaaS pins the dock to the left
+        edge and hides the menu bar.
       </p>
       <div
         style={{
@@ -94,8 +88,8 @@ function NotesContent() {
     <div>
       <h2 style={{ margin: "0 0 8px" }}>Notes</h2>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        Plain notes app. Open me by clicking my dock tile, by pressing{" "}
-        <kbd>Cmd-2</kbd>, or by typing "notes" into Spotlight.
+        Plain notes app. Open me by clicking my dock tile, by pressing <kbd>Cmd-2</kbd>,
+        or by typing "notes" into Spotlight.
       </p>
     </div>
   );
@@ -106,8 +100,8 @@ function CalculatorContent() {
     <div>
       <h2 style={{ margin: "0 0 8px" }}>Calculator</h2>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        Three apps gives Spotlight something to search. Try{" "}
-        <kbd>Cmd-K</kbd> then "calc".
+        Three apps gives Spotlight something to search. Try <kbd>Cmd-K</kbd> then
+        "calc".
       </p>
     </div>
   );

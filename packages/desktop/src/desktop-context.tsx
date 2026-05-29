@@ -9,12 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type {
-  App,
-  OsTheme,
-  SettingsPrefs,
-  StorageAdapter,
-} from "@react-ui-os/core";
+import type { App, OsTheme, SettingsPrefs, StorageAdapter } from "@react-ui-os/core";
 import { applyPrefs, createLocalStorageAdapter } from "@react-ui-os/core";
 
 interface DesktopContextValue {
@@ -46,10 +41,7 @@ function prefsKey(themeId: string): string {
   return `settings:${themeId}`;
 }
 
-function readStoredPrefs(
-  storage: StorageAdapter,
-  themeId: string,
-): SettingsPrefs {
+function readStoredPrefs(storage: StorageAdapter, themeId: string): SettingsPrefs {
   const raw = storage.get<SettingsPrefs>(prefsKey(themeId));
   return raw && typeof raw === "object" ? raw : {};
 }
@@ -103,7 +95,6 @@ export function DesktopContextProvider({
 
   const resetPref = useCallback(
     (path: string) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [path]: _omit, ...rest } = prefs;
       writePrefs(rest);
     },
@@ -135,9 +126,7 @@ export function DesktopContextProvider({
     };
   }, [apps, baseTheme, theme, storage, prefs, setPref, resetPref, resetAllPrefs]);
 
-  return (
-    <DesktopContext.Provider value={value}>{children}</DesktopContext.Provider>
-  );
+  return <DesktopContext.Provider value={value}>{children}</DesktopContext.Provider>;
 }
 
 export function useDesktopContext(): DesktopContextValue {

@@ -19,7 +19,7 @@ export interface NotificationItem {
   accent?: string;
   /** Lucide-style icon. Letter fallback when absent. */
   icon?: ComponentType<{ size?: number }>;
-  /** Severity hint — affects accent / icon if not explicitly set. */
+  /** Severity hint: affects accent / icon if not explicitly set. */
   level?: "info" | "success" | "warn" | "error";
   /**
    * Auto-dismiss duration in ms. `0` keeps the toast pinned until the

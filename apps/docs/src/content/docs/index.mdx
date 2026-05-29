@@ -32,9 +32,7 @@ Most React UI libraries ship fifty components and let you wire them. That instin
 import { Desktop } from "@react-ui-os/desktop";
 import { defaultTheme } from "@react-ui-os/theme-default";
 
-const apps = [
-  { id: "notes", name: "Notes", content: () => <h1>Hello, desktop.</h1> },
-];
+const apps = [{ id: "notes", name: "Notes", content: () => <h1>Hello, desktop.</h1> }];
 
 <Desktop apps={apps} theme={defaultTheme} />;
 ```

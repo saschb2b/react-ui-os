@@ -19,7 +19,7 @@ interface ToggleProps {
 }
 
 /**
- * Themed switch. Renders a labelled row with a sliding thumb track —
+ * Themed switch. Renders a labelled row with a sliding thumb track,
  * macOS-style. Built on a real `<button role="switch">` so screen
  * readers and keyboard users get the right semantics and focus ring.
  */

@@ -11,13 +11,7 @@ import starlight from "@astrojs/starlight";
 // condition handles this for the dev server, but the production build's
 // commonjs resolver ignores it and falls back to the missing `dist/index.js`.
 // An explicit alias is honored by every resolver in both dev and build.
-const PACKAGES = [
-  "core",
-  "desktop",
-  "theme-default",
-  "theme-mintables",
-  "theme-saas",
-];
+const PACKAGES = ["core", "desktop", "theme-default", "theme-mintables", "theme-saas"];
 const sourceAliases = PACKAGES.map((name) => ({
   find: `@react-ui-os/${name}`,
   replacement: fileURLToPath(
@@ -27,12 +21,12 @@ const sourceAliases = PACKAGES.map((name) => ({
 
 // GitHub Pages deploy. Change `site` and drop `base` once a custom domain
 // is wired up via a CNAME file. The workflow at .github/workflows/docs.yml
-// reads neither — it just builds with these values baked in.
+// reads neither: it just builds with these values baked in.
 const SITE = process.env.ASTRO_SITE ?? "https://saschb2b.github.io";
 const BASE = process.env.ASTRO_BASE ?? "/react-ui-os";
 
 // Social card image used by every page. Using the desktop wallpaper as the
-// stand-in until a dedicated branded card is rendered — see Changelog
+// stand-in until a dedicated branded card is rendered, see Changelog
 // roadmap. The image lives at apps/docs/public/wallpaper.jpg.
 const SOCIAL_IMAGE = `${SITE}${BASE}/wallpaper.jpg`;
 
@@ -49,16 +43,28 @@ export default defineConfig({
         "A React component library that ships a working OS-style desktop in one line.",
       logo: undefined,
       head: [
-        // Open Graph — Slack, LinkedIn, iMessage.
+        // Open Graph: Slack, LinkedIn, iMessage.
         { tag: "meta", attrs: { property: "og:type", content: "website" } },
         { tag: "meta", attrs: { property: "og:image", content: SOCIAL_IMAGE } },
         { tag: "meta", attrs: { property: "og:image:width", content: "3840" } },
         { tag: "meta", attrs: { property: "og:image:height", content: "2160" } },
-        { tag: "meta", attrs: { property: "og:image:alt", content: "react-ui-os desktop wallpaper" } },
+        {
+          tag: "meta",
+          attrs: { property: "og:image:alt", content: "react-ui-os desktop wallpaper" },
+        },
         // Twitter / X.
-        { tag: "meta", attrs: { name: "twitter:card", content: "summary_large_image" } },
+        {
+          tag: "meta",
+          attrs: { name: "twitter:card", content: "summary_large_image" },
+        },
         { tag: "meta", attrs: { name: "twitter:image", content: SOCIAL_IMAGE } },
-        { tag: "meta", attrs: { name: "twitter:image:alt", content: "react-ui-os desktop wallpaper" } },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:image:alt",
+            content: "react-ui-os desktop wallpaper",
+          },
+        },
         // Theme color picks up the dock accent in browser chrome.
         { tag: "meta", attrs: { name: "theme-color", content: "#7c66f5" } },
       ],

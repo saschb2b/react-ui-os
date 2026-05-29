@@ -75,7 +75,7 @@ A user's accent, dock position, and window arrangement now follow them across de
 
 ## Dynamic app registry
 
-Apps don't have to be a literal array — anything that resolves to an `App[]` works. Useful when a tenant's plan determines which features show up.
+Apps don't have to be a literal array; anything that resolves to an `App[]` works. Useful when a tenant's plan determines which features show up.
 
 ```tsx
 import { useEffect, useState } from "react";
@@ -135,7 +135,7 @@ export function RemoteSearchSource() {
           cacheRef.current.set(query, rows);
         })
         .catch(() => {
-          // Aborted by next keystroke — fine.
+          // Aborted by next keystroke, fine.
         });
 
       return (cached ?? []).map((row: any) => ({
@@ -156,7 +156,7 @@ The first keystroke shows nothing because the cache is cold, but a few character
 
 ## Open a window from a URL route
 
-The window manager doesn't own routing, but it doesn't fight it either. Route components mount, dispatch `openWindow`, then return `null` — the route is just a hook.
+The window manager doesn't own routing, but it doesn't fight it either. Route components mount, dispatch `openWindow`, then return `null`: the route is just a hook.
 
 ```tsx
 // app/(routes)/files/page.tsx
@@ -182,7 +182,7 @@ A system window can be opened with `args` and the name resolved per instance. Tw
 import { registerSystemWindow } from "@react-ui-os/desktop";
 
 registerSystemWindow("inspector", {
-  name: ({ targetId }) => `Inspector — ${String(targetId)}`,
+  name: ({ targetId }) => `Inspector: ${String(targetId)}`,
   defaultBounds: { w: 360, h: 480 },
   content: ({ args }) => <InspectorContent id={String(args?.targetId)} />,
 });
@@ -196,7 +196,7 @@ See [`SystemWindowArgs`](/changelog/#unreleased) for the underlying serializatio
 
 ## Conditional desktop folders
 
-A folder icon should only show up when there's something in it. `appearsAsDesktopIcon` is the gate — it reads from the storage adapter so the same predicate sees per-user state in a multi-tenant deploy.
+A folder icon should only show up when there's something in it. `appearsAsDesktopIcon` is the gate: it reads from the storage adapter so the same predicate sees per-user state in a multi-tenant deploy.
 
 ```tsx
 import { registerSystemWindow } from "@react-ui-os/desktop";

@@ -14,10 +14,7 @@ import { useApp, useApps, useTheme } from "./desktop-context";
 import { getDockTileRect } from "./Dock";
 import { clampWindowToWorkArea } from "./util/clamp";
 import { pickInitialBounds } from "./util/initial-bounds";
-import {
-  openContextMenu,
-  type ContextMenuItem,
-} from "./context-menu";
+import { openContextMenu, type ContextMenuItem } from "./context-menu";
 import {
   computeSnapZone,
   rectForZone,
@@ -46,11 +43,7 @@ function snapZoneLabel(zone: SnapZone): string {
   }
 }
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
-import {
-  getChromeMetrics,
-  getMenuBarHeight,
-  getWorkArea,
-} from "./util/layout";
+import { getChromeMetrics, getMenuBarHeight, getWorkArea } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
 
 interface WindowProps {
@@ -112,20 +105,18 @@ export function Window({ win }: WindowProps) {
   const metrics = getChromeMetrics(mode);
   const titleBarHeight = metrics.titleBarHeight;
 
-  const appPayload =
-    win.payload.kind === "app" ? win.payload.appId : undefined;
+  const appPayload = win.payload.kind === "app" ? win.payload.appId : undefined;
   const app = useApp(appPayload ?? "__none__");
   const systemDef =
-    win.payload.kind === "system"
-      ? getSystemWindow(win.payload.systemId)
-      : undefined;
-  const systemArgs =
-    win.payload.kind === "system" ? win.payload.args : undefined;
+    win.payload.kind === "system" ? getSystemWindow(win.payload.systemId) : undefined;
+  const systemArgs = win.payload.kind === "system" ? win.payload.args : undefined;
 
   const title =
     win.payload.kind === "app"
       ? (app?.name ?? "Window")
-      : (systemDef ? resolveSystemWindowName(systemDef, systemArgs) : "Window");
+      : systemDef
+        ? resolveSystemWindowName(systemDef, systemArgs)
+        : "Window";
   const accent =
     win.payload.kind === "app"
       ? (app?.accent ?? theme.palette.accent)
@@ -175,8 +166,10 @@ export function Window({ win }: WindowProps) {
     const dockRect = appPayload ? getDockTileRect(appPayload) : null;
     if (el && dockRect) {
       const winRect = el.getBoundingClientRect();
-      const dx = dockRect.left + dockRect.width / 2 - (winRect.left + winRect.width / 2);
-      const dy = dockRect.top + dockRect.height / 2 - (winRect.top + winRect.height / 2);
+      const dx =
+        dockRect.left + dockRect.width / 2 - (winRect.left + winRect.width / 2);
+      const dy =
+        dockRect.top + dockRect.height / 2 - (winRect.top + winRect.height / 2);
       el.style.setProperty("--genie-dx", `${String(dx)}px`);
       el.style.setProperty("--genie-dy", `${String(dy)}px`);
     }
@@ -246,7 +239,16 @@ export function Window({ win }: WindowProps) {
         ariaLabel: `${title} window menu`,
       });
     },
-    [handleClose, handleMaximize, handleMinimize, win.state, win.id, win.workspaceId, title, wm],
+    [
+      handleClose,
+      handleMaximize,
+      handleMinimize,
+      win.state,
+      win.id,
+      win.workspaceId,
+      title,
+      wm,
+    ],
   );
 
   const startDrag = useCallback(
@@ -473,21 +475,14 @@ export function Window({ win }: WindowProps) {
         ) : null}
       </div>
       {!maximized && (
-        <ResizeHandles
-          onStart={startResize}
-          onMove={moveResize}
-          onEnd={endResize}
-        />
+        <ResizeHandles onStart={startResize} onMove={moveResize} onEnd={endResize} />
       )}
     </div>
   );
 }
 
 interface ResizeHandlesProps {
-  onStart: (
-    dir: ResizeDir,
-    e: ReactPointerEvent<HTMLDivElement>,
-  ) => void;
+  onStart: (dir: ResizeDir, e: ReactPointerEvent<HTMLDivElement>) => void;
   onMove: (e: ReactPointerEvent<HTMLDivElement>) => void;
   onEnd: (e: ReactPointerEvent<HTMLDivElement>) => void;
 }
@@ -501,11 +496,7 @@ const CORNER_SIZE = 12;
  * state machine so handles only need to forward pointer events.
  */
 function ResizeHandles({ onStart, onMove, onEnd }: ResizeHandlesProps) {
-  const edge = (
-    dir: ResizeDir,
-    style: React.CSSProperties,
-    cursor: string,
-  ) => (
+  const edge = (dir: ResizeDir, style: React.CSSProperties, cursor: string) => (
     <div
       key={dir}
       onPointerDown={(e) => {
@@ -667,9 +658,7 @@ function TitleBar({
           fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
           fontSize: 12,
           fontWeight: 500,
-          color: focused
-            ? theme.palette.textPrimary
-            : theme.palette.textSecondary,
+          color: focused ? theme.palette.textPrimary : theme.palette.textSecondary,
         }}
       >
         {title}
@@ -698,9 +687,24 @@ function TrafficLights({
       }}
       style={{ display: "flex", gap: 6 }}
     >
-      <TrafficLight color="#ff5f57" hoverGlyph="x" onClick={onClose} focused={focused} />
-      <TrafficLight color="#febc2e" hoverGlyph="-" onClick={onMinimize} focused={focused} />
-      <TrafficLight color="#28c840" hoverGlyph="+" onClick={onMaximize} focused={focused} />
+      <TrafficLight
+        color="#ff5f57"
+        hoverGlyph="x"
+        onClick={onClose}
+        focused={focused}
+      />
+      <TrafficLight
+        color="#febc2e"
+        hoverGlyph="-"
+        onClick={onMinimize}
+        focused={focused}
+      />
+      <TrafficLight
+        color="#28c840"
+        hoverGlyph="+"
+        onClick={onMaximize}
+        focused={focused}
+      />
     </div>
   );
 }
@@ -737,7 +741,9 @@ function TrafficLight({
         color: "rgba(0,0,0,0.6)",
         boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.25)",
       }}
-      aria-label={hoverGlyph === "x" ? "Close" : hoverGlyph === "-" ? "Minimize" : "Maximize"}
+      aria-label={
+        hoverGlyph === "x" ? "Close" : hoverGlyph === "-" ? "Minimize" : "Maximize"
+      }
     >
       {/* Glyph hidden by default, revealed on group hover via a parent CSS rule
           if a theme wants it. For phase 1, traffic lights stay glyph-less to

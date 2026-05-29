@@ -9,10 +9,7 @@ import {
   type ContextMenuItem,
 } from "./context-menu";
 import { pickInitialBounds } from "./util/initial-bounds";
-import {
-  NOTIFICATION_CENTER_TOGGLE_EVENT,
-  SPOTLIGHT_OPEN_EVENT,
-} from "./events";
+import { NOTIFICATION_CENTER_TOGGLE_EVENT, SPOTLIGHT_OPEN_EVENT } from "./events";
 
 interface DesktopBackdropProps {
   /** Extra items appended to the default set. */
@@ -28,7 +25,7 @@ interface DesktopBackdropProps {
  * Catches right-clicks on the desktop background and pops a system menu.
  * Uses a document-level capture-phase listener and bails out when the
  * click landed inside a window, dock, menu bar, or other interactive
- * surface — anything that already has its own context menu (or a sane
+ * surface. Anything that already has its own context menu (or a sane
  * "nothing" behavior) keeps it.
  *
  * Default items surface system entry points: Spotlight, Notifications,
@@ -40,10 +37,7 @@ interface DesktopBackdropProps {
  * `<DesktopProvider>` composition if you want it but with a custom
  * item set.
  */
-export function DesktopBackdrop({
-  extraItems,
-  buildItems,
-}: DesktopBackdropProps = {}) {
+export function DesktopBackdrop({ extraItems, buildItems }: DesktopBackdropProps = {}) {
   const { windows, minimizeWindow, openWindow } = useWindowManager();
   const theme = useTheme();
   const apps = useApps();
@@ -52,21 +46,17 @@ export function DesktopBackdrop({
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      // Bail when the event landed inside a region with its own menu —
+      // Bail when the event landed inside a region with its own menu:
       // the FileExplorer, anything wrapped in ContextMenuAnchor, etc.
       if (target.closest("[data-rui-context-region]")) return;
-      // Bail when the event landed inside a real window or system chrome
-      // — those have their own contextmenu handlers or intentionally none.
+      // Bail when the event landed inside a real window or system chrome.
+      // Those have their own contextmenu handlers or intentionally none.
       if (target.closest("[data-rui-window]")) return;
       if (target.closest("[data-rui-dock]")) return;
       if (target.closest("[data-rui-menubar]")) return;
       // Don't fight form controls.
       const tag = target.tagName.toLowerCase();
-      if (
-        tag === "input" ||
-        tag === "textarea" ||
-        target.isContentEditable
-      ) {
+      if (tag === "input" || tag === "textarea" || target.isContentEditable) {
         return;
       }
 
@@ -83,9 +73,7 @@ export function DesktopBackdrop({
         {
           label: "Notifications",
           onSelect: () => {
-            window.dispatchEvent(
-              new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT),
-            );
+            window.dispatchEvent(new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT));
           },
         },
         { separator: true },

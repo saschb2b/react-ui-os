@@ -42,13 +42,13 @@ customizable: {
 
 ## Field kinds
 
-| Kind                  | Editor                                                                                  | Required fields                                            |
-| --------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `color-from-palette`  | A row of color swatches.                                                                | `options: string[]` (hex / CSS colors)                     |
-| `image-pick`          | A thumbnail grid.                                                                       | `options: Array<{ src: string; label: string }>`           |
-| `range`               | A slider with a tabular-numeric readout.                                                | `min`, `max`, `step`; optional `unit`                      |
-| `select`              | A segmented control.                                                                    | `options: Array<{ value: string; label: string }>`         |
-| `toggle`              | An iOS-style switch (`role="switch"`).                                                  | _(none)_                                                   |
+| Kind                 | Editor                                   | Required fields                                    |
+| -------------------- | ---------------------------------------- | -------------------------------------------------- |
+| `color-from-palette` | A row of color swatches.                 | `options: string[]` (hex / CSS colors)             |
+| `image-pick`         | A thumbnail grid.                        | `options: Array<{ src: string; label: string }>`   |
+| `range`              | A slider with a tabular-numeric readout. | `min`, `max`, `step`; optional `unit`              |
+| `select`             | A segmented control.                     | `options: Array<{ value: string; label: string }>` |
+| `toggle`             | An iOS-style switch (`role="switch"`).   | _(none)_                                           |
 
 Every kind also accepts `label: string`, `description?: string`, and `section?: string`.
 
@@ -69,7 +69,7 @@ Fields sharing a `section` value render together with the section name as a smal
 defaults  <  declared theme  <  user prefs
 ```
 
-At runtime the active theme is `applyPrefs(baseTheme, prefs)`. The function walks each pref path, shallow-clones along the way, and writes the leaf — leaving everything else untouched. The library re-runs this on every pref change.
+At runtime the active theme is `applyPrefs(baseTheme, prefs)`. The function walks each pref path, shallow-clones along the way, and writes the leaf, leaving everything else untouched. The library re-runs this on every pref change.
 
 ## Reading what a theme exposes
 
@@ -90,6 +90,6 @@ The full hook surface is in [`useSettings`](/api/usesettings/).
 
 ## See also
 
-- [Settings](/components/settings/) — the UI that renders the schema.
-- [`useSettings`](/api/usesettings/) — the read / write hook.
-- [Writing a theme](/themes/writing/) — declaring `customizable` in your own theme.
+- [Settings](/components/settings/): the UI that renders the schema.
+- [`useSettings`](/api/usesettings/): the read / write hook.
+- [Writing a theme](/themes/writing/): declaring `customizable` in your own theme.

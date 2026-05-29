@@ -22,13 +22,13 @@ export interface ExplorerItem {
   name: string;
   /** "Kind" cell in list view + group/sort field. */
   kind?: string;
-  /** Epoch ms — drives the Date column + sort. */
+  /** Epoch ms, drives the Date column + sort. */
   timestamp?: number;
   /** Optional one-line subtitle in icon view. */
   subtitle?: string;
   /** Optional right-aligned metadata in list view (e.g. file format). */
   meta?: string;
-  /** Large tile icon — rendered in icon view. */
+  /** Large tile icon, rendered in icon view. */
   icon?: ReactNode;
   /** Compact icon used in list view. Falls back to `icon`. */
   iconSmall?: ReactNode;
@@ -65,7 +65,7 @@ export interface ExplorerSidebarSection {
 
 export interface FileExplorerProps<T extends ExplorerItem = ExplorerItem> {
   items: T[];
-  /** Triggered on double-click / Enter — single item. */
+  /** Triggered on double-click / Enter, single item. */
   onOpen?: (item: T) => void;
   /** When provided, items become renameable via F2 / context menu. */
   onRename?: (item: T, newName: string) => void;
@@ -91,7 +91,6 @@ interface ContextMenuTarget {
 }
 
 const SIDEBAR_WIDTH = 168;
-const SELECTION_BG = "rgba(120, 160, 220, 0.22)";
 
 /* ─── Component ──────────────────────────────────────────────── */
 
@@ -182,9 +181,7 @@ export function FileExplorer<T extends ExplorerItem>({
         const clickIdx = filtered.findIndex((it) => it.id === id);
         if (anchorIdx >= 0 && clickIdx >= 0) {
           const [from, to] =
-            anchorIdx <= clickIdx
-              ? [anchorIdx, clickIdx]
-              : [clickIdx, anchorIdx];
+            anchorIdx <= clickIdx ? [anchorIdx, clickIdx] : [clickIdx, anchorIdx];
           const next = new Set<string>();
           for (let i = from; i <= to; i++) {
             const item = filtered[i];
@@ -309,23 +306,14 @@ export function FileExplorer<T extends ExplorerItem>({
     return () => {
       window.removeEventListener("keydown", onKey);
     };
-  }, [
-    actions,
-    beginRename,
-    filtered,
-    items,
-    onOpen,
-    selectedItems,
-    selectedIds,
-  ]);
+  }, [actions, beginRename, filtered, items, onOpen, selectedItems, selectedIds]);
 
-  /** Toolbar actions visible right now — hide singleOnly when >1 selected. */
+  /** Toolbar actions visible right now: hide singleOnly when >1 selected. */
   const visibleActions = useMemo(
     () =>
       actions.filter(
         (a) =>
-          selectedItems.length > 0 &&
-          (!a.singleOnly || selectedItems.length === 1),
+          selectedItems.length > 0 && (!a.singleOnly || selectedItems.length === 1),
       ),
     [actions, selectedItems.length],
   );
@@ -395,11 +383,9 @@ export function FileExplorer<T extends ExplorerItem>({
           }}
         >
           {filtered.length === 0 ? (
-            emptyState ?? (
-              <EmptyState
-                message={query ? "No matches." : "Nothing here yet."}
-              />
-            )
+            (emptyState ?? (
+              <EmptyState message={query ? "No matches." : "Nothing here yet."} />
+            ))
           ) : view === "icons" ? (
             <GridView
               items={filtered}
@@ -654,6 +640,7 @@ function Segmented({
   themeText: string;
   themeRadius: number;
 }) {
+  const theme = useTheme();
   return (
     <div
       style={{
@@ -678,7 +665,7 @@ function Segmented({
               fontSize: 11,
               fontFamily: "inherit",
               cursor: "pointer",
-              background: selected ? SELECTION_BG : "transparent",
+              background: selected ? `${theme.palette.accent}38` : "transparent",
               color: themeText,
             }}
           >
@@ -784,7 +771,7 @@ function GridView<T extends ExplorerItem>({
               gap: 4,
               padding: 8,
               borderRadius: theme.shape.small,
-              background: selected ? SELECTION_BG : "transparent",
+              background: selected ? `${theme.palette.accent}38` : "transparent",
               cursor: "pointer",
               color: theme.palette.textPrimary,
             }}
@@ -835,9 +822,7 @@ function GridView<T extends ExplorerItem>({
               </span>
             )}
             {item.kind && (
-              <span
-                style={{ fontSize: 10, color: theme.palette.textSecondary }}
-              >
+              <span style={{ fontSize: 10, color: theme.palette.textSecondary }}>
                 {item.kind}
               </span>
             )}
@@ -958,7 +943,7 @@ function ListView<T extends ExplorerItem>({
               alignItems: "center",
               padding: "6px 8px",
               borderBottom: `1px solid ${themeBorder}`,
-              background: selected ? SELECTION_BG : "transparent",
+              background: selected ? `${theme.palette.accent}38` : "transparent",
               cursor: "pointer",
               color: theme.palette.textPrimary,
             }}
@@ -982,9 +967,7 @@ function ListView<T extends ExplorerItem>({
                   flexShrink: 0,
                 }}
               >
-                {item.iconSmall ??
-                  item.icon ??
-                  item.name.charAt(0).toUpperCase()}
+                {item.iconSmall ?? item.icon ?? item.name.charAt(0).toUpperCase()}
               </span>
               {isRenaming ? (
                 <RenameInput
@@ -1013,8 +996,7 @@ function ListView<T extends ExplorerItem>({
               {item.kind ?? ""}
             </span>
             <span style={{ fontSize: 11, color: themeTextMuted }}>
-              {item.subtitle ??
-                (item.timestamp ? formatDate(item.timestamp) : "")}
+              {item.subtitle ?? (item.timestamp ? formatDate(item.timestamp) : "")}
             </span>
           </div>
         );
@@ -1045,6 +1027,7 @@ function RenameInput({
   onCancel: () => void;
   style?: CSSProperties;
 }) {
+  const theme = useTheme();
   const [value, setValue] = useState(initial);
   const ref = useRef<HTMLInputElement | null>(null);
   // Suppress the blur-commit when Escape cancels the rename: blur fires
@@ -1092,7 +1075,7 @@ function RenameInput({
         e.stopPropagation();
       }}
       style={{
-        border: "1px solid rgba(120,160,220,0.55)",
+        border: `1px solid ${theme.palette.accent}8c`,
         borderRadius: 4,
         background: "rgba(0,0,0,0.25)",
         color: "inherit",
@@ -1267,12 +1250,8 @@ function ContextMenu<T extends ExplorerItem>({
           {(["date", "name", "kind"] as const).map((field) => (
             <MenuRow
               key={field}
-              label={
-                field === "date" ? "Date" : field === "name" ? "Name" : "Kind"
-              }
-              shortcut={
-                sort === field ? (dir === "asc" ? "↑" : "↓") : undefined
-              }
+              label={field === "date" ? "Date" : field === "name" ? "Name" : "Kind"}
+              shortcut={sort === field ? (dir === "asc" ? "↑" : "↓") : undefined}
               checked={sort === field}
               onClick={() => {
                 onSetSort(field);
@@ -1303,6 +1282,7 @@ function MenuRow({
   onClick: () => void;
   themeTextMuted: string;
 }) {
+  const theme = useTheme();
   return (
     <button
       type="button"
@@ -1323,7 +1303,7 @@ function MenuRow({
         textAlign: "left",
       }}
       onPointerEnter={(e) => {
-        e.currentTarget.style.background = "rgba(120,160,220,0.18)";
+        e.currentTarget.style.background = `${theme.palette.accent}2e`;
       }}
       onPointerLeave={(e) => {
         e.currentTarget.style.background = "transparent";
@@ -1355,13 +1335,7 @@ function MenuRow({
   );
 }
 
-function MenuLabel({
-  text,
-  themeTextMuted,
-}: {
-  text: string;
-  themeTextMuted: string;
-}) {
+function MenuLabel({ text, themeTextMuted }: { text: string; themeTextMuted: string }) {
   return (
     <div
       style={{
@@ -1380,10 +1354,7 @@ function MenuLabel({
 
 function MenuDivider({ color }: { color: string }) {
   return (
-    <div
-      style={{ height: 1, background: color, margin: "4px 4px" }}
-      aria-hidden
-    />
+    <div style={{ height: 1, background: color, margin: "4px 4px" }} aria-hidden />
   );
 }
 
@@ -1400,6 +1371,7 @@ function Sidebar({
   textSecondary: string;
   radius: number;
 }) {
+  const theme = useTheme();
   return (
     <div
       style={{
@@ -1436,7 +1408,7 @@ function Sidebar({
                 gap: 8,
                 width: "100%",
                 border: "none",
-                background: item.active ? SELECTION_BG : "transparent",
+                background: item.active ? `${theme.palette.accent}38` : "transparent",
                 color: "inherit",
                 cursor: "pointer",
                 padding: "5px 8px",

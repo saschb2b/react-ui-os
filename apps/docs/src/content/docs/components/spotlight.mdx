@@ -23,30 +23,30 @@ None. Drop the component anywhere inside `<DesktopProvider>` and it works. The d
 
 ## Opening Spotlight
 
-| Trigger                                                         | Behavior                                                        |
-| --------------------------------------------------------------- | --------------------------------------------------------------- |
-| `Cmd-K` (macOS) / `Ctrl-K` (elsewhere)                           | Toggles the palette. Bails when typing in an input or textarea. |
-| `window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT))`    | Opens from any component without prop drilling.                 |
-| A custom button calling the above                                | Standard pattern for a "search" button in your own menu bar.    |
+| Trigger                                                       | Behavior                                                        |
+| ------------------------------------------------------------- | --------------------------------------------------------------- |
+| `Cmd-K` (macOS) / `Ctrl-K` (elsewhere)                        | Toggles the palette. Bails when typing in an input or textarea. |
+| `window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT))` | Opens from any component without prop drilling.                 |
+| A custom button calling the above                             | Standard pattern for a "search" button in your own menu bar.    |
 
 ## Result kinds
 
-| Kind     | Source                                                                                                          |
-| -------- | --------------------------------------------------------------------------------------------------------------- |
-| App      | Every entry in the `apps` prop passed to `<Desktop>` / `<DesktopProvider>`.                                     |
-| System   | Every entry in the `systemWindows` registry (Settings by default, plus any you register).                        |
-| External | Every result returned by a function registered via [`registerSpotlightSource`](/api/registerspotlightsource/).  |
+| Kind     | Source                                                                                                         |
+| -------- | -------------------------------------------------------------------------------------------------------------- |
+| App      | Every entry in the `apps` prop passed to `<Desktop>` / `<DesktopProvider>`.                                    |
+| System   | Every entry in the `systemWindows` registry (Settings by default, plus any you register).                      |
+| External | Every result returned by a function registered via [`registerSpotlightSource`](/api/registerspotlightsource/). |
 
 Each row shows an accent tile, name, and tagline. Activating an App or System result calls `openWindow(...)`, the same primitive a dock click uses. External results run their own `onActivate` callback so they can navigate, dispatch, or open a URL. From "I typed three letters" to "the right thing happens" is one keystroke and one dispatch.
 
 ## Keyboard
 
-| Key            | Effect                                                              |
-| -------------- | ------------------------------------------------------------------- |
-| ↑ / ↓          | Move selection. Wraps at the ends.                                  |
-| Enter          | Activate the selected result.                                       |
-| Escape         | Dismiss. Focus returns to whatever owned it before Spotlight opened. |
-| Cmd/Ctrl-K     | Dismiss (toggle off).                                               |
+| Key        | Effect                                                               |
+| ---------- | -------------------------------------------------------------------- |
+| ↑ / ↓      | Move selection. Wraps at the ends.                                   |
+| Enter      | Activate the selected result.                                        |
+| Escape     | Dismiss. Focus returns to whatever owned it before Spotlight opened. |
+| Cmd/Ctrl-K | Dismiss (toggle off).                                                |
 
 ## Adding your own results
 
@@ -81,9 +81,9 @@ useEffect(() => {
 - Panel is `role="dialog" aria-modal="true" aria-label="Spotlight"`.
 - Results list is `role="listbox" aria-label="Spotlight results"`.
 - Each row is `role="option" aria-selected="<bool>"`.
-- Focus restoration on close — never traps the user.
+- Focus restoration on close, never traps the user.
 
 ## See also
 
 - [KeyboardShortcuts](/components/desktopicons/#see-also) registers the global Cmd-K binding.
-- [registerSystemWindow](/components/desktopicons/) — how to surface custom windows in Spotlight.
+- [registerSystemWindow](/components/desktopicons/): how to surface custom windows in Spotlight.

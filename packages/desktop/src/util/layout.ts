@@ -59,8 +59,10 @@ export const DOCK_TILE_SIZE = REGULAR_METRICS.dockTileSize;
 export const DOCK_GAP = REGULAR_METRICS.dockGap;
 export const DOCK_PADDING = REGULAR_METRICS.dockPadding;
 export const DOCK_EDGE_OFFSET = REGULAR_METRICS.dockEdgeOffset;
-export const DOCK_HEIGHT = REGULAR_METRICS.dockTileSize + REGULAR_METRICS.dockPadding * 2;
-export const DOCK_WIDTH = REGULAR_METRICS.dockTileSize + REGULAR_METRICS.dockPadding * 2;
+export const DOCK_HEIGHT =
+  REGULAR_METRICS.dockTileSize + REGULAR_METRICS.dockPadding * 2;
+export const DOCK_WIDTH =
+  REGULAR_METRICS.dockTileSize + REGULAR_METRICS.dockPadding * 2;
 
 export interface WorkArea {
   /** Top-left corner of the work area in viewport coords. */

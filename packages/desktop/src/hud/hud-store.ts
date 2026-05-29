@@ -2,14 +2,14 @@ import type { ReactNode } from "react";
 
 /**
  * The HUD is the small floating indicator the OS uses to confirm a
- * momentary action — "Snapped Left", "Maximized", "Volume 35%". Always
+ * momentary action: "Snapped Left", "Maximized", "Volume 35%". Always
  * centered, always fades after a short hold, never blocks input. The
  * store is module-level so a snap handler, a hotkey, or a custom action
  * can fire it without prop-drilling.
  */
 
 export interface HudPayload {
-  /** Visible main line. Keep short — this is glyphic, not paragraph copy. */
+  /** Visible main line. Keep short. This is glyphic, not paragraph copy. */
   title: string;
   /** Optional second line. */
   sublabel?: string;
@@ -82,9 +82,7 @@ export function getHud(): ActiveHud | null {
   return active;
 }
 
-export function subscribeHud(
-  listener: (value: ActiveHud | null) => void,
-): () => void {
+export function subscribeHud(listener: (value: ActiveHud | null) => void): () => void {
   listeners.add(listener);
   return () => {
     listeners.delete(listener);

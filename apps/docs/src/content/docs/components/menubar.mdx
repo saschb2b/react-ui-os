@@ -7,9 +7,13 @@ sidebar:
 
 import LivePreview from "~/components/LivePreview.astro";
 
-`MenuBar` renders the top 28 px of the desktop. It is system chrome — application-specific actions belong inside the window, not here. Hidden when `theme.chrome.menuBar` is `"none"`.
+`MenuBar` renders the top 28 px of the desktop. It is system chrome: application-specific actions belong inside the window, not here. Hidden when `theme.chrome.menuBar` is `"none"`.
 
-<LivePreview src="?demo=menubar" label="The menu bar tracking the focused window" height="320px" />
+<LivePreview
+  src="?demo=menubar"
+  label="The menu bar tracking the focused window"
+  height="320px"
+/>
 
 ## Import
 
@@ -19,9 +23,9 @@ import { MenuBar, MENU_BAR_HEIGHT } from "@react-ui-os/desktop";
 
 ## Props
 
-| Prop    | Type     | Default          | Description                                                       |
-| ------- | -------- | ---------------- | ----------------------------------------------------------------- |
-| `brand` | `string` | `"react-ui-os"`  | Label rendered on the far left of the bar in bold.                |
+| Prop    | Type     | Default         | Description                                        |
+| ------- | -------- | --------------- | -------------------------------------------------- |
+| `brand` | `string` | `"react-ui-os"` | Label rendered on the far left of the bar in bold. |
 
 ## Composition
 
@@ -44,16 +48,16 @@ import { MenuBar, MENU_BAR_HEIGHT } from "@react-ui-os/desktop";
 
 ## Configuration via theme
 
-| `theme.chrome.menuBar` | Behavior                                                                                   |
-| ---------------------- | ------------------------------------------------------------------------------------------ |
-| `"top"`                | Renders the bar at the top of the viewport (default).                                      |
-| `"none"`               | Returns `null`. App identity then needs to surface inside the windows themselves.          |
+| `theme.chrome.menuBar` | Behavior                                                                          |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `"top"`                | Renders the bar at the top of the viewport (default).                             |
+| `"none"`               | Returns `null`. App identity then needs to surface inside the windows themselves. |
 
 ## Exports
 
-| Export             | Description                                                                                |
-| ------------------ | ------------------------------------------------------------------------------------------ |
-| `MENU_BAR_HEIGHT`  | Pixel height of the bar (28). Useful when laying out custom surfaces that must clear it.   |
+| Export            | Description                                                                              |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `MENU_BAR_HEIGHT` | Pixel height of the bar (28). Useful when laying out custom surfaces that must clear it. |
 
 ## See also
 

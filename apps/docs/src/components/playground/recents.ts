@@ -38,17 +38,11 @@ export function deleteRecent(storage: StorageAdapter, id: string): void {
   );
 }
 
-export function renameRecent(
-  storage: StorageAdapter,
-  id: string,
-  name: string,
-): void {
+export function renameRecent(storage: StorageAdapter, id: string, name: string): void {
   const trimmed = name.trim();
   if (!trimmed) return;
   storage.set(
     RECENTS_STORAGE_KEY,
-    listRecents(storage).map((e) =>
-      e.id === id ? { ...e, name: trimmed } : e,
-    ),
+    listRecents(storage).map((e) => (e.id === id ? { ...e, name: trimmed } : e)),
   );
 }

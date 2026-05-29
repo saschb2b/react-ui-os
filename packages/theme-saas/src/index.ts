@@ -64,14 +64,7 @@ export function createSaasTheme(options: SaasThemeOptions = {}): OsTheme {
         section: "Appearance",
         label: "Accent",
         description: "Tints the dock tiles and the focused-window highlight.",
-        options: [
-          "#5b6cff",
-          "#22c55e",
-          "#a855f7",
-          "#0ea5e9",
-          "#f59e0b",
-          "#ec4899",
-        ],
+        options: ["#5b6cff", "#22c55e", "#a855f7", "#0ea5e9", "#f59e0b", "#ec4899"],
       },
       "shape.windowRadius": {
         kind: "range",

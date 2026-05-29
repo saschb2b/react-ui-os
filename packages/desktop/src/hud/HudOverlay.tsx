@@ -7,7 +7,7 @@ import { getHud, subscribeHud, type ActiveHud } from "./hud-store";
 /**
  * Centered floating indicator for transient action feedback ("Snapped
  * Left", "Maximized", "Volume 30%"). Hold-then-fade lifecycle is owned
- * by the HUD store — this component just paints what the store points
+ * by the HUD store. This component just paints what the store points
  * at and animates the entry / exit.
  */
 export function HudOverlay() {
@@ -69,8 +69,7 @@ export function HudOverlay() {
     zIndex: 1600,
     opacity,
     pointerEvents: "none",
-    transition:
-      "opacity 160ms ease, transform 200ms cubic-bezier(0.2, 0.85, 0.25, 1)",
+    transition: "opacity 160ms ease, transform 200ms cubic-bezier(0.2, 0.85, 0.25, 1)",
     textAlign: "center",
   };
 

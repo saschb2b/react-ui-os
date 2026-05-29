@@ -23,9 +23,7 @@ import { defaultTheme } from "@react-ui-os/theme-default";
 ```tsx
 import type { App } from "@react-ui-os/core";
 
-const apps: App[] = [
-  { id: "notes", name: "Notes", content: () => <h1>Notes</h1> },
-];
+const apps: App[] = [{ id: "notes", name: "Notes", content: () => <h1>Notes</h1> }];
 
 <Desktop apps={apps} theme={defaultTheme} brand="acme" />;
 ```
@@ -48,13 +46,13 @@ const apps: App[] = [
 
 ## Props
 
-| Prop       | Type                  | Default          | Description                                                                                                                                                                  |
-| ---------- | --------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps`     | `App[]`               | **required**     | The app registry. Order matters: Cmd-1..9 maps to indices, dock tiles render in this order.                                                                                  |
-| `theme`    | `OsTheme`             | **required**     | The active theme. Pass `defaultTheme` or call `createMintablesTheme(...)`.                                                                                                   |
-| `brand`    | `string`              | `"react-ui-os"`  | Label shown on the left of the menu bar.                                                                                                                                     |
-| `storage`  | `StorageAdapter`      | `localStorage`  | Backend for user preferences and state-earned folders. Defaults to a `localStorage`-backed adapter; swap for a server adapter to sync across devices.                        |
-| `children` | `ReactNode`            | `undefined`     | Headless companions rendered inside the provider alongside the default surfaces. Use for URL sync, deep-link activators, analytics, or any component that needs `useWindowManager()`. |
+| Prop       | Type             | Default         | Description                                                                                                                                                                           |
+| ---------- | ---------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps`     | `App[]`          | **required**    | The app registry. Order matters: Cmd-1..9 maps to indices, dock tiles render in this order.                                                                                           |
+| `theme`    | `OsTheme`        | **required**    | The active theme. Pass `defaultTheme` or call `createMintablesTheme(...)`.                                                                                                            |
+| `brand`    | `string`         | `"react-ui-os"` | Label shown on the left of the menu bar.                                                                                                                                              |
+| `storage`  | `StorageAdapter` | `localStorage`  | Backend for user preferences and state-earned folders. Defaults to a `localStorage`-backed adapter; swap for a server adapter to sync across devices.                                 |
+| `children` | `ReactNode`      | `undefined`     | Headless companions rendered inside the provider alongside the default surfaces. Use for URL sync, deep-link activators, analytics, or any component that needs `useWindowManager()`. |
 
 ## Examples
 
@@ -122,6 +120,6 @@ const remoteStorage: StorageAdapter = {
 
 ## See also
 
-- [DesktopProvider](/api/usewindowmanager/) — the lift-the-hood mode.
-- [Themes overview](/themes/overview/) — the skeleton vs. the look.
-- [Spotlight](/components/spotlight/) — the Cmd-K command palette.
+- [DesktopProvider](/api/usewindowmanager/): the lift-the-hood mode.
+- [Themes overview](/themes/overview/): the skeleton vs. the look.
+- [Spotlight](/components/spotlight/): the Cmd-K command palette.

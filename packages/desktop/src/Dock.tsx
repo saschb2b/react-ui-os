@@ -8,10 +8,7 @@ import {
 } from "@react-ui-os/core";
 import type { App } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
-import {
-  openContextMenu,
-  type ContextMenuItem,
-} from "./context-menu";
+import { openContextMenu, type ContextMenuItem } from "./context-menu";
 import { Tooltip } from "./tooltip";
 import { pickInitialBounds } from "./util/initial-bounds";
 import { getChromeMetrics } from "./util/layout";
@@ -130,8 +127,7 @@ function DockTile({
       items.push({
         label: isMinimized ? "Restore" : "Minimize",
         shortcut: isMinimized ? undefined : "⌘M",
-        onSelect: () =>
-          isMinimized ? restoreWindow(id) : minimizeWindow(id),
+        onSelect: () => (isMinimized ? restoreWindow(id) : minimizeWindow(id)),
       });
       items.push({
         label: "Close",
@@ -191,105 +187,104 @@ function DockTile({
       shortcut={isLeft ? undefined : undefined}
       placement={isLeft ? "right" : "top"}
     >
-    <button
-      type="button"
-      onClick={handleClick}
-      onContextMenu={handleContextMenu}
-      data-dock-app-id={app.id}
-      style={{
-        position: "relative",
-        width: metrics.dockTileSize,
-        height: metrics.dockTileSize,
-        padding: 0,
-        border: "none",
-        borderRadius: theme.shape.dockTileRadius,
-        background: `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
-        boxShadow:
-          "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 6px rgba(0,0,0,0.35)",
-        cursor: "pointer",
-        color: "#fff",
-        transition: `transform ${String(theme.motion.dockHoverDurationMs)}ms ease`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-      onPointerEnter={(e) => {
-        e.currentTarget.style.transform = hoverTransform;
-      }}
-      onPointerLeave={(e) => {
-        e.currentTarget.style.transform = "translate(0, 0) scale(1)";
-      }}
-    >
-      {Art ? (
-        <Art size={Math.round(metrics.dockTileSize * 0.7)} />
-      ) : Icon ? (
-        <Icon size={Math.round(metrics.dockTileSize * 0.5)} />
-      ) : (
-        <span
-          style={{
-            fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
-            fontWeight: 700,
-            fontSize: Math.round(metrics.dockTileSize * 0.4),
-            textShadow: "0 1px 2px rgba(0,0,0,0.4)",
-          }}
-        >
-          {app.name.charAt(0).toUpperCase()}
-        </span>
-      )}
-      {win && (
-        <span
-          aria-hidden
-          style={{
-            position: "absolute",
-            ...(isLeft
-              ? {
-                  right: -metrics.dockEdgeOffset + 4,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                }
-              : {
-                  bottom: -metrics.dockEdgeOffset + 2,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                }),
-            width: 4,
-            height: 4,
-            borderRadius: "50%",
-            backgroundColor: isFocused
-              ? theme.palette.textPrimary
-              : theme.palette.textSecondary,
-            opacity: isFocused ? 1 : 0.6,
-            transition: `opacity ${String(theme.motion.dockHoverDurationMs)}ms ease`,
-          }}
-        />
-      )}
-      {badgeCount > 0 && (
-        <span
-          aria-label={`${String(badgeCount)} unread notifications`}
-          style={{
-            position: "absolute",
-            top: -4,
-            right: -4,
-            minWidth: 18,
-            height: 18,
-            padding: "0 5px",
-            borderRadius: 9,
-            background: "#ef4444",
-            color: "#fff",
-            fontSize: 10,
-            fontWeight: 700,
-            fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 0 0 2px rgba(0,0,0,0.55)",
-            lineHeight: 1,
-          }}
-        >
-          {badgeCount > 99 ? "99+" : String(badgeCount)}
-        </span>
-      )}
-    </button>
+      <button
+        type="button"
+        onClick={handleClick}
+        onContextMenu={handleContextMenu}
+        data-dock-app-id={app.id}
+        style={{
+          position: "relative",
+          width: metrics.dockTileSize,
+          height: metrics.dockTileSize,
+          padding: 0,
+          border: "none",
+          borderRadius: theme.shape.dockTileRadius,
+          background: `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 6px rgba(0,0,0,0.35)",
+          cursor: "pointer",
+          color: "#fff",
+          transition: `transform ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        onPointerEnter={(e) => {
+          e.currentTarget.style.transform = hoverTransform;
+        }}
+        onPointerLeave={(e) => {
+          e.currentTarget.style.transform = "translate(0, 0) scale(1)";
+        }}
+      >
+        {Art ? (
+          <Art size={Math.round(metrics.dockTileSize * 0.7)} />
+        ) : Icon ? (
+          <Icon size={Math.round(metrics.dockTileSize * 0.5)} />
+        ) : (
+          <span
+            style={{
+              fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+              fontWeight: 700,
+              fontSize: Math.round(metrics.dockTileSize * 0.4),
+              textShadow: "0 1px 2px rgba(0,0,0,0.4)",
+            }}
+          >
+            {app.name.charAt(0).toUpperCase()}
+          </span>
+        )}
+        {win && (
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              ...(isLeft
+                ? {
+                    right: -metrics.dockEdgeOffset + 4,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }
+                : {
+                    bottom: -metrics.dockEdgeOffset + 2,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                  }),
+              width: 4,
+              height: 4,
+              borderRadius: "50%",
+              backgroundColor: isFocused
+                ? theme.palette.textPrimary
+                : theme.palette.textSecondary,
+              opacity: isFocused ? 1 : 0.6,
+              transition: `opacity ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+            }}
+          />
+        )}
+        {badgeCount > 0 && (
+          <span
+            aria-label={`${String(badgeCount)} unread notifications`}
+            style={{
+              position: "absolute",
+              top: -4,
+              right: -4,
+              minWidth: 18,
+              height: 18,
+              padding: "0 5px",
+              borderRadius: 9,
+              background: "#ef4444",
+              color: "#fff",
+              fontSize: 10,
+              fontWeight: 700,
+              fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 0 0 2px rgba(0,0,0,0.55)",
+              lineHeight: 1,
+            }}
+          >
+            {badgeCount > 99 ? "99+" : String(badgeCount)}
+          </span>
+        )}
+      </button>
     </Tooltip>
   );
 }
@@ -297,8 +292,6 @@ function DockTile({
 /** Returns the DOMRect of a dock tile by its app id, if mounted. */
 export function getDockTileRect(appId: string): DOMRect | null {
   if (typeof document === "undefined") return null;
-  const el = document.querySelector<HTMLElement>(
-    `[data-dock-app-id="${appId}"]`,
-  );
+  const el = document.querySelector<HTMLElement>(`[data-dock-app-id="${appId}"]`);
   return el ? el.getBoundingClientRect() : null;
 }

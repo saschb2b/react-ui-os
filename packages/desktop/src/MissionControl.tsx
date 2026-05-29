@@ -1,16 +1,7 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type CSSProperties,
-} from "react";
-import {
-  useWindowManager,
-  type OpenWindow,
-} from "@react-ui-os/core";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useWindowManager, type OpenWindow } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 
@@ -19,8 +10,8 @@ import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
  * open window animates into a tiled grid of large preview cards. Click a
  * card to dismiss and focus that window; click empty space or hit Esc to
  * dismiss without switching. Mirrors the macOS gesture in everything but
- * the live thumbnail — instead of mirroring the window's body, the card
- * shows the chrome and a representational stripe so the user can pick by
+ * the live thumbnail. Instead of mirroring the window's body, the card
+ * shows the chrome and a neutral body fill so the user can pick by
  * shape and name at a glance.
  *
  * Self-mounted by `<Desktop>`. Drop down to `<DesktopProvider>` and skip
@@ -33,7 +24,7 @@ export function MissionControl() {
 
   const [open, setOpen] = useState(false);
 
-  // Only count windows that are actually visible (not minimized) — Mission
+  // Only count windows that are actually visible (not minimized). Mission
   // Control's job is to surface what's on screen, not what's parked in the
   // dock.
   const visible = useMemo<OpenWindow[]>(
@@ -46,9 +37,7 @@ export function MissionControl() {
       const t = e.target as HTMLElement | null;
       if (
         t &&
-        (t.tagName === "INPUT" ||
-          t.tagName === "TEXTAREA" ||
-          t.isContentEditable)
+        (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)
       ) {
         return;
       }
@@ -57,7 +46,7 @@ export function MissionControl() {
         setOpen((prev) => !prev);
         return;
       }
-      // Ctrl + ArrowUp — Mac convention for Mission Control on PCs.
+      // Ctrl + ArrowUp, Mac convention for Mission Control on PCs.
       if (e.ctrlKey && !e.metaKey && e.key === "ArrowUp") {
         e.preventDefault();
         setOpen((prev) => !prev);
@@ -190,8 +179,7 @@ function Grid({
     <div
       style={{
         display: "grid",
-        gridTemplateColumns:
-          "repeat(auto-fit, minmax(min(220px, 100%), max-content))",
+        gridTemplateColumns: "repeat(auto-fit, minmax(min(220px, 100%), max-content))",
         justifyContent: "center",
         gap: "clamp(8px, 1.5vmin, 18px)",
         maxWidth: "min(1100px, 100%)",
@@ -259,8 +247,7 @@ function Card({
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = "scale(1)";
-        e.currentTarget.style.boxShadow =
-          "0 12px 28px -6px rgba(0,0,0,0.45)";
+        e.currentTarget.style.boxShadow = "0 12px 28px -6px rgba(0,0,0,0.45)";
       }}
     >
       <span
@@ -307,7 +294,7 @@ function Card({
         <div style={{ opacity: 0.6, marginBottom: 6 }}>
           {String(Math.round(win.w))} × {String(Math.round(win.h))}
         </div>
-        <StripePattern accent={accent} />
+        <WindowBodyFill theme={theme} />
       </div>
     </button>
   );
@@ -316,10 +303,7 @@ function Card({
 function TrafficLights() {
   const dots = ["#ff5f57", "#febc2e", "#28c840"];
   return (
-    <span
-      aria-hidden
-      style={{ display: "inline-flex", gap: 4 }}
-    >
+    <span aria-hidden style={{ display: "inline-flex", gap: 4 }}>
       {dots.map((color) => (
         <span
           key={color}
@@ -335,15 +319,15 @@ function TrafficLights() {
   );
 }
 
-function StripePattern({ accent }: { accent: string }) {
+function WindowBodyFill({ theme }: { theme: ReturnType<typeof useTheme> }) {
   return (
     <div
       aria-hidden
       style={{
         height: "calc(100% - 28px)",
-        borderRadius: 6,
-        background: `repeating-linear-gradient(45deg, ${accent}11 0 8px, transparent 8px 16px)`,
-        border: `1px solid ${accent}33`,
+        borderRadius: theme.shape.small,
+        background: theme.palette.background,
+        border: `1px solid ${theme.palette.border}`,
       }}
     />
   );

@@ -1,6 +1,13 @@
 "use client";
 
-import { Children, cloneElement, isValidElement, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  type MouseEvent,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { openContextMenu } from "./store";
 import type { ContextMenuItem } from "./store";
 
@@ -15,18 +22,14 @@ interface AnchorProps {
 /**
  * Declarative wrapper. Right-clicking the wrapped child opens a context
  * menu at the cursor with the given items. Pass a function for `items`
- * if the menu contents depend on per-event state — it runs on every
+ * if the menu contents depend on per-event state; it runs on every
  * right-click.
  *
  * Use the imperative `openContextMenu(...)` instead when you need
  * fine-grained control over the trigger (e.g. opening from a button
  * click, deriving items from selection across multiple regions).
  */
-export function ContextMenuAnchor({
-  items,
-  ariaLabel,
-  children,
-}: AnchorProps) {
+export function ContextMenuAnchor({ items, ariaLabel, children }: AnchorProps) {
   const child = Children.only(children);
   if (!isValidElement<{ onContextMenu?: (e: MouseEvent) => void }>(child)) {
     return <>{children}</>;
@@ -43,11 +46,13 @@ export function ContextMenuAnchor({
       y: e.clientY,
       items: resolved,
       ariaLabel,
-      returnFocusTo:
-        e.currentTarget instanceof HTMLElement ? e.currentTarget : null,
+      returnFocusTo: e.currentTarget instanceof HTMLElement ? e.currentTarget : null,
     });
   };
-  return cloneElement(child as ReactElement<{ onContextMenu?: (e: MouseEvent) => void }>, {
-    onContextMenu: handler,
-  });
+  return cloneElement(
+    child as ReactElement<{ onContextMenu?: (e: MouseEvent) => void }>,
+    {
+      onContextMenu: handler,
+    },
+  );
 }

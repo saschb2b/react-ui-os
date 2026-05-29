@@ -35,9 +35,7 @@ export function DesktopIcons() {
   const apps = useApps();
   const { storage } = useDesktopContext();
   const { openWindow } = useWindowManager();
-  const [visible, setVisible] = useState<VisibleIcon[]>(() =>
-    computeVisible(storage),
-  );
+  const [visible, setVisible] = useState<VisibleIcon[]>(() => computeVisible(storage));
 
   useEffect(() => {
     const recompute = () => {
@@ -50,12 +48,12 @@ export function DesktopIcons() {
     return unsubscribe;
   }, [storage]);
 
-  if (visible.length === 0) return null;
-
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
   const topInset =
     (theme.chrome.menuBar === "top" ? metrics.menuBarHeight : 0) + EDGE_INSET;
+
+  if (visible.length === 0) return null;
 
   return (
     <div

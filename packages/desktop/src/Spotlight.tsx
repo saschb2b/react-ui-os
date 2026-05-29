@@ -21,13 +21,18 @@ import {
   resolveSystemWindowName,
   type SystemWindowDef,
 } from "./system-windows";
-import {
-  listSpotlightSources,
-  subscribeSpotlightSources,
-} from "./spotlight-sources";
+import { listSpotlightSources, subscribeSpotlightSources } from "./spotlight-sources";
 
 type Result =
-  | { kind: "app"; key: string; name: string; tagline?: string; accent?: string; icon?: ReactNode; app: App }
+  | {
+      kind: "app";
+      key: string;
+      name: string;
+      tagline?: string;
+      accent?: string;
+      icon?: ReactNode;
+      app: App;
+    }
   | {
       kind: "system";
       key: string;
@@ -101,9 +106,7 @@ export function Spotlight() {
         const t = e.target as HTMLElement | null;
         const inField =
           t &&
-          (t.tagName === "INPUT" ||
-            t.tagName === "TEXTAREA" ||
-            t.isContentEditable);
+          (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
         if (inField) return;
         e.preventDefault();
         handleOpen();
@@ -168,34 +171,28 @@ export function Spotlight() {
     const q = query.trim().toLowerCase();
     // Sources receive the trimmed query; they decide how to filter their
     // own data. Each result is tagged with the source id to avoid clashes.
-    const externalResults: Result[] = listSpotlightSources().flatMap(
-      (source, idx) => {
-        try {
-          return source(q).map((r) => ({
-            kind: "external" as const,
-            key: `external:${String(idx)}:${r.id}`,
-            name: r.name,
-            tagline: r.tagline,
-            accent: r.accent,
-            icon: r.icon,
-            kindLabel: r.kindLabel,
-            onActivate: r.onActivate,
-          }));
-        } catch (err) {
-          // A misbehaving source should not bring down Spotlight. We log in
-          // development so the consumer can see *why* their source isn't
-          // appearing; production silently drops the source for that call.
-          if (
-            typeof process !== "undefined" &&
-            process.env?.NODE_ENV !== "production"
-          ) {
-            // eslint-disable-next-line no-console
-            console.warn("[react-ui-os] Spotlight source threw:", err);
-          }
-          return [];
+    const externalResults: Result[] = listSpotlightSources().flatMap((source, idx) => {
+      try {
+        return source(q).map((r) => ({
+          kind: "external" as const,
+          key: `external:${String(idx)}:${r.id}`,
+          name: r.name,
+          tagline: r.tagline,
+          accent: r.accent,
+          icon: r.icon,
+          kindLabel: r.kindLabel,
+          onActivate: r.onActivate,
+        }));
+      } catch (err) {
+        // A misbehaving source should not bring down Spotlight. We log in
+        // development so the consumer can see *why* their source isn't
+        // appearing; production silently drops the source for that call.
+        if (typeof process !== "undefined" && process.env?.NODE_ENV !== "production") {
+          console.warn("[react-ui-os] Spotlight source threw:", err);
         }
-      },
-    );
+        return [];
+      }
+    });
     const builtIn: Result[] = [...appResults, ...systemResults];
     if (!q) return [...builtIn, ...externalResults];
     const filteredBuiltIn = builtIn.filter((r) => {
@@ -451,9 +448,7 @@ function ResultRow({
         height: 44,
         borderRadius: theme.shape.small + 2,
         cursor: "pointer",
-        backgroundColor: selected
-          ? "rgba(120,160,220,0.22)"
-          : "transparent",
+        backgroundColor: selected ? `${theme.palette.accent}38` : "transparent",
         transition: "background-color 80ms ease",
       }}
     >
@@ -464,8 +459,7 @@ function ResultRow({
           flexShrink: 0,
           borderRadius: theme.shape.small + 2,
           background: `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
-          boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.22), 0 1px 2px rgba(0,0,0,0.3)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 1px 2px rgba(0,0,0,0.3)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -548,9 +542,7 @@ function HintChip({
   theme: ReturnType<typeof useTheme>;
 }) {
   return (
-    <span
-      style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-    >
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
       <kbd
         style={{
           fontSize: 10,

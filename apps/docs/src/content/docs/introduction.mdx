@@ -19,7 +19,7 @@ react-ui-os is a React component library that ships a working OS-style desktop i
 
 **Pick react-ui-os when:**
 
-- The product *is* the desktop metaphor — a tool that lives in a browser tab but reads like an application (a creative app, a maker tool, an admin shell, a workshop).
+- The product _is_ the desktop metaphor: a tool that lives in a browser tab but reads like an application (a creative app, a maker tool, an admin shell, a workshop).
 - You want a coherent OS feeling instead of a webpage with chrome on top of it.
 - Multi-window workflows matter (compare two views side by side, keep a reference open while editing).
 
@@ -34,10 +34,10 @@ react-ui-os is a React component library that ships a working OS-style desktop i
 The same primitives are reachable at three levels.
 
 ```tsx
-// 1. One-line desktop — full default composition.
+// 1. One-line desktop: full default composition.
 <Desktop apps={apps} theme={defaultTheme} />
 
-// 2. Composable provider — pick which surfaces to render.
+// 2. Composable provider: pick which surfaces to render.
 <DesktopProvider apps={apps} theme={theme}>
   <Wallpaper />
   <MenuBar />
@@ -46,7 +46,7 @@ The same primitives are reachable at three levels.
   <Spotlight />
 </DesktopProvider>
 
-// 3. Hooks — drive the system from anywhere.
+// 3. Hooks: drive the system from anywhere.
 const { openWindow, focusedWindow } = useWindowManager();
 const theme = useTheme();
 ```

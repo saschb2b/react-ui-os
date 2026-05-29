@@ -97,10 +97,10 @@ function createMemoryAdapter(): StorageAdapter {
 
 ## Keys the library writes
 
-| Key                       | Written by                                                    |
-| ------------------------- | ------------------------------------------------------------- |
-| `settings:<themeId>`      | `useSettings().setPref` and Settings UI                       |
-| Anything you write        | Consumer code (the docs `Recents` demo writes `"recents"`)    |
+| Key                  | Written by                                                 |
+| -------------------- | ---------------------------------------------------------- |
+| `settings:<themeId>` | `useSettings().setPref` and Settings UI                    |
+| Anything you write   | Consumer code (the docs `Recents` demo writes `"recents"`) |
 
 Reads via `get<T>(...)` are typed by the caller; the adapter doesn't enforce.
 
@@ -112,5 +112,5 @@ The library uses one subscription per `<DesktopProvider>` instance to invalidate
 
 ## See also
 
-- [`useSettings`](/api/usesettings/) — the most common writer.
-- [DesktopIcons](/components/desktopicons/) — state-earned folder predicates read from this adapter.
+- [`useSettings`](/api/usesettings/): the most common writer.
+- [DesktopIcons](/components/desktopicons/): state-earned folder predicates read from this adapter.

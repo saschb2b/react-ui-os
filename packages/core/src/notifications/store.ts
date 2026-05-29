@@ -7,7 +7,7 @@ import type {
 /**
  * Module-level notification store. Owns an ordered list (newest first) and
  * notifies subscribers on every change. The store is intentionally outside
- * React so any code — a fetch handler, an effect, a service worker — can
+ * React so any code (a fetch handler, an effect, a service worker) can
  * call `notify(...)` without prop-drilling a dispatcher.
  *
  * Snapshots are deeply cloned on every change so `useSyncExternalStore`
@@ -80,7 +80,7 @@ function ensureTickerRunning(): void {
     // The cached snapshot is what `useSyncExternalStore`'s getSnapshot
     // returns; it MUST stay referentially stable between notifications.
     // Earlier this function rebuilt the snapshot every tick and only
-    // emitted when the active count changed — that silently swapped the
+    // emitted when the active count changed. That silently swapped the
     // cached reference, so React would see a fresh object on a
     // post-render getSnapshot call without a matching listener fire and
     // bail with "result of getServerSnapshot should be cached" (an
@@ -197,7 +197,7 @@ export function subscribeNotifications(
 }
 
 /**
- * Reset for tests. Not exported from the package barrel — only consumed
+ * Reset for tests. Not exported from the package barrel, only consumed
  * from the package's own test suite.
  */
 export function __resetNotifications(): void {

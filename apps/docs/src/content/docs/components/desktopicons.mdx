@@ -1,6 +1,6 @@
 ---
 title: DesktopIcons
-description: "Right-edge column of file-style shortcuts for system windows. State-earned — a folder icon only appears once its predicate passes."
+description: "Right-edge column of file-style shortcuts for system windows. State-earned: a folder icon only appears once its predicate passes."
 sidebar:
   order: 8
 ---
@@ -9,7 +9,10 @@ import LivePreview from "~/components/LivePreview.astro";
 
 `DesktopIcons` renders a column of file-style shortcuts on the right edge of the desktop. Each shortcut maps to a system window whose `appearsAsDesktopIcon` predicate currently returns `true`. The library subscribes to storage change events so the column updates without polling.
 
-<LivePreview label="Add an entry from Hello to make the Recents folder appear" height="420px" />
+<LivePreview
+  label="Add an entry from Hello to make the Recents folder appear"
+  height="420px"
+/>
 
 ## Import
 
@@ -39,10 +42,10 @@ registerSystemWindow("downloads", {
 
 The fields that control desktop-icon behavior:
 
-| Field                   | Type                                                                            | Description                                                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `appearsAsDesktopIcon`  | `boolean \| ((storage: StorageAdapter) => boolean)`                              | `false` (default) hides the icon. `true` always shows it. A function is the **state-earned** pattern: evaluated on each storage change. |
-| `desktopIcon`           | `ComponentType<{ size?: number }>`                                              | The icon painted on the shortcut. Defaults to a generic folder SVG.                                                        |
+| Field                  | Type                                                | Description                                                                                                                             |
+| ---------------------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `appearsAsDesktopIcon` | `boolean \| ((storage: StorageAdapter) => boolean)` | `false` (default) hides the icon. `true` always shows it. A function is the **state-earned** pattern: evaluated on each storage change. |
+| `desktopIcon`          | `ComponentType<{ size?: number }>`                  | The icon painted on the shortcut. Defaults to a generic folder SVG.                                                                     |
 
 ## State-earned folders
 
@@ -63,10 +66,10 @@ registerSystemWindow("downloads", {
 
 ## Click behavior
 
-| Gesture        | Effect                                                                       |
-| -------------- | ---------------------------------------------------------------------------- |
-| Single click   | Visual press (placeholder for a desktop selection model)                     |
-| Double click   | Opens the matching system window via `openWindow({ kind: "system", systemId })` |
+| Gesture      | Effect                                                                          |
+| ------------ | ------------------------------------------------------------------------------- |
+| Single click | Visual press (placeholder for a desktop selection model)                        |
+| Double click | Opens the matching system window via `openWindow({ kind: "system", systemId })` |
 
 ## Position
 

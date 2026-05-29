@@ -7,20 +7,24 @@ sidebar:
 
 import LivePreview from "~/components/LivePreview.astro";
 
-Workspaces are virtual desktops. Three ship out of the box; each open window is tagged with the workspace it was opened on. Switching workspaces only filters the window layer — every window keeps its bounds and internal state, so it's there waiting when you come back.
+Workspaces are virtual desktops. Three ship out of the box; each open window is tagged with the workspace it was opened on. Switching workspaces only filters the window layer; every window keeps its bounds and internal state, so it's there waiting when you come back.
 
-<LivePreview src="?demo=dock" label="Click the three pips next to the clock, or press Ctrl+Alt+→" height="460px" />
+<LivePreview
+  src="?demo=dock"
+  label="Click the three pips next to the clock, or press Ctrl+Alt+→"
+  height="460px"
+/>
 
 The menu bar shows a row of pips next to the clock (one per workspace, the active one is wider and accent-colored). Click any pip to jump to that workspace; the keyboard chord moves at the speed of muscle memory.
 
 ## Keyboard
 
-| Shortcut                          | Effect                                                      |
-| --------------------------------- | ----------------------------------------------------------- |
-| `Ctrl + Alt + ←`                  | Previous workspace (wraps)                                  |
-| `Ctrl + Alt + →`                  | Next workspace (wraps)                                      |
-| `Ctrl + Alt + Shift + ←/→`        | Same, and bring the focused window along                    |
-| Right-click a window's title bar  | Pick "Move to Workspace N" from the menu                    |
+| Shortcut                         | Effect                                   |
+| -------------------------------- | ---------------------------------------- |
+| `Ctrl + Alt + ←`                 | Previous workspace (wraps)               |
+| `Ctrl + Alt + →`                 | Next workspace (wraps)                   |
+| `Ctrl + Alt + Shift + ←/→`       | Same, and bring the focused window along |
+| Right-click a window's title bar | Pick "Move to Workspace N" from the menu |
 
 Every binding bails when the event target is an `<input>`, `<textarea>`, or contenteditable element. Workspaces never hijack typing.
 
@@ -28,8 +32,8 @@ Every binding bails when the event target is an `<input>`, `<textarea>`, or cont
 
 - **Focus follows you.** Switching to a workspace restores the focus to whichever window was on top there. Returning to an empty workspace drops focus.
 - **Opening across workspaces.** Calling `openWindow({ kind: "app", appId })` from anywhere, when the window already exists on another workspace, pulls you to that workspace and focuses the window. Mirrors what Cmd+Tab does on macOS.
-- **Closing the focused window** hands focus to the next-highest-z window on the current workspace — not across spaces.
-- **`appearsAsDesktopIcon` predicates** are evaluated against the storage adapter, not per-workspace. Desktop icons appear on every workspace consistently; this is the same model as macOS — folders and shortcuts live "on the desktop," not "on Space 2."
+- **Closing the focused window** hands focus to the next-highest-z window on the current workspace, not across spaces.
+- **`appearsAsDesktopIcon` predicates** are evaluated against the storage adapter, not per-workspace. Desktop icons appear on every workspace consistently; this is the same model as macOS: folders and shortcuts live "on the desktop," not "on Space 2."
 
 ## Using the API
 
@@ -37,11 +41,11 @@ Every binding bails when the event target is an `<input>`, `<textarea>`, or cont
 
 ```ts
 const {
-  state,                  // includes workspaces[], activeWorkspaceId
-  switchWorkspace,        // (workspaceId) => void
-  moveWindowToWorkspace,  // (windowId, workspaceId) => void
-  addWorkspace,           // (workspaceId?) => void — id auto-generated when omitted
-  removeWorkspace,        // (workspaceId) => void — migrates windows to the first remaining
+  state, // includes workspaces[], activeWorkspaceId
+  switchWorkspace, // (workspaceId) => void
+  moveWindowToWorkspace, // (windowId, workspaceId) => void
+  addWorkspace, // (workspaceId?) => void, id auto-generated when omitted
+  removeWorkspace, // (workspaceId) => void, migrates windows to the first remaining
 } = useWindowManager();
 ```
 
@@ -68,11 +72,11 @@ function AddWorkspaceButton() {
 }
 ```
 
-(The library doesn't ship this as a default — three felt like the right initial count, and many apps deliberately reduce to one to hide the feature.)
+(The library doesn't ship this as a default: three felt like the right initial count, and many apps deliberately reduce to one to hide the feature.)
 
 ## Migration note
 
-Adding the workspace field is **a non-breaking change at the call-site level** — every existing `useWindowManager` action still works — but the `OpenWindow` shape now includes a required `workspaceId: string`. Consumers persisting their own WM snapshots to disk will see the field on deserialization; treat missing values as the active workspace at load time.
+Adding the workspace field is **a non-breaking change at the call-site level** (every existing `useWindowManager` action still works) but the `OpenWindow` shape now includes a required `workspaceId: string`. Consumers persisting their own WM snapshots to disk will see the field on deserialization; treat missing values as the active workspace at load time.
 
 ## Accessibility
 
@@ -82,6 +86,6 @@ Adding the workspace field is **a non-breaking change at the call-site level** �
 
 ## See also
 
-- [App switcher](/components/appswitcher/) — Cmd+Tab follows windows across workspaces.
-- [Mission Control](/components/missioncontrol/) — currently shows windows on the active workspace only.
-- [`useWindowManager`](/api/usewindowmanager/) — for `state.workspaces` and `state.activeWorkspaceId`.
+- [App switcher](/components/appswitcher/): Cmd+Tab follows windows across workspaces.
+- [Mission Control](/components/missioncontrol/): currently shows windows on the active workspace only.
+- [`useWindowManager`](/api/usewindowmanager/): for `state.workspaces` and `state.activeWorkspaceId`.

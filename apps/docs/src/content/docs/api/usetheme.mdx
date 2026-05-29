@@ -1,6 +1,6 @@
 ---
 title: useTheme
-description: Returns the active OsTheme — declared theme overlaid with user prefs. Reactive; re-renders consumers when prefs change.
+description: "Returns the active OsTheme: declared theme overlaid with user prefs. Reactive; re-renders consumers when prefs change."
 sidebar:
   order: 2
 ---
@@ -45,14 +45,22 @@ interface OsTheme {
 function AccentSwatch() {
   const theme = useTheme();
   return (
-    <span style={{ display: "inline-block", width: 12, height: 12, borderRadius: 6, background: theme.palette.accent }} />
+    <span
+      style={{
+        display: "inline-block",
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        background: theme.palette.accent,
+      }}
+    />
   );
 }
 ```
 
 ## Base vs effective
 
-If you specifically need the **base** theme (before user prefs are layered on) — say, to enumerate the original `customizable` options regardless of overrides — use `useBaseTheme()`:
+If you specifically need the **base** theme (before user prefs are layered on), say, to enumerate the original `customizable` options regardless of overrides, use `useBaseTheme()`:
 
 ```tsx
 import { useBaseTheme } from "@react-ui-os/desktop";
@@ -65,5 +73,5 @@ Components almost always want `useTheme()`. `useBaseTheme()` is for inspector to
 
 ## See also
 
-- [`useSettings`](/api/usesettings/) — how the overrides are written.
-- [Customizable schema](/themes/customizable/) — what a theme exposes to the panel.
+- [`useSettings`](/api/usesettings/): how the overrides are written.
+- [Customizable schema](/themes/customizable/): what a theme exposes to the panel.

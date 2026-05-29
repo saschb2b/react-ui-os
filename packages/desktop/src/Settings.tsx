@@ -121,8 +121,7 @@ export function Settings() {
             </h3>
             {fields.map(([path, field]) => {
               const overridden = path in prefs;
-              const value =
-                path in prefs ? prefs[path] : getPath(baseTheme, path);
+              const value = path in prefs ? prefs[path] : getPath(baseTheme, path);
               return (
                 <FieldRow
                   key={path}
@@ -153,13 +152,7 @@ interface FieldRowProps {
   onReset: () => void;
 }
 
-function FieldRow({
-  field,
-  value,
-  overridden,
-  onChange,
-  onReset,
-}: FieldRowProps) {
+function FieldRow({ field, value, overridden, onChange, onReset }: FieldRowProps) {
   const theme = useTheme();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -249,13 +242,7 @@ function FieldControl({
         />
       );
     case "toggle":
-      return (
-        <ToggleControl
-          field={field}
-          value={Boolean(value)}
-          onChange={onChange}
-        />
-      );
+      return <ToggleControl field={field} value={Boolean(value)} onChange={onChange} />;
   }
 }
 
@@ -418,9 +405,7 @@ function SelectControl({
             }}
             style={{
               border: "none",
-              background: selected
-                ? "rgba(120,160,220,0.22)"
-                : "transparent",
+              background: selected ? `${theme.palette.accent}38` : "transparent",
               color: theme.palette.textPrimary,
               padding: "6px 12px",
               fontSize: 12,

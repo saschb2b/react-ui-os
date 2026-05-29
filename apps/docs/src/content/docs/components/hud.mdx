@@ -1,15 +1,19 @@
 ---
 title: HUD overlay
-description: The transient floating indicator the OS uses to confirm a momentary action. Snap a window — "Snapped Left" briefly fades in and out at the center of the screen.
+description: The transient floating indicator the OS uses to confirm a momentary action. Snap a window. "Snapped Left" briefly fades in and out at the center of the screen.
 sidebar:
   order: 12
 ---
 
 import LivePreview from "~/components/LivePreview.astro";
 
-The HUD is the small, non-interactive floating indicator that confirms a momentary action — the analogue of the macOS volume / brightness pill or the Windows volume slider. It lives in the center, fades in, sits, fades out, and never blocks input. The library wires it into the actions that benefit (window snap, maximize / restore) and exposes the imperative API so consumers can fire their own.
+The HUD is the small, non-interactive floating indicator that confirms a momentary action: the analogue of the macOS volume / brightness pill or the Windows volume slider. It lives in the center, fades in, sits, fades out, and never blocks input. The library wires it into the actions that benefit (window snap, maximize / restore) and exposes the imperative API so consumers can fire their own.
 
-<LivePreview src="?demo=dock" label="Drag a window to the edge and release — the snap HUD lights up briefly" height="460px" />
+<LivePreview
+  src="?demo=dock"
+  label="Drag a window to the edge and release. The snap HUD lights up briefly"
+  height="460px"
+/>
 
 ## Imperative API
 
@@ -20,7 +24,7 @@ showHud({
   title: "Maximized",
   // optional second line
   sublabel: "Hello window",
-  // optional 0..1 bar — handy for volume / brightness analogues
+  // optional 0..1 bar, handy for volume / brightness analogues
   progress: 0.42,
   // optional icon node (use your icon kit)
   icon: <VolumeIcon />,
@@ -33,30 +37,30 @@ showHud({
 hideHud();
 ```
 
-Firing again before the previous HUD fades **replaces it in place** — repeated brightness taps coalesce into a single floating indicator that updates its progress bar smoothly, the way an OS handles volume keys.
+Firing again before the previous HUD fades **replaces it in place**: repeated brightness taps coalesce into a single floating indicator that updates its progress bar smoothly, the way an OS handles volume keys.
 
 ## Built-in calls
 
 The library fires the HUD for these actions out of the box:
 
-| Action                                            | HUD title           |
-| ------------------------------------------------- | ------------------- |
-| Drag window to top edge → maximize via snap       | `Maximized`         |
-| Drag window to left/right edge → halve            | `Snapped Left/Right` |
-| Drag window to corner → quarter                   | `Top Left Quarter`, etc. |
-| `Cmd/Ctrl + ↑` or double-click title bar (maximize) | `Maximized`         |
-| `Cmd/Ctrl + ↓` or Esc (restore from maximize)     | `Restored`          |
-| `Cmd/Ctrl + ←/→` (snap chord)                     | `Snapped Left/Right` |
+| Action                                              | HUD title                |
+| --------------------------------------------------- | ------------------------ |
+| Drag window to top edge → maximize via snap         | `Maximized`              |
+| Drag window to left/right edge → halve              | `Snapped Left/Right`     |
+| Drag window to corner → quarter                     | `Top Left Quarter`, etc. |
+| `Cmd/Ctrl + ↑` or double-click title bar (maximize) | `Maximized`              |
+| `Cmd/Ctrl + ↓` or Esc (restore from maximize)       | `Restored`               |
+| `Cmd/Ctrl + ←/→` (snap chord)                       | `Snapped Left/Right`     |
 
-Replace any of them by calling `showHud(...)` in your own handler after the action — the store always shows the latest payload.
+Replace any of them by calling `showHud(...)` in your own handler after the action. The store always shows the latest payload.
 
 ## Visual contract
 
 - Centered: `top: 50%; left: 50%; translate(-50%, -50%)`.
 - Backdrop-blurred surface, theme-accent for the icon and the optional progress bar.
 - Enters with a small scale-up + fade-in, exits in reverse.
-- `pointer-events: none` — the HUD never traps input. The user can keep dragging, typing, clicking through.
-- `role="status" aria-live="polite"` — screen readers announce the title without interrupting.
+- `pointer-events: none`: the HUD never traps input. The user can keep dragging, typing, clicking through.
+- `role="status" aria-live="polite"`: screen readers announce the title without interrupting.
 
 ## When NOT to use it
 
@@ -64,10 +68,10 @@ Replace any of them by calling `showHud(...)` in your own handler after the acti
 - For state that persists: surface it inline in the window.
 - For background work: notifications are the right home.
 
-The HUD is for the moment you complete an action and want an unobtrusive "yes, that happened" — nothing more.
+The HUD is for the moment you complete an action and want an unobtrusive "yes, that happened." Nothing more.
 
 ## See also
 
-- [Notifications](/components/notifications/) — for actionable / persistent messages.
-- [Window snapping](/components/snapping/) — the most visible HUD consumer.
-- [Recipes: deep-link a feature](/recipes/overview/#deep-link-a-feature) — same headless-companion pattern that the snap-HUD wiring uses.
+- [Notifications](/components/notifications/): for actionable / persistent messages.
+- [Window snapping](/components/snapping/): the most visible HUD consumer.
+- [Recipes: deep-link a feature](/recipes/overview/#deep-link-a-feature): same headless-companion pattern that the snap-HUD wiring uses.

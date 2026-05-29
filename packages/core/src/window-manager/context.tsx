@@ -8,10 +8,7 @@ import {
   useReducer,
   type ReactNode,
 } from "react";
-import {
-  initialWindowManagerState,
-  windowManagerReducer,
-} from "./reducer";
+import { initialWindowManagerState, windowManagerReducer } from "./reducer";
 import type {
   OpenWindow,
   WindowBounds,
@@ -26,15 +23,10 @@ interface WindowManagerContextValue {
   dispatch: WindowManagerDispatch;
 }
 
-const WindowManagerContext = createContext<WindowManagerContextValue | null>(
-  null,
-);
+const WindowManagerContext = createContext<WindowManagerContextValue | null>(null);
 
 export function WindowManagerProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(
-    windowManagerReducer,
-    initialWindowManagerState,
-  );
+  const [state, dispatch] = useReducer(windowManagerReducer, initialWindowManagerState);
   const value = useMemo<WindowManagerContextValue>(
     () => ({ state, dispatch }),
     [state],
@@ -56,9 +48,7 @@ export interface UseWindowManagerResult extends WindowManagerActions {
 export function useWindowManager(): UseWindowManagerResult {
   const ctx = useContext(WindowManagerContext);
   if (!ctx) {
-    throw new Error(
-      "useWindowManager must be used within a WindowManagerProvider",
-    );
+    throw new Error("useWindowManager must be used within a WindowManagerProvider");
   }
   const { state, dispatch } = ctx;
 
@@ -133,11 +123,9 @@ export function useWindowManager(): UseWindowManagerResult {
       const id =
         workspaceId ??
         String(
-          (state.workspaces.length === 0
+          state.workspaces.length === 0
             ? 1
-            : Math.max(
-                ...state.workspaces.map((w) => Number.parseInt(w, 10) || 0),
-              ) + 1),
+            : Math.max(...state.workspaces.map((w) => Number.parseInt(w, 10) || 0)) + 1,
         );
       dispatch({ type: "ADD_WORKSPACE", workspaceId: id });
     },

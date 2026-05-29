@@ -69,7 +69,7 @@ describe("notification store", () => {
 
   it("error-level notifications are sticky by default (duration 0)", () => {
     const id = notify({ title: "Boom", level: "error" });
-    // Advance well past 10s — error toasts should still be active.
+    // Advance well past 10s. Error toasts should still be active.
     vi.advanceTimersByTime(20_000);
     const item = getNotificationSnapshot().items.find((row) => row.id === id);
     expect(item?.dismissedAt).toBeUndefined();
@@ -83,9 +83,9 @@ describe("notification store", () => {
     // The store's interval-based reaper is best-effort; force a refresh by
     // calling notify on something unrelated to trigger rebuild.
     notify({ title: "tick" });
-    expect(
-      getNotificationSnapshot().active.some((a) => a.title === "Hello"),
-    ).toBe(false);
+    expect(getNotificationSnapshot().active.some((a) => a.title === "Hello")).toBe(
+      false,
+    );
   });
 
   it("subscribe fires on every change", () => {

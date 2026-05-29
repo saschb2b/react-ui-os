@@ -31,7 +31,7 @@ interface SliderProps {
  *
  * Why not a custom-drawn track + a fake thumb? The native input handles
  * page-up / page-down / home / end shortcuts and screen-reader value
- * announcements for free — a custom implementation would have to redo
+ * announcements for free. A custom implementation would have to redo
  * all of that and still wouldn't be as good.
  */
 export function Slider({

@@ -10,10 +10,7 @@ export type {
   WindowState,
 } from "./types";
 export { windowIdOf } from "./types";
-export {
-  initialWindowManagerState,
-  windowManagerReducer,
-} from "./reducer";
+export { initialWindowManagerState, windowManagerReducer } from "./reducer";
 export {
   WindowManagerProvider,
   useWindowManager,

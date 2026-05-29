@@ -7,7 +7,7 @@ import type { WorkArea } from "../util/layout";
  * the resolved rect and applies it via setBounds.
  *
  * Vanilla store so the Window and the SnapPreview don't have to share a
- * provider — the same pattern notifications and the context menu use.
+ * provider, the same pattern notifications and the context menu use.
  */
 
 export type SnapZone =
@@ -101,9 +101,7 @@ export function computeSnapZone(
   const right = pointerX >= work.x + work.width - EDGE_THRESHOLD;
 
   // Corners take precedence over edges when the pointer is well inside the
-  // corner window — Windows behaves the same way.
-  const cornerTop = pointerY <= work.y + CORNER_THRESHOLD;
-  const cornerBottom = pointerY >= work.y + work.height - CORNER_THRESHOLD;
+  // corner window. Windows behaves the same way.
   const cornerLeft = pointerX <= work.x + CORNER_THRESHOLD;
   const cornerRight = pointerX >= work.x + work.width - CORNER_THRESHOLD;
 

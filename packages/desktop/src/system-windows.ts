@@ -63,10 +63,7 @@ export const systemWindows: Record<string, SystemWindowDef> = {
 };
 
 /** Register a new system window. Consumer apps call this once at startup. */
-export function registerSystemWindow(
-  systemId: string,
-  def: SystemWindowDef,
-): void {
+export function registerSystemWindow(systemId: string, def: SystemWindowDef): void {
   systemWindows[systemId] = def;
 }
 
@@ -75,9 +72,7 @@ export function getSystemWindow(systemId: string): SystemWindowDef | undefined {
 }
 
 /** List system windows in declaration order; useful for Spotlight. */
-export function listSystemWindows(): Array<
-  { systemId: string } & SystemWindowDef
-> {
+export function listSystemWindows(): Array<{ systemId: string } & SystemWindowDef> {
   return Object.entries(systemWindows).map(([systemId, def]) => ({
     systemId,
     ...def,

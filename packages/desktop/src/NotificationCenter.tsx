@@ -90,11 +90,7 @@ export function NotificationCenter() {
 
   return (
     <>
-      <div
-        style={backdrop}
-        aria-hidden={!open}
-        onClick={() => setOpen(false)}
-      />
+      <div style={backdrop} aria-hidden={!open} onClick={() => setOpen(false)} />
       <aside
         style={sheet}
         aria-hidden={!open}
@@ -113,9 +109,7 @@ export function NotificationCenter() {
         >
           <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
             <strong style={{ fontSize: 13 }}>Notifications</strong>
-            <span
-              style={{ color: theme.palette.textSecondary, fontSize: 11 }}
-            >
+            <span style={{ color: theme.palette.textSecondary, fontSize: 11 }}>
               {items.length === 0
                 ? "No notifications"
                 : `${String(items.length)} total`}
@@ -218,13 +212,7 @@ function EmptyState({ theme }: { theme: ReturnType<typeof useTheme> }) {
   );
 }
 
-function CenterRow({
-  item,
-  accent,
-}: {
-  item: NotificationItem;
-  accent: string;
-}) {
+function CenterRow({ item, accent }: { item: NotificationItem; accent: string }) {
   const theme = useTheme();
   const time = new Date(item.createdAt).toLocaleTimeString([], {
     hour: "numeric",
@@ -313,10 +301,7 @@ function CenterRow({
   );
 }
 
-function accentFor(
-  item: NotificationItem,
-  apps: ReturnType<typeof useApps>,
-): string {
+function accentFor(item: NotificationItem, apps: ReturnType<typeof useApps>): string {
   if (item.accent) return item.accent;
   if (item.appId) {
     const app = apps.find((a) => a.id === item.appId);

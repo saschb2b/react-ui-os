@@ -23,9 +23,7 @@ export interface MintablesThemeOptions {
  * Returns a fresh theme object on each call so caller customizations
  * never leak between consumers.
  */
-export function createMintablesTheme(
-  options: MintablesThemeOptions = {},
-): OsTheme {
+export function createMintablesTheme(options: MintablesThemeOptions = {}): OsTheme {
   const accent = options.accent ?? "#5cb6b9";
   return {
     id: "mintables",
@@ -71,14 +69,7 @@ export function createMintablesTheme(
         label: "Accent",
         description:
           "Tints the dock tiles, focused-window highlight, and Settings field UI.",
-        options: [
-          "#5cb6b9",
-          "#7c66f5",
-          "#a855f7",
-          "#ec4899",
-          "#f59e0b",
-          "#22c55e",
-        ],
+        options: ["#5cb6b9", "#7c66f5", "#a855f7", "#ec4899", "#f59e0b", "#22c55e"],
       },
       "wallpaper.parallax": {
         kind: "toggle",

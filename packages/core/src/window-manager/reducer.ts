@@ -30,12 +30,13 @@ export function windowManagerReducer(
       const existing = state.windows.find((w) => w.id === id);
       if (existing) {
         // Opening an app that's already open focuses + un-minimizes it. If
-        // it lives on another workspace, also switch to that workspace —
+        // it lives on another workspace, also switch to that workspace,
         // matching the macOS "Cmd+Tab finds you" behavior. The payload is
         // refreshed too so "system" windows with shared ids can navigate.
-        const next = state.activeWorkspaceId !== existing.workspaceId
-          ? { ...state, activeWorkspaceId: existing.workspaceId }
-          : state;
+        const next =
+          state.activeWorkspaceId !== existing.workspaceId
+            ? { ...state, activeWorkspaceId: existing.workspaceId }
+            : state;
         return focusWindow(next, id, {
           payload: action.payload,
           state: "normal",
@@ -136,7 +137,7 @@ export function windowManagerReducer(
                 y: action.y,
                 w: action.w,
                 h: action.h,
-                // The window now has real, placed bounds — drop the auto flag
+                // The window now has real, placed bounds. Drop the auto flag
                 // so a later remount (e.g. workspace switch) won't re-place it
                 // and undo a user's drag.
                 autoBounds: false,
@@ -192,16 +193,12 @@ export function windowManagerReducer(
     case "REMOVE_WORKSPACE": {
       if (!state.workspaces.includes(action.workspaceId)) return state;
       if (state.workspaces.length <= 1) return state;
-      const remaining = state.workspaces.filter(
-        (w) => w !== action.workspaceId,
-      );
+      const remaining = state.workspaces.filter((w) => w !== action.workspaceId);
       // Migrate every window from the removed workspace to the first
       // remaining one. Less surprising than silently dropping windows.
       const fallback = remaining[0] ?? state.activeWorkspaceId;
       const windows = state.windows.map((w) =>
-        w.workspaceId === action.workspaceId
-          ? { ...w, workspaceId: fallback }
-          : w,
+        w.workspaceId === action.workspaceId ? { ...w, workspaceId: fallback } : w,
       );
       const activeWorkspaceId =
         state.activeWorkspaceId === action.workspaceId
@@ -271,10 +268,7 @@ function bumpZ(state: WindowManagerState): WindowManagerState {
   };
 }
 
-function topVisibleId(
-  windows: OpenWindow[],
-  workspaceId: string,
-): string | null {
+function topVisibleId(windows: OpenWindow[], workspaceId: string): string | null {
   let top: OpenWindow | null = null;
   for (const w of windows) {
     if (w.workspaceId !== workspaceId) continue;

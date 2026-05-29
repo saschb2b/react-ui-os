@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-`useWindowManager()` returns the reactive window-manager state plus a set of dispatch functions. Mount it anywhere inside `<DesktopProvider>` — the library's own components consume it; consumers use it to build custom UI (alternative docks, a launcher widget, a window-list inspector).
+`useWindowManager()` returns the reactive window-manager state plus a set of dispatch functions. Mount it anywhere inside `<DesktopProvider>`. The library's own components consume it; consumers use it to build custom UI (alternative docks, a launcher widget, a window-list inspector).
 
 ## Import
 
@@ -15,28 +15,32 @@ import { useWindowManager } from "@react-ui-os/core";
 
 ## Returns
 
-| Property          | Type                                                                  | Description                                                                                  |
-| ----------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `state`           | `WindowManagerState`                                                  | Raw state: `{ windows, focusedId, nextZ }`. Rarely needed; the convenience fields cover it.  |
-| `windows`         | `OpenWindow[]`                                                        | All currently-open windows in z-index order.                                                 |
-| `focusedWindow`   | `OpenWindow \| null`                                                  | The currently-focused window, or `null`.                                                     |
-| `windowById`      | `(id: string) => OpenWindow \| undefined`                             | Look up a window by its stable id.                                                           |
-| `openWindow`      | `(payload, initialBounds?) => void`                                   | Open or focus a window. Dedups by `windowIdOf(payload)`.                                     |
-| `closeWindow`     | `(id: string) => void`                                                | Close a window. Auto-refocuses the next-top.                                                 |
-| `focusWindow`     | `(id: string) => void`                                                | Bring a window to the top.                                                                   |
-| `minimizeWindow`  | `(id: string) => void`                                                | Flip state to `"minimized"`. Clears focus if the focused window minimized.                   |
-| `restoreWindow`   | `(id: string) => void`                                                | Restore from minimized and focus.                                                            |
-| `toggleMaximize`  | `(id: string) => void`                                                | Cycle `normal` ↔ `maximized`.                                                                |
-| `moveWindow`      | `(id, x, y) => void`                                                  | Update position only.                                                                        |
-| `resizeWindow`    | `(id, w, h) => void`                                                  | Update size only.                                                                            |
-| `setBounds`       | `(id, x, y, w, h) => void`                                            | Update position + size in one dispatch.                                                      |
+| Property         | Type                                      | Description                                                                                 |
+| ---------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `state`          | `WindowManagerState`                      | Raw state: `{ windows, focusedId, nextZ }`. Rarely needed; the convenience fields cover it. |
+| `windows`        | `OpenWindow[]`                            | All currently-open windows in z-index order.                                                |
+| `focusedWindow`  | `OpenWindow \| null`                      | The currently-focused window, or `null`.                                                    |
+| `windowById`     | `(id: string) => OpenWindow \| undefined` | Look up a window by its stable id.                                                          |
+| `openWindow`     | `(payload, initialBounds?) => void`       | Open or focus a window. Dedups by `windowIdOf(payload)`.                                    |
+| `closeWindow`    | `(id: string) => void`                    | Close a window. Auto-refocuses the next-top.                                                |
+| `focusWindow`    | `(id: string) => void`                    | Bring a window to the top.                                                                  |
+| `minimizeWindow` | `(id: string) => void`                    | Flip state to `"minimized"`. Clears focus if the focused window minimized.                  |
+| `restoreWindow`  | `(id: string) => void`                    | Restore from minimized and focus.                                                           |
+| `toggleMaximize` | `(id: string) => void`                    | Cycle `normal` ↔ `maximized`.                                                               |
+| `moveWindow`     | `(id, x, y) => void`                      | Update position only.                                                                       |
+| `resizeWindow`   | `(id, w, h) => void`                      | Update size only.                                                                           |
+| `setBounds`      | `(id, x, y, w, h) => void`                | Update position + size in one dispatch.                                                     |
 
 ## `WindowPayload`
 
 ```ts
 type WindowPayload =
   | { kind: "app"; appId: string }
-  | { kind: "system"; systemId: string; args?: Record<string, string | number | boolean> };
+  | {
+      kind: "system";
+      systemId: string;
+      args?: Record<string, string | number | boolean>;
+    };
 ```
 
 - App payloads dedup by `appId`. Opening the same app twice focuses the existing window.
@@ -111,5 +115,5 @@ useEffect(() => {
 
 ## See also
 
-- [Window](/components/window/) — the surface this state drives.
-- [Themes overview](/themes/overview/) — what tokens are reactive.
+- [Window](/components/window/): the surface this state drives.
+- [Themes overview](/themes/overview/): what tokens are reactive.

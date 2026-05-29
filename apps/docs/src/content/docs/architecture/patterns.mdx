@@ -7,16 +7,16 @@ sidebar:
 
 The library is bigger than it looks because most "new features" follow one of a handful of recurring shapes. Read this page once and you will recognize half the source.
 
-## Contribution shapes — what consumers register
+## Contribution shapes: what consumers register
 
 The library exposes four points at which a consumer hands the system something to render or surface.
 
-| Shape              | Registry                          | Where it shows up                                                       |
-| ------------------ | --------------------------------- | ----------------------------------------------------------------------- |
-| `App`              | `<Desktop apps={...} />`          | Dock tile, menu bar focus name, Spotlight, `Cmd/Ctrl + 1..9`            |
-| `SystemWindowDef`  | `registerSystemWindow(id, def)`   | Spotlight, desktop icon (when `appearsAsDesktopIcon` passes), windowable |
-| `SpotlightSource`  | `registerSpotlightSource(id, fn)` | Cmd-K palette only — for anything that activates instead of opening     |
-| `StatusItem`       | `registerStatusItem({ id, ... })` | Menu-bar right cluster between workspaces and the clock                 |
+| Shape             | Registry                          | Where it shows up                                                        |
+| ----------------- | --------------------------------- | ------------------------------------------------------------------------ |
+| `App`             | `<Desktop apps={...} />`          | Dock tile, menu bar focus name, Spotlight, `Cmd/Ctrl + 1..9`             |
+| `SystemWindowDef` | `registerSystemWindow(id, def)`   | Spotlight, desktop icon (when `appearsAsDesktopIcon` passes), windowable |
+| `SpotlightSource` | `registerSpotlightSource(id, fn)` | Cmd-K palette only: for anything that activates instead of opening       |
+| `StatusItem`      | `registerStatusItem({ id, ... })` | Menu-bar right cluster between workspaces and the clock                  |
 
 All four are **declarative**. You hand the library a description; it owns the rendering, the keyboard nav, the focus, the dismissal. Re-registering the same id replaces the previous record so a host component can update without churn.
 
@@ -28,12 +28,12 @@ Several systems need to be triggerable from any code (a fetch handler, an effect
 2. A **component mounted by `<Desktop>`** subscribes via `useSyncExternalStore`.
 3. An **imperative function** (`notify`, `showHud`, `openContextMenu`, etc.) writes to the store.
 
-| System            | Imperative call                  | Mounted by `<Desktop>`           |
-| ----------------- | -------------------------------- | -------------------------------- |
-| Notifications     | `notify({ title, ... })`         | `<NotificationToasts>` + `<NotificationCenter>` |
-| Context menu      | `openContextMenu({ x, y, ... })` | `<ContextMenu>`                  |
-| Snap preview      | `setSnapPreview({ ... })`        | `<SnapPreview>`                  |
-| HUD               | `showHud({ title, ... })`        | `<HudOverlay>`                   |
+| System        | Imperative call                  | Mounted by `<Desktop>`                          |
+| ------------- | -------------------------------- | ----------------------------------------------- |
+| Notifications | `notify({ title, ... })`         | `<NotificationToasts>` + `<NotificationCenter>` |
+| Context menu  | `openContextMenu({ x, y, ... })` | `<ContextMenu>`                                 |
+| Snap preview  | `setSnapPreview({ ... })`        | `<SnapPreview>`                                 |
+| HUD           | `showHud({ title, ... })`        | `<HudOverlay>`                                  |
 
 This is how a deep fetch handler can `notify({ title: "Saved" })` without anyone threading a dispatcher down. Stores live in `@react-ui-os/core` so they have no React dependency; the components that paint them live in `@react-ui-os/desktop`.
 
@@ -69,21 +69,21 @@ If you reach for depth 3 features on the most common path, the API is undersized
 
 ## What goes in `core` vs `desktop` vs themes
 
-- `@react-ui-os/core` — types, hooks, the window-manager reducer, the storage adapter, the settings applier, vanilla stores (notifications). No JSX outside the provider. No browser globals at module load. No theme assumptions.
-- `@react-ui-os/desktop` — the components. Depends on `core` for types and hooks, never on a specific theme. Every visual decision comes from `useTheme()`.
-- `@react-ui-os/theme-*` — pure data. Depends on `core` for types only.
+- `@react-ui-os/core`: types, hooks, the window-manager reducer, the storage adapter, the settings applier, vanilla stores (notifications). No JSX outside the provider. No browser globals at module load. No theme assumptions.
+- `@react-ui-os/desktop`: the components. Depends on `core` for types and hooks, never on a specific theme. Every visual decision comes from `useTheme()`.
+- `@react-ui-os/theme-*`: pure data. Depends on `core` for types only.
 
 A theme that can't express a token a component needs means the contract is undersized, not the theme.
 
 ## Mounted-by-`<Desktop>` vs. opt-in
 
-`<Desktop>` mounts the system surfaces by default — the notification stack, the Center, the context menu renderer, the snap preview, the HUD, the app switcher, Mission Control, the desktop backdrop, the Spotlight, the keyboard shortcuts, the wallpaper, the menu bar, the dock, the window layer.
+`<Desktop>` mounts the system surfaces by default: the notification stack, the Center, the context menu renderer, the snap preview, the HUD, the app switcher, Mission Control, the desktop backdrop, the Spotlight, the keyboard shortcuts, the wallpaper, the menu bar, the dock, the window layer.
 
-To opt out of any one, drop down to `<DesktopProvider>` and mount only what you want. That's the only way to remove default behavior — the library does not gate it behind feature flags.
+To opt out of any one, drop down to `<DesktopProvider>` and mount only what you want. That's the only way to remove default behavior. The library does not gate it behind feature flags.
 
 ## See also
 
-- [`useWindowManager`](/api/usewindowmanager/) — the central hook.
-- [`registerSpotlightSource`](/api/registerspotlightsource/) — a contribution shape in detail.
-- [Notifications](/components/notifications/) — the imperative-store pattern's canonical example.
-- [Recipes](/recipes/overview/) — concrete patterns built on top.
+- [`useWindowManager`](/api/usewindowmanager/): the central hook.
+- [`registerSpotlightSource`](/api/registerspotlightsource/): a contribution shape in detail.
+- [Notifications](/components/notifications/): the imperative-store pattern's canonical example.
+- [Recipes](/recipes/overview/): concrete patterns built on top.

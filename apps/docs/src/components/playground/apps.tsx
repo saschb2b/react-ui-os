@@ -1,10 +1,7 @@
 import type { CSSProperties } from "react";
 import type { App } from "@react-ui-os/core";
 import { notify } from "@react-ui-os/core";
-import {
-  registerStatusItem,
-  registerSystemWindow,
-} from "@react-ui-os/desktop";
+import { registerStatusItem, registerSystemWindow } from "@react-ui-os/desktop";
 import { useDesktopContext } from "@react-ui-os/desktop";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
@@ -63,12 +60,12 @@ function HelloContent({ focused }: { focused: boolean }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <h2 style={{ margin: 0, fontSize: 18 }}>Hello, desktop.</h2>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        Drag the title bar. Drag any edge or corner to resize. Double-click
-        to maximize, then press Escape to restore.
+        Drag the title bar. Drag any edge or corner to resize. Double-click to maximize,
+        then press Escape to restore.
       </p>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        Press <kbd>Cmd-K</kbd> for Spotlight, <kbd>Cmd-,</kbd> for Settings.
-        Cmd-1/2/3 jumps between apps.
+        Press <kbd>Cmd-K</kbd> for Spotlight, <kbd>Cmd-,</kbd> for Settings. Cmd-1/2/3
+        jumps between apps.
       </p>
       <div
         style={{
@@ -121,8 +118,8 @@ function NotesContent() {
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <h2 style={{ margin: 0, fontSize: 18 }}>Notes</h2>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        Plain notes app. Open me by clicking my dock tile, by pressing{" "}
-        <kbd>Cmd-2</kbd>, or by typing "notes" into Spotlight.
+        Plain notes app. Open me by clicking my dock tile, by pressing <kbd>Cmd-2</kbd>,
+        or by typing "notes" into Spotlight.
       </p>
     </div>
   );
@@ -133,8 +130,8 @@ function CalculatorContent() {
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <h2 style={{ margin: 0, fontSize: 18 }}>Calculator</h2>
       <p style={{ margin: 0, opacity: 0.78 }}>
-        Three apps gives Spotlight something to search. Try{" "}
-        <kbd>Cmd-K</kbd> then "calc".
+        Three apps gives Spotlight something to search. Try <kbd>Cmd-K</kbd> then
+        "calc".
       </p>
     </div>
   );

@@ -15,13 +15,13 @@ import { useSettings } from "@react-ui-os/desktop";
 
 ## Returns
 
-| Property      | Type                                                  | Description                                                                                  |
-| ------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `schema`      | `Record<string, CustomizableField>`                   | The active theme's `customizable` map. Empty `{}` when the theme exposes none.               |
-| `prefs`       | `Record<string, unknown>`                             | Current user overrides keyed by the same dotted paths. `{}` when nothing has been set.       |
-| `setPref`     | `(path: string, value: unknown) => void`              | Write a single override. Triggers immediate re-render of the desktop.                        |
-| `resetPref`   | `(path: string) => void`                              | Remove one override, falling back to the theme default.                                      |
-| `resetAll`    | `() => void`                                          | Clear every override for the active theme.                                                   |
+| Property    | Type                                     | Description                                                                            |
+| ----------- | ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `schema`    | `Record<string, CustomizableField>`      | The active theme's `customizable` map. Empty `{}` when the theme exposes none.         |
+| `prefs`     | `Record<string, unknown>`                | Current user overrides keyed by the same dotted paths. `{}` when nothing has been set. |
+| `setPref`   | `(path: string, value: unknown) => void` | Write a single override. Triggers immediate re-render of the desktop.                  |
+| `resetPref` | `(path: string) => void`                 | Remove one override, falling back to the theme default.                                |
+| `resetAll`  | `() => void`                             | Clear every override for the active theme.                                             |
 
 ## Examples
 
@@ -31,7 +31,10 @@ import { useSettings } from "@react-ui-os/desktop";
 function AccentChip({ hex }: { hex: string }) {
   const { setPref } = useSettings();
   return (
-    <button onClick={() => setPref("palette.accent", hex)} style={{ background: hex }} />
+    <button
+      onClick={() => setPref("palette.accent", hex)}
+      style={{ background: hex }}
+    />
   );
 }
 ```
@@ -49,9 +52,7 @@ const supportsLeftDock = "chrome.dockPosition" in schema;
 function ResetMenu() {
   const { resetAll, prefs } = useSettings();
   const hasOverrides = Object.keys(prefs).length > 0;
-  return hasOverrides ? (
-    <button onClick={resetAll}>Reset all settings</button>
-  ) : null;
+  return hasOverrides ? <button onClick={resetAll}>Reset all settings</button> : null;
 }
 ```
 
@@ -61,6 +62,6 @@ function ResetMenu() {
 
 ## See also
 
-- [Settings](/components/settings/) — the default UI built on this hook.
-- [Customizable schema](/themes/customizable/) — what shapes `schema` can take.
-- [`StorageAdapter`](/api/storageadapter/) — where prefs persist.
+- [Settings](/components/settings/): the default UI built on this hook.
+- [Customizable schema](/themes/customizable/): what shapes `schema` can take.
+- [`StorageAdapter`](/api/storageadapter/): where prefs persist.

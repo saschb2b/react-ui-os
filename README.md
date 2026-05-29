@@ -6,9 +6,7 @@ A React component library that gives you a working OS-style desktop in one line,
 import { Desktop } from "@react-ui-os/desktop";
 import { defaultTheme } from "@react-ui-os/theme-default";
 
-const apps = [
-  { id: "hello", name: "Hello", content: () => <h1>Hello, desktop.</h1> },
-];
+const apps = [{ id: "hello", name: "Hello", content: () => <h1>Hello, desktop.</h1> }];
 
 <Desktop apps={apps} theme={defaultTheme} />;
 ```
@@ -23,13 +21,13 @@ Most React UI libraries ship fifty components and let you wire them. That instin
 
 ## Packages
 
-| Package | Purpose |
-| --- | --- |
-| `@react-ui-os/core` | Pure logic. Window manager, app and theme types, storage adapter. No JSX. |
-| `@react-ui-os/desktop` | The components. `<Desktop>`, `<DesktopProvider>`, `<Wallpaper>`, `<MenuBar>`, `<Dock>`, `<WindowLayer>`, `<Window>`, `<Spotlight>`, `<Settings>`, `<FileExplorer>`, `<DesktopIcons>`. |
-| `@react-ui-os/theme-default` | Unbranded baseline theme. |
-| `@react-ui-os/theme-mintables` | Cinematic frosted-glass theme with parallax wallpaper, deep blur, teal accent. |
-| `@react-ui-os/theme-saas` | Neutral light theme. Left dock, hidden menu bar — exercises the non-Mac chrome variants. |
+| Package                        | Purpose                                                                                                                                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@react-ui-os/core`            | Pure logic. Window manager, app and theme types, storage adapter. No JSX.                                                                                                             |
+| `@react-ui-os/desktop`         | The components. `<Desktop>`, `<DesktopProvider>`, `<Wallpaper>`, `<MenuBar>`, `<Dock>`, `<WindowLayer>`, `<Window>`, `<Spotlight>`, `<Settings>`, `<FileExplorer>`, `<DesktopIcons>`. |
+| `@react-ui-os/theme-default`   | Unbranded baseline theme.                                                                                                                                                             |
+| `@react-ui-os/theme-mintables` | Cinematic frosted-glass theme with parallax wallpaper, deep blur, teal accent.                                                                                                        |
+| `@react-ui-os/theme-saas`      | Neutral light theme. Left dock, hidden menu bar, exercises the non-Mac chrome variants.                                                                                               |
 
 All five packages ship dual ESM/CJS bundles + TypeScript declarations via `tsup`. Source-exported during in-repo development via a `source` Vite condition; consumers resolve through the bundled `dist/` output.
 
@@ -38,10 +36,10 @@ All five packages ship dual ESM/CJS bundles + TypeScript declarations via `tsup`
 The library is designed so the easy thing is short and the hard thing is reachable.
 
 ```tsx
-// 1. One-line desktop — full default composition.
+// 1. One-line desktop: full default composition.
 <Desktop apps={apps} theme={defaultTheme} />
 
-// 2. Composable provider — pick which surfaces to render.
+// 2. Composable provider: pick which surfaces to render.
 <DesktopProvider apps={apps} theme={theme}>
   <Wallpaper />
   <MenuBar brand="acme" />
@@ -51,7 +49,7 @@ The library is designed so the easy thing is short and the hard thing is reachab
   <Spotlight />
 </DesktopProvider>
 
-// 3. Hooks — drive the system from anywhere.
+// 3. Hooks: drive the system from anywhere.
 const { windows, focusedWindow, openWindow } = useWindowManager();
 const theme = useTheme();
 const { schema, prefs, setPref } = useSettings();
@@ -88,7 +86,13 @@ export const myTheme: OsTheme = {
   name: "My Theme",
   palette: { background, surface, textPrimary, textSecondary, accent, border },
   shape: { windowRadius, dockTileRadius, small },
-  motion: { windowOpenDurationMs, windowOpenEasing, dockHoverDurationMs, genieDurationMs, genieEasing },
+  motion: {
+    windowOpenDurationMs,
+    windowOpenEasing,
+    dockHoverDurationMs,
+    genieDurationMs,
+    genieEasing,
+  },
   blur: { surface, spotlight },
   wallpaper: { src: "/wallpaper.jpg", parallax: true, vignette: true },
   chrome: {
@@ -96,7 +100,9 @@ export const myTheme: OsTheme = {
     dockPosition: "bottom" | "left" | "hidden",
     menuBar: "top" | "in-window" | "none",
   },
-  customizable: { /* dotted-path field schema, optional */ },
+  customizable: {
+    /* dotted-path field schema, optional */
+  },
 };
 ```
 

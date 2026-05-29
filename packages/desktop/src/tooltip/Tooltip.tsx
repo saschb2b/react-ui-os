@@ -19,7 +19,7 @@ import { useTheme } from "../desktop-context";
  * Lightweight themed tooltip. Wraps a single child and shows a small
  * dark pill near it after a hover delay. Replaces the native `title`
  * attribute on every dock tile, traffic light, workspace pip, and clock
- * in the library — same visual stance, support for an optional shortcut
+ * in the library: same visual stance, support for an optional shortcut
  * hint, and no layout jank when the tooltip would overflow the viewport.
  *
  * "Warm" behavior: once a tooltip has shown in the last 800 ms, the
@@ -30,7 +30,6 @@ import { useTheme } from "../desktop-context";
 const SHOW_DELAY_COLD = 480;
 const SHOW_DELAY_WARM = 60;
 const HIDE_GRACE_PERIOD = 800;
-const ARROW_SIZE = 5;
 const OFFSET = 8;
 
 interface TooltipProps {

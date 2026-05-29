@@ -13,7 +13,7 @@ export type SystemWindowArgs = Record<string, string | number | boolean>;
  *             `appId`, just like a macOS app instance.
  *   `system`  hosts a built-in surface (Settings, file explorers, etc.).
  *             Multiple instances per `systemId` are possible by passing
- *             distinct `args` — for example, a docs site can open a
+ *             distinct `args`: for example, a docs site can open a
  *             "Component" system window with `args: { name: "Spotlight" }`
  *             and another with `args: { name: "Window" }` side by side.
  */
@@ -44,7 +44,7 @@ export interface OpenWindow {
   /**
    * Workspace this window belongs to. Defaults to the workspace that was
    * active when the window opened. Switching workspaces hides all windows
-   * whose `workspaceId` doesn't match — they aren't unmounted, just
+   * whose `workspaceId` doesn't match. They aren't unmounted, just
    * filtered by the window layer, so internal state survives.
    */
   workspaceId: string;

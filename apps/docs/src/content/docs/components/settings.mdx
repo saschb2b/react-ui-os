@@ -9,7 +9,10 @@ import LivePreview from "~/components/LivePreview.astro";
 
 `Settings` is a system window opened by `Cmd-,` (macOS convention), by typing "settings" into Spotlight, or programmatically via `openWindow({ kind: "system", systemId: "settings" })`. It reads `theme.customizable` and renders the appropriate editor per field kind.
 
-<LivePreview label="Press Cmd-, to open Settings and tweak the theme live" height="420px" />
+<LivePreview
+  label="Press Cmd-, to open Settings and tweak the theme live"
+  height="420px"
+/>
 
 ## Import
 
@@ -29,13 +32,13 @@ In normal use you never instantiate `<Settings>` directly. The library registers
 
 ## Supported field kinds
 
-| Kind                  | Editor                                                                                      |
-| --------------------- | ------------------------------------------------------------------------------------------- |
-| `color-from-palette`  | A row of color swatches. Selected swatch wears an outline.                                  |
-| `image-pick`          | A thumbnail grid. Each option has an `src` and a `label`.                                   |
-| `range`               | A slider with `min` / `max` / `step` and a tabular-numeric readout (optional `unit`).       |
-| `select`              | A segmented control where each `option` has a `value` and a `label`.                        |
-| `toggle`              | An iOS-style switch with a 36 × 20 rounded pill and a sliding thumb.                        |
+| Kind                 | Editor                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------- |
+| `color-from-palette` | A row of color swatches. Selected swatch wears an outline.                            |
+| `image-pick`         | A thumbnail grid. Each option has an `src` and a `label`.                             |
+| `range`              | A slider with `min` / `max` / `step` and a tabular-numeric readout (optional `unit`). |
+| `select`             | A segmented control where each `option` has a `value` and a `label`.                  |
+| `toggle`             | An iOS-style switch with a 36 × 20 rounded pill and a sliding thumb.                  |
 
 ## Reset buttons
 

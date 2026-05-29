@@ -11,6 +11,14 @@ This is an OS. Almost every behavior we ship (motion timings and magnitudes, int
 - Deviating from the reference is allowed, but only deliberately and with a stated reason. An accidental deviation is a bug.
 - When the reference turns out to work differently from what you assumed, that discovery is the point. (Case in point: our wallpaper parallax is cursor-driven, but macOS has no such effect at all, and iOS parallax is tilt-driven and far subtler than a first guess. We only learned that by looking it up, after a round of guessing produced a version that made people dizzy.)
 
+## Finish the whole scope
+
+When research turns up several valid fixes, or a problem has many instances, do all of them. Do not survey the options, fix a convenient subset, and hand back the rest as a backlog. "Found 200 cases, fixed the worst 5" is not done; it is a status report disguised as work.
+
+- If you enumerate options or instances, the default is to complete every one, not to propose a sample. Surface the full list only when you genuinely need a decision (real trade-offs, destructive actions, ambiguous intent), not to offload finishable work.
+- A pass over the codebase is complete when a re-run of the same search returns nothing. Verify that way before claiming done.
+- Partial completion is allowed only when scope is genuinely unbounded or blocked. Say so explicitly and name what remains and why.
+
 ## Tech stack
 
 - **TypeScript strict, ESM + CJS dual bundles** via tsup.
@@ -113,12 +121,18 @@ One object. The dock, menu bar, Spotlight, and keyboard shortcuts all read from 
 interface OsTheme {
   id: string;
   name: string;
-  palette: { background, surface, textPrimary, textSecondary, accent, border };
-  shape: { windowRadius, dockTileRadius, small };
-  motion: { windowOpenDurationMs, windowOpenEasing, dockHoverDurationMs, genieDurationMs, genieEasing };
-  blur: { surface, spotlight };
-  wallpaper: { src?, parallax?, vignette? };
-  chrome: { windowControls, dockPosition, menuBar };
+  palette: { background; surface; textPrimary; textSecondary; accent; border };
+  shape: { windowRadius; dockTileRadius; small };
+  motion: {
+    windowOpenDurationMs;
+    windowOpenEasing;
+    dockHoverDurationMs;
+    genieDurationMs;
+    genieEasing;
+  };
+  blur: { surface; spotlight };
+  wallpaper: { src?; parallax?; vignette? };
+  chrome: { windowControls; dockPosition; menuBar };
   customizable?: Record<string, CustomizableField>;
 }
 ```
@@ -130,7 +144,11 @@ Themes are pure data. They depend on `@react-ui-os/core` for types only, never o
 ```ts
 type WindowPayload =
   | { kind: "app"; appId: string }
-  | { kind: "system"; systemId: string; args?: Record<string, string | number | boolean> };
+  | {
+      kind: "system";
+      systemId: string;
+      args?: Record<string, string | number | boolean>;
+    };
 ```
 
 `windowIdOf(payload)` serializes the args into the id so two system windows with distinct args coexist as distinct windows. Backward compatible: omitting args keeps the single-slot behavior.
@@ -186,20 +204,20 @@ interface StatusItem {
 }
 ```
 
-`registerStatusItem({ id, icon, ... })` adds a widget to the menu-bar right cluster (between workspaces and the clock). Battery, sync state, online dot, current track — anything that should live in the system chrome rather than in an app window. Re-registering the same id replaces the previous record so a host component can update its badge without remount churn.
+`registerStatusItem({ id, icon, ... })` adds a widget to the menu-bar right cluster (between workspaces and the clock). Battery, sync state, online dot, current track. Anything that should live in the system chrome rather than in an app window. Re-registering the same id replaces the previous record so a host component can update its badge without remount churn.
 
 ## The imperative-store pattern
 
 Four library systems share the same shape: a **module-level vanilla store** + a **component mounted by `<Desktop>` that subscribes via `useSyncExternalStore`** + an **imperative function callable from any code**. This is how features that span "anywhere in the app" stay decoupled from any provider hierarchy. Pattern files:
 
-| System            | Imperative call                | Renderer mounted by `<Desktop>` | Store                                      |
-| ----------------- | ------------------------------ | ------------------------------- | ------------------------------------------ |
-| Notifications     | `notify({ ... })`              | `<NotificationToasts>` + `<NotificationCenter>` | `core/notifications/store.ts`     |
-| Context menu      | `openContextMenu({ x, y, ... })` | `<ContextMenu>`                 | `desktop/context-menu/store.ts`            |
-| Window snap       | `setSnapPreview(...)`          | `<SnapPreview>`                 | `desktop/snap/snap-store.ts`               |
-| HUD               | `showHud({ title, ... })`      | `<HudOverlay>`                  | `desktop/hud/hud-store.ts`                 |
-| Status tray       | `registerStatusItem(...)`      | `<StatusItems>` inside `<MenuBar>` | `desktop/status-items.ts`               |
-| Spotlight source  | `registerSpotlightSource(...)` | inside `<Spotlight>`            | `desktop/spotlight-sources.ts`             |
+| System           | Imperative call                  | Renderer mounted by `<Desktop>`                 | Store                           |
+| ---------------- | -------------------------------- | ----------------------------------------------- | ------------------------------- |
+| Notifications    | `notify({ ... })`                | `<NotificationToasts>` + `<NotificationCenter>` | `core/notifications/store.ts`   |
+| Context menu     | `openContextMenu({ x, y, ... })` | `<ContextMenu>`                                 | `desktop/context-menu/store.ts` |
+| Window snap      | `setSnapPreview(...)`            | `<SnapPreview>`                                 | `desktop/snap/snap-store.ts`    |
+| HUD              | `showHud({ title, ... })`        | `<HudOverlay>`                                  | `desktop/hud/hud-store.ts`      |
+| Status tray      | `registerStatusItem(...)`        | `<StatusItems>` inside `<MenuBar>`              | `desktop/status-items.ts`       |
+| Spotlight source | `registerSpotlightSource(...)`   | inside `<Spotlight>`                            | `desktop/spotlight-sources.ts`  |
 
 Reasons:
 
@@ -211,7 +229,7 @@ When adding a new "appears system-wide" feature, follow this shape. Don't reach 
 
 ## Workspaces
 
-Window manager state includes `workspaces: string[]` and `activeWorkspaceId: string`. Every `OpenWindow` has a `workspaceId`. `WindowLayer` filters by the active workspace — switching is an O(n) hide rather than mount/unmount, so window state survives. `FOCUS` on a window from another workspace pulls the user to that workspace (matches the macOS "click a dock tile, jump to that space" behavior).
+Window manager state includes `workspaces: string[]` and `activeWorkspaceId: string`. Every `OpenWindow` has a `workspaceId`. `WindowLayer` filters by the active workspace: switching is an O(n) hide rather than mount/unmount, so window state survives. `FOCUS` on a window from another workspace pulls the user to that workspace (matches the macOS "click a dock tile, jump to that space" behavior).
 
 Defaults: three workspaces, seeded at boot. Actions: `switchWorkspace`, `moveWindowToWorkspace`, `addWorkspace`, `removeWorkspace`. `removeWorkspace` refuses to drop the last and migrates orphan windows to the first remaining workspace.
 
@@ -249,7 +267,7 @@ The window manager is the source of truth, held in React state. Routes (in any c
 
 ### Animations are state machines, not effects.
 
-Window open / close / minimize use a local `phase` state machine. The dispatch to the window manager happens *after* the animation timeout fires.
+Window open / close / minimize use a local `phase` state machine. The dispatch to the window manager happens _after_ the animation timeout fires.
 
 ### Storage events glue the system together.
 
@@ -294,11 +312,40 @@ Call `registerSpotlightSource(id, query => results)` at module load or inside a 
 - **Phase 4.** FileExplorer primitive with full macOS-Finder interaction model. State-earned desktop folders.
 - **Phase 5.** Bundling via tsup. Docs site rebuilt on Astro Starlight. `SystemWindowArgs` for multi-instance system windows. `registerSpotlightSource` for arbitrary result kinds. CI + Pages deploy.
 
-## Writing rules
+## No AI slop
+
+AI-generated work has a recognizable texture: padded prose, decorative styling with no function, and comments that narrate the code. It reads as generated, not authored. None of it ships here. The three sub-sections below are hard rules, not preferences. They restate and extend the design discipline in `DESIGN.md` ("Material does the work"); when in doubt, the more restrained option wins.
+
+### Prose (docs, copy, comments, commit messages)
 
 - **No em dashes (—) or en dashes (–).** Anywhere. Not in docs, not in user-facing copy, not in commit messages, not in code comments. Use commas, colons, periods, parentheses. Pre-existing dashes from imported third-party content are not in scope for cleanup, but never introduce new ones.
-- **No marketing-y headers** ("Effortless," "Powerful," "Beautiful"). The library does the work; the docs describe it plainly.
+- **No marketing-y headers** ("Effortless," "Powerful," "Beautiful"). The library does the work; the docs describe it plainly. Headers name the thing, they do not sell it.
+- **No fluff adjectives.** Banned: seamless, powerful, effortless, beautiful, robust, rich, comprehensive, intuitive, elegant, blazing, lightning-fast, cutting-edge, state-of-the-art, delightful, stunning. Describe what it does, not how it makes you feel.
+- **No AI-tell verbs and openers.** Banned: leverage (use "use"), delve, dive in / dive into, elevate, unlock, empower, harness, boast(s), "in today's world", "in conclusion", "it's worth noting", "that being said", "look no further", "the world of". Cut filler transitions ("As you can see", "Simply put", "Notably") entirely.
+- **No rule-of-three padding.** Do not pad with three parallel adjectives ("fast, simple, and reliable") when the sentence carries its meaning without them.
+- **No emoji** in headings, prose, UI copy, or comments. Unicode glyphs that carry meaning (⌘ ⇧ ↵ for shortcuts) are fine.
 - **Code over prose** when explaining an API. One real snippet beats three paragraphs.
+
+### Visual (components, themes, playground, docs)
+
+Real operating systems (macOS, iOS, Windows 11, GNOME) are restrained. They do not decorate chrome to look busy. Decoration that serves no UX purpose is the most common AI tell in UI code, and it directly violates `DESIGN.md`. The rule: **accent color and shadow are affordances, not garnish.**
+
+- **No decorative accent borders or stripes.** No `borderTop`/`borderLeft`/`border` in an accent color used as visual flair, no underline accents, no `repeating-linear-gradient` stripe patterns standing in for real content. Chrome separators are a 1px `palette.border` hairline or nothing.
+- **No glows.** No accent-tinted `box-shadow` (`0 0 6px ${accent}aa`), no stacked inner+outer glow, no colored focus ring layered over a drop shadow. Shadows are neutral (black at low alpha) and convey elevation only. A focus or selection state is a `palette.accent` outline or a subtle background fill, not a glow.
+- **No decorative gradients.** Gradients are reserved for the few signals `DESIGN.md` sanctions (below). Do not gradient-fill buttons, cards, headers, chips, or toast icons for "depth."
+- **Accent marks small affordances, not large surfaces.** Use accent for the focus ring, the selected row, the indicator dot, the progress fill. Do not flood backgrounds, full headers, or large panels with accent.
+- **Read tokens, never hardcode look.** Radii come from `theme.shape` (`windowRadius`, `dockTileRadius`, `small`), durations and easings from `theme.motion`, colors and hairlines from `theme.palette`, blur from `theme.blur`. No inline `borderRadius: 9`, no `rgba(120,160,220,0.55)`, no `transition: "... 140ms ease"`, no magic opacity. If a value you need is missing, add a token to the contract, do not invent one inline. (See "Package boundaries": a missing token is a contract gap, not a license to hardcode.)
+- **Sanctioned accent use (this is the whole allowlist, not examples):** the dock-tile gradient (app accent top to lower-alpha accent bottom), the focused window's top-edge highlight line, and the Spotlight top accent line. These are defined in `DESIGN.md`. Anything beyond this list needs a stated UX reason in a code comment or it is slop.
+- **Match the reference, do not guess** (see "Build on the shoulders of giants"). Motion timings, sizes, and easings come from the platform being imitated, cited, not tuned by feel.
+
+### Code
+
+The current baseline is good; keep it. The point of these rules is to stop regressions, not to start adding ceremony.
+
+- **No comments that restate the code.** No `// increment counter` over `counter++`, no `// set the state`, no narration of the next line. Comments earn their place by explaining _why_, a non-obvious constraint, or a reference (a platform behavior, a spec, a citation).
+- **No banner / divider comments** (`// ===== HELPERS =====`). Let the code structure speak. (The one existing exception, the section markers in the 1400-line `FileExplorer.tsx`, is a deliberate, consistent pattern in a single oversized file, not a template to copy.)
+- **No JSDoc that just restates the function name.** Document behavior, edge cases, and lifecycle, or omit it.
+- **No leftover debug.** No stray `console.log`, no unowned `TODO`/`FIXME`. A guarded, prefixed dev warning (like the Spotlight source guard) is fine; raw logging is not.
 
 ## Conventions
 

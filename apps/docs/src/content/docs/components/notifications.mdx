@@ -7,11 +7,19 @@ sidebar:
 
 import LivePreview from "~/components/LivePreview.astro";
 
-The library ships a complete notification subsystem. `notify({ title, body, ... })` from anywhere puts a toast in the top-right stack, an entry in the Notification Center history, a count bubble on the matching dock tile, and a dot on the menu-bar clock — all from the same call.
+The library ships a complete notification subsystem. `notify({ title, body, ... })` from anywhere puts a toast in the top-right stack, an entry in the Notification Center history, a count bubble on the matching dock tile, and a dot on the menu-bar clock, all from the same call.
 
-<LivePreview src="?demo=notifications" label="Toasts stacking, dock badges, menu-bar dot" height="460px" />
+<LivePreview
+  src="?demo=notifications"
+  label="Toasts stacking, dock badges, menu-bar dot"
+  height="460px"
+/>
 
-<LivePreview src="?demo=notification-center" label="Notification Center grouped by day" height="460px" />
+<LivePreview
+  src="?demo=notification-center"
+  label="Notification Center grouped by day"
+  height="460px"
+/>
 
 ## Import
 
@@ -24,7 +32,7 @@ import {
 } from "@react-ui-os/desktop";
 ```
 
-`<Desktop>` mounts `<NotificationToasts />` and `<NotificationCenter />` for you — you only import them explicitly when composing your own layout with `<DesktopProvider>`.
+`<Desktop>` mounts `<NotificationToasts />` and `<NotificationCenter />` for you. You only import them explicitly when composing your own layout with `<DesktopProvider>`.
 
 ## Calling `notify`
 
@@ -32,9 +40,9 @@ import {
 notify({
   title: "Build finished",
   body: "Deploy succeeded in 1m 42s.",
-  appId: "ci",           // associates with the CI dock tile
-  level: "success",      // info | success | warn | error
-  duration: 5000,        // ms; 0 = sticky until dismissed
+  appId: "ci", // associates with the CI dock tile
+  level: "success", // info | success | warn | error
+  duration: 5000, // ms; 0 = sticky until dismissed
   actions: [
     { label: "View", onClick: () => router.push("/builds/123"), primary: true },
     { label: "Dismiss", onClick: () => {} },
@@ -42,7 +50,7 @@ notify({
 });
 ```
 
-`notify` returns the assigned id. Pass an explicit `id` to update a running toast — useful for progress bars that change as work proceeds. Repeating the same id replaces the row instead of stacking a second one.
+`notify` returns the assigned id. Pass an explicit `id` to update a running toast, useful for progress bars that change as work proceeds. Repeating the same id replaces the row instead of stacking a second one.
 
 ```ts
 const id = "downloading";
@@ -60,18 +68,18 @@ notify({ id, title: "Download complete", body: "report.pdf", level: "success" })
 | `info`    | 5000 ms            | theme accent    |
 | `success` | 5000 ms            | green           |
 | `warn`    | 8000 ms            | amber           |
-| `error`   | `0` — sticky       | red             |
+| `error`   | `0`: sticky        | red             |
 
 `error` toasts are sticky because the user needs to acknowledge them. Override with an explicit `duration` if you want a one-shot warning.
 
 ## Where notifications appear
 
-| Surface                  | Behavior                                                                                  |
-| ------------------------ | ------------------------------------------------------------------------------------------ |
-| **Toast stack**          | Top-right, slides in, lives for `duration` ms, then leaves the stack and joins history.    |
-| **Notification Center**  | Right-edge sheet, grouped by day, opens via the menu-bar clock or the toggle event.        |
-| **Dock badges**          | Per-app unread count bubble on the corresponding tile (uses `appId`).                      |
-| **Menu-bar dot**         | Small accent dot next to the clock whenever any notification is unread.                    |
+| Surface                 | Behavior                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| **Toast stack**         | Top-right, slides in, lives for `duration` ms, then leaves the stack and joins history. |
+| **Notification Center** | Right-edge sheet, grouped by day, opens via the menu-bar clock or the toggle event.     |
+| **Dock badges**         | Per-app unread count bubble on the corresponding tile (uses `appId`).                   |
+| **Menu-bar dot**        | Small accent dot next to the clock whenever any notification is unread.                 |
 
 The unread count clears when the user opens the Notification Center, or after the toast has been visible for 1.5 seconds.
 
@@ -79,10 +87,10 @@ The unread count clears when the user opens the Notification Center, or after th
 
 ```ts
 import {
-  dismissNotification,       // hide toast, keep history
-  removeNotification,        // remove from history too
-  clearAllNotifications,     // empty everything
-  markAllNotificationsRead,  // clear badges without removing rows
+  dismissNotification, // hide toast, keep history
+  removeNotification, // remove from history too
+  clearAllNotifications, // empty everything
+  markAllNotificationsRead, // clear badges without removing rows
 } from "@react-ui-os/core";
 ```
 
@@ -90,7 +98,7 @@ import {
 
 ## Reading the feed from a component
 
-`useNotifications()` exposes the full snapshot — useful for custom menu-bar items or in-app inboxes.
+`useNotifications()` exposes the full snapshot, useful for custom menu-bar items or in-app inboxes.
 
 ```tsx
 import { useNotifications } from "@react-ui-os/core";
@@ -125,5 +133,5 @@ window.dispatchEvent(new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT));
 
 ## See also
 
-- [`registerSpotlightSource`](/api/registerspotlightsource/) — another contribution path, this one for the Cmd-K palette rather than the notification feed.
+- [`registerSpotlightSource`](/api/registerspotlightsource/): another contribution path, this one for the Cmd-K palette rather than the notification feed.
 - [Recipes: debounced Spotlight source](/recipes/overview/#debounced-spotlight-source) for the pattern of throttling an external feed before contributing rows.

@@ -24,9 +24,7 @@ function entryToItem(entry: RecentEntry): ExplorerItem {
 
 export function RecentsFolder() {
   const { storage } = useDesktopContext();
-  const [entries, setEntries] = useState<RecentEntry[]>(() =>
-    listRecents(storage),
-  );
+  const [entries, setEntries] = useState<RecentEntry[]>(() => listRecents(storage));
 
   useEffect(() => {
     const refresh = () => {

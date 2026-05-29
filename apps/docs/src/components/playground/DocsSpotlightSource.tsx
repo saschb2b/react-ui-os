@@ -5,7 +5,15 @@ interface DocsPage {
   id: string;
   name: string;
   path: string;
-  kind: "intro" | "component" | "api" | "theme" | "architecture" | "recipe" | "showcase" | "release";
+  kind:
+    | "intro"
+    | "component"
+    | "api"
+    | "theme"
+    | "architecture"
+    | "recipe"
+    | "showcase"
+    | "release";
 }
 
 const DOCS_PAGES: DocsPage[] = [
@@ -16,29 +24,124 @@ const DOCS_PAGES: DocsPage[] = [
   { id: "window", name: "Window", path: "/components/window/", kind: "component" },
   { id: "dock", name: "Dock", path: "/components/dock/", kind: "component" },
   { id: "menubar", name: "MenuBar", path: "/components/menubar/", kind: "component" },
-  { id: "spotlight", name: "Spotlight", path: "/components/spotlight/", kind: "component" },
-  { id: "settings", name: "Settings", path: "/components/settings/", kind: "component" },
-  { id: "notifications", name: "Notifications", path: "/components/notifications/", kind: "component" },
-  { id: "contextmenu", name: "ContextMenu", path: "/components/contextmenu/", kind: "component" },
-  { id: "snapping", name: "Window snapping", path: "/components/snapping/", kind: "component" },
-  { id: "appswitcher", name: "App switcher", path: "/components/appswitcher/", kind: "component" },
-  { id: "missioncontrol", name: "Mission Control", path: "/components/missioncontrol/", kind: "component" },
+  {
+    id: "spotlight",
+    name: "Spotlight",
+    path: "/components/spotlight/",
+    kind: "component",
+  },
+  {
+    id: "settings",
+    name: "Settings",
+    path: "/components/settings/",
+    kind: "component",
+  },
+  {
+    id: "notifications",
+    name: "Notifications",
+    path: "/components/notifications/",
+    kind: "component",
+  },
+  {
+    id: "contextmenu",
+    name: "ContextMenu",
+    path: "/components/contextmenu/",
+    kind: "component",
+  },
+  {
+    id: "snapping",
+    name: "Window snapping",
+    path: "/components/snapping/",
+    kind: "component",
+  },
+  {
+    id: "appswitcher",
+    name: "App switcher",
+    path: "/components/appswitcher/",
+    kind: "component",
+  },
+  {
+    id: "missioncontrol",
+    name: "Mission Control",
+    path: "/components/missioncontrol/",
+    kind: "component",
+  },
   { id: "hud", name: "HUD", path: "/components/hud/", kind: "component" },
-  { id: "workspaces", name: "Workspaces", path: "/components/workspaces/", kind: "component" },
+  {
+    id: "workspaces",
+    name: "Workspaces",
+    path: "/components/workspaces/",
+    kind: "component",
+  },
   { id: "tooltip", name: "Tooltip", path: "/components/tooltip/", kind: "component" },
-  { id: "statusitems", name: "Status items", path: "/components/statusitems/", kind: "component" },
-  { id: "primitives", name: "Slider + Toggle", path: "/components/primitives/", kind: "component" },
-  { id: "fileexplorer", name: "FileExplorer", path: "/components/fileexplorer/", kind: "component" },
-  { id: "desktopicons", name: "DesktopIcons", path: "/components/desktopicons/", kind: "component" },
-  { id: "usewindowmanager", name: "useWindowManager", path: "/api/usewindowmanager/", kind: "api" },
+  {
+    id: "statusitems",
+    name: "Status items",
+    path: "/components/statusitems/",
+    kind: "component",
+  },
+  {
+    id: "primitives",
+    name: "Slider + Toggle",
+    path: "/components/primitives/",
+    kind: "component",
+  },
+  {
+    id: "fileexplorer",
+    name: "FileExplorer",
+    path: "/components/fileexplorer/",
+    kind: "component",
+  },
+  {
+    id: "desktopicons",
+    name: "DesktopIcons",
+    path: "/components/desktopicons/",
+    kind: "component",
+  },
+  {
+    id: "usewindowmanager",
+    name: "useWindowManager",
+    path: "/api/usewindowmanager/",
+    kind: "api",
+  },
   { id: "usetheme", name: "useTheme", path: "/api/usetheme/", kind: "api" },
   { id: "usesettings", name: "useSettings", path: "/api/usesettings/", kind: "api" },
-  { id: "storageadapter", name: "StorageAdapter", path: "/api/storageadapter/", kind: "api" },
-  { id: "registerspotlightsource", name: "registerSpotlightSource", path: "/api/registerspotlightsource/", kind: "api" },
-  { id: "themes-overview", name: "Themes overview", path: "/themes/overview/", kind: "theme" },
-  { id: "themes-customizable", name: "Customizable schema", path: "/themes/customizable/", kind: "theme" },
-  { id: "themes-writing", name: "Writing a theme", path: "/themes/writing/", kind: "theme" },
-  { id: "patterns", name: "Patterns", path: "/architecture/patterns/", kind: "architecture" },
+  {
+    id: "storageadapter",
+    name: "StorageAdapter",
+    path: "/api/storageadapter/",
+    kind: "api",
+  },
+  {
+    id: "registerspotlightsource",
+    name: "registerSpotlightSource",
+    path: "/api/registerspotlightsource/",
+    kind: "api",
+  },
+  {
+    id: "themes-overview",
+    name: "Themes overview",
+    path: "/themes/overview/",
+    kind: "theme",
+  },
+  {
+    id: "themes-customizable",
+    name: "Customizable schema",
+    path: "/themes/customizable/",
+    kind: "theme",
+  },
+  {
+    id: "themes-writing",
+    name: "Writing a theme",
+    path: "/themes/writing/",
+    kind: "theme",
+  },
+  {
+    id: "patterns",
+    name: "Patterns",
+    path: "/architecture/patterns/",
+    kind: "architecture",
+  },
   { id: "recipes", name: "Recipes", path: "/recipes/overview/", kind: "recipe" },
   { id: "showcase", name: "Showcase", path: "/showcase/", kind: "showcase" },
   { id: "changelog", name: "Changelog", path: "/changelog/", kind: "release" },
@@ -86,28 +189,28 @@ export function DocsSpotlightSource() {
         return [];
       }
       const q = query.toLowerCase();
-      return DOCS_PAGES.filter((page) =>
-        page.name.toLowerCase().includes(q),
-      ).map((page) => ({
-        id: page.id,
-        name: page.name,
-        kindLabel: KIND_LABELS[page.kind],
-        accent: KIND_ACCENTS[page.kind],
-        tagline: page.path,
-        onActivate: () => {
-          const target = `${prefix}${page.path}`;
-          // Escape the iframe if we're inside one, else navigate top-level.
-          try {
-            if (window.top && window.top !== window) {
-              window.top.location.href = target;
-              return;
+      return DOCS_PAGES.filter((page) => page.name.toLowerCase().includes(q)).map(
+        (page) => ({
+          id: page.id,
+          name: page.name,
+          kindLabel: KIND_LABELS[page.kind],
+          accent: KIND_ACCENTS[page.kind],
+          tagline: page.path,
+          onActivate: () => {
+            const target = `${prefix}${page.path}`;
+            // Escape the iframe if we're inside one, else navigate top-level.
+            try {
+              if (window.top && window.top !== window) {
+                window.top.location.href = target;
+                return;
+              }
+            } catch {
+              // Cross-origin top frame, fall through to new tab.
             }
-          } catch {
-            // Cross-origin top frame — fall through to new tab.
-          }
-          window.open(target, "_blank", "noopener");
-        },
-      }));
+            window.open(target, "_blank", "noopener");
+          },
+        }),
+      );
     });
   }, []);
 

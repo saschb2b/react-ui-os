@@ -9,9 +9,7 @@ import type {
 } from "../src/window-manager/types";
 import { windowIdOf } from "../src/window-manager/types";
 
-function run(
-  ...actions: WindowManagerAction[]
-): WindowManagerState {
+function run(...actions: WindowManagerAction[]): WindowManagerState {
   return actions.reduce(windowManagerReducer, initialWindowManagerState);
 }
 

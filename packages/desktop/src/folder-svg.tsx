@@ -37,11 +37,7 @@ export function FolderSvg({ size = 48 }: { size?: number }) {
         stroke="rgba(255,255,255,0.08)"
         strokeWidth="0.5"
       />
-      <path
-        d="M 7 19 L 41 19"
-        stroke="rgba(255,255,255,0.18)"
-        strokeWidth="0.6"
-      />
+      <path d="M 7 19 L 41 19" stroke="rgba(255,255,255,0.18)" strokeWidth="0.6" />
     </svg>
   );
 }

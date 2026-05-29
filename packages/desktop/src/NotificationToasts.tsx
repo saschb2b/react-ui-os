@@ -55,14 +55,7 @@ export function NotificationToasts() {
           (item.appId ? apps.find((a) => a.id === item.appId)?.accent : undefined) ??
           levelAccent(item.level) ??
           theme.palette.accent;
-        return (
-          <Toast
-            key={item.id}
-            item={item}
-            accent={accent}
-            indexFromTop={idx}
-          />
-        );
+        return <Toast key={item.id} item={item} accent={accent} indexFromTop={idx} />;
       })}
     </div>
   );
@@ -225,21 +218,13 @@ function Toast({
   );
 }
 
-function ToastIcon({
-  item,
-  accent,
-}: {
-  item: NotificationItem;
-  accent: string;
-}) {
+function ToastIcon({ item, accent }: { item: NotificationItem; accent: string }) {
   const theme = useTheme();
   const IconComp = item.icon;
   const content: ReactNode = IconComp ? (
     <IconComp size={16} />
   ) : (
-    <span style={{ fontSize: 12, fontWeight: 700 }}>
-      {iconLetterFor(item)}
-    </span>
+    <span style={{ fontSize: 12, fontWeight: 700 }}>{iconLetterFor(item)}</span>
   );
   return (
     <div
@@ -249,8 +234,8 @@ function ToastIcon({
         width: 28,
         height: 28,
         borderRadius: theme.shape.small + 2,
-        background: `linear-gradient(180deg, ${accent}33, ${accent}11)`,
-        border: `1px solid ${accent}55`,
+        background: `${accent}1f`,
+        border: `1px solid ${theme.palette.border}`,
         color: theme.palette.textPrimary,
         display: "grid",
         placeItems: "center",
@@ -270,13 +255,7 @@ function iconLetterFor(item: NotificationItem): string {
   return "·";
 }
 
-function DismissButton({
-  onClick,
-  color,
-}: {
-  onClick: () => void;
-  color: string;
-}) {
+function DismissButton({ onClick, color }: { onClick: () => void; color: string }) {
   return (
     <button
       type="button"

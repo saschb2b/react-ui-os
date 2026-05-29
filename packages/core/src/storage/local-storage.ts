@@ -14,9 +14,7 @@ interface ChangeDetail {
  * SSR-safe: when `window` is unavailable, all methods are no-ops returning
  * `null` / nothing. Subscriptions return a no-op unsubscribe.
  */
-export function createLocalStorageAdapter(
-  prefix: string = "rui-os",
-): StorageAdapter {
+export function createLocalStorageAdapter(prefix: string = "rui-os"): StorageAdapter {
   const fullKey = (k: string) => `${prefix}:${k}`;
   const stripPrefix = (k: string) =>
     k.startsWith(`${prefix}:`) ? k.slice(prefix.length + 1) : k;

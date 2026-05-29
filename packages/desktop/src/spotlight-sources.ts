@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 /**
  * One result row contributed by a Spotlight source. Sources are how features
  * outside the apps registry and the system-window registry surface in the
- * Cmd-K palette — recently opened docs pages, presets, downloads, bookmarks,
+ * Cmd-K palette: recently opened docs pages, presets, downloads, bookmarks,
  * or anything else the consumer wants to make findable.
  */
 export interface SpotlightResult {
@@ -37,7 +37,7 @@ const listeners = new Set<() => void>();
 /**
  * Register a Spotlight source. Returns an unsubscribe function. Sources are
  * keyed by `id` so registering twice with the same id replaces the previous
- * one — useful when a host component re-mounts.
+ * one, useful when a host component re-mounts.
  */
 export function registerSpotlightSource(
   id: string,
