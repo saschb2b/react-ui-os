@@ -49,6 +49,7 @@ export function MissionControl() {
   const [phase, setPhase] = useState<Phase>("closed");
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
+  const [keyIndex, setKeyIndex] = useState(-1);
 
   const duration = theme.motion.missionControlDurationMs;
   const easing = theme.motion.missionControlEasing;
@@ -63,6 +64,10 @@ export function MissionControl() {
       ),
     [windows, activeWorkspace],
   );
+  const visibleRef = useRef(visible);
+  visibleRef.current = visible;
+  const keyIndexRef = useRef(keyIndex);
+  keyIndexRef.current = keyIndex;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -80,9 +85,35 @@ export function MissionControl() {
         setPhase(showing ? "leave" : "enter");
         return;
       }
-      if (showing && e.key === "Escape") {
+      if (!showing) return;
+      if (e.key === "Escape") {
         e.preventDefault();
         setPhase("leave");
+        return;
+      }
+      const vis = visibleRef.current;
+      if (vis.length === 0) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        setKeyIndex((idx) => (idx < 0 ? 0 : (idx + 1) % vis.length));
+        return;
+      }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setKeyIndex((idx) =>
+          idx < 0 ? vis.length - 1 : (idx - 1 + vis.length) % vis.length,
+        );
+        return;
+      }
+      if (e.key === "Enter" || e.key === " ") {
+        const idx = keyIndexRef.current;
+        const w = idx >= 0 ? vis[idx] : undefined;
+        if (w) {
+          e.preventDefault();
+          if (w.state === "minimized") restoreWindow(w.id);
+          else focusWindow(w.id);
+          setPhase("leave");
+        }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -114,6 +145,11 @@ export function MissionControl() {
     }
     return undefined;
   }, [phase, duration]);
+
+  useEffect(() => {
+    // Reset the keyboard selection each time the overlay closes.
+    if (phase === "closed") setKeyIndex(-1);
+  }, [phase]);
 
   if (phase === "closed") return null;
 
@@ -206,12 +242,13 @@ export function MissionControl() {
                 gap: "clamp(16px, 2.6vmin, 34px)",
               }}
             >
-              {visible.map((win) => (
+              {visible.map((win, i) => (
                 <Card
                   key={win.id}
                   win={win}
                   apps={apps}
                   theme={theme}
+                  selected={i === keyIndex}
                   onPick={() => {
                     pick(win);
                   }}
@@ -366,11 +403,13 @@ function Card({
   win,
   apps,
   theme,
+  selected,
   onPick,
 }: {
   win: OpenWindow;
   apps: ReturnType<typeof useApps>;
   theme: ReturnType<typeof useTheme>;
+  selected: boolean;
   onPick: () => void;
 }) {
   const label = labelFor(win, apps);
@@ -381,28 +420,20 @@ function Card({
 
   const stageRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
+  const [hovered, setHovered] = useState(false);
+  // Hover, focus, and keyboard selection all show the same neutral highlight.
+  const highlight = selected || hovered;
+
   useEffect(() => {
     // Keep the duplicated preview content out of the tab order and pointer
     // path; it is a thumbnail, not a usable second copy of the app.
     stageRef.current?.setAttribute("inert", "");
   }, []);
 
-  const baseShadow = "0 14px 34px -16px rgba(0,0,0,0.5)";
-  const hoverShadow = "0 20px 44px -14px rgba(0,0,0,0.55)";
-  const lift = () => {
-    const f = frameRef.current;
-    if (!f) return;
-    f.style.transform = "scale(1.03)";
-    f.style.boxShadow = hoverShadow;
-    f.style.borderColor = "rgba(255,255,255,0.45)";
-  };
-  const settle = () => {
-    const f = frameRef.current;
-    if (!f) return;
-    f.style.transform = "scale(1)";
-    f.style.boxShadow = baseShadow;
-    f.style.borderColor = theme.palette.border;
-  };
+  useEffect(() => {
+    // Keep the keyboard-selected card in view if the spread scrolls.
+    if (selected) frameRef.current?.scrollIntoView({ block: "nearest" });
+  }, [selected]);
 
   // The card is a div, not a button: the preview renders real app content that
   // can contain its own buttons, and a button cannot nest a button. A
@@ -425,10 +456,13 @@ function Card({
           width: frameW,
           height: frameH,
           borderRadius: theme.shape.windowRadius,
-          border: `1px solid ${theme.palette.border}`,
+          border: `1px solid ${highlight ? "rgba(255,255,255,0.5)" : theme.palette.border}`,
           background: theme.palette.surface,
           overflow: "hidden",
-          boxShadow: baseShadow,
+          transform: highlight ? "scale(1.03)" : "scale(1)",
+          boxShadow: highlight
+            ? "0 20px 44px -14px rgba(0,0,0,0.55)"
+            : "0 14px 34px -16px rgba(0,0,0,0.5)",
           transition: `transform ${String(theme.motion.dockHoverDurationMs)}ms ease, box-shadow ${String(theme.motion.dockHoverDurationMs)}ms ease, border-color ${String(theme.motion.dockHoverDurationMs)}ms ease`,
         }}
       >
@@ -449,10 +483,18 @@ function Card({
           type="button"
           onClick={onPick}
           aria-label={label}
-          onPointerEnter={lift}
-          onPointerLeave={settle}
-          onFocus={lift}
-          onBlur={settle}
+          onPointerEnter={() => {
+            setHovered(true);
+          }}
+          onPointerLeave={() => {
+            setHovered(false);
+          }}
+          onFocus={() => {
+            setHovered(true);
+          }}
+          onBlur={() => {
+            setHovered(false);
+          }}
           style={{
             position: "absolute",
             inset: 0,
