@@ -43,6 +43,8 @@ export function createSaasTheme(options: SaasThemeOptions = {}): OsTheme {
       dockHoverDurationMs: 120,
       genieDurationMs: 240,
       genieEasing: "cubic-bezier(0.4, 0.0, 0.2, 1)",
+      missionControlDurationMs: 190,
+      missionControlEasing: "cubic-bezier(0.32, 0.72, 0, 1)",
     },
     blur: {
       surface: "blur(16px) saturate(140%)",

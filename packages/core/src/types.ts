@@ -70,6 +70,13 @@ export interface OsThemeMotion {
   dockHoverDurationMs: number;
   genieDurationMs: number;
   genieEasing: string;
+  /**
+   * Mission Control spread and collapse. Its own gesture, distinct from the
+   * window open and genie pacing (the macOS expose zoom runs roughly 0.2 to
+   * 0.25s).
+   */
+  missionControlDurationMs: number;
+  missionControlEasing: string;
 }
 
 export interface OsThemeBlur {

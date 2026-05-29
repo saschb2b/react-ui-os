@@ -1,39 +1,66 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  Component,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+  type ReactNode,
+} from "react";
 import { useWindowManager, type OpenWindow } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 
+type Phase = "closed" | "enter" | "open" | "leave";
+
+// Each thumbnail is the real window (chrome + content) rendered at full size
+// and scaled down, so it reads as a faithful miniature like macOS. Windows are
+// fit into a shared envelope so a small utility and a large document end up at
+// comparable, recognizable sizes rather than one dwarfing the other.
+const THUMB_MAX_W = 300;
+const THUMB_MAX_H = 200;
+const THUMB_MAX_SCALE = 0.72;
+const MINI_TITLE_BAR_H = 30;
+
 /**
- * Mission Control: press F3 (or Ctrl+Up on non-Mac keyboards) and every
- * open window animates into a tiled grid of large preview cards. Click a
- * card to dismiss and focus that window; click empty space or hit Esc to
- * dismiss without switching. Mirrors the macOS gesture in everything but
- * the live thumbnail. Instead of mirroring the window's body, the card
- * shows the chrome and a neutral body fill so the user can pick by
- * shape and name at a glance.
+ * Mission Control: press F3 (or Ctrl+Up on non-Mac keyboards) and every open
+ * window spreads into a non-overlapping set of preview cards. Click a card to
+ * focus that window and collapse back; click empty space or press Esc to
+ * collapse without switching.
  *
- * Self-mounted by `<Desktop>`. Drop down to `<DesktopProvider>` and skip
- * it if you want to replace it.
+ * Each card is a live, scaled re-render of the window's own chrome and content,
+ * with the app name on a readable label beneath it (scaled title text is too
+ * small to read, so macOS labels separately too). The preview mounts a second,
+ * inert instance of the content while Mission Control is open, so it shows the
+ * real UI but not unsaved live state; an error boundary keeps a misbehaving
+ * preview from tearing down the overlay.
+ *
+ * Self-mounted by `<Desktop>`. Drop down to `<DesktopProvider>` and skip it if
+ * you want to replace it.
  */
 export function MissionControl() {
   const theme = useTheme();
   const apps = useApps();
   const { windows, focusWindow, restoreWindow } = useWindowManager();
 
-  const [open, setOpen] = useState(false);
+  const [phase, setPhase] = useState<Phase>("closed");
+  const phaseRef = useRef(phase);
+  phaseRef.current = phase;
 
-  // Only count windows that are actually visible (not minimized). Mission
-  // Control's job is to surface what's on screen, not what's parked in the
-  // dock.
+  const duration = theme.motion.missionControlDurationMs;
+  const easing = theme.motion.missionControlEasing;
+
+  // Only surface what is actually on screen. Minimized windows live in the
+  // dock, not here, matching macOS.
   const visible = useMemo<OpenWindow[]>(
     () => windows.filter((w) => w.state !== "minimized"),
     [windows],
   );
 
   useEffect(() => {
-    const handleDown = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (
         t &&
@@ -41,94 +68,133 @@ export function MissionControl() {
       ) {
         return;
       }
-      if (e.key === "F3") {
+      const showing = phaseRef.current === "enter" || phaseRef.current === "open";
+      // Ctrl + ArrowUp is the Mac convention for Mission Control on PCs.
+      if (e.key === "F3" || (e.ctrlKey && !e.metaKey && e.key === "ArrowUp")) {
         e.preventDefault();
-        setOpen((prev) => !prev);
+        setPhase(showing ? "leave" : "enter");
         return;
       }
-      // Ctrl + ArrowUp, Mac convention for Mission Control on PCs.
-      if (e.ctrlKey && !e.metaKey && e.key === "ArrowUp") {
+      if (showing && e.key === "Escape") {
         e.preventDefault();
-        setOpen((prev) => !prev);
-        return;
-      }
-      if (open && e.key === "Escape") {
-        e.preventDefault();
-        setOpen(false);
+        setPhase("leave");
       }
     };
-    window.addEventListener("keydown", handleDown);
+    window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("keydown", handleDown);
+      window.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, []);
 
-  const handlePick = useCallback(
-    (win: OpenWindow) => {
-      if (win.state === "minimized") restoreWindow(win.id);
-      else focusWindow(win.id);
-      setOpen(false);
-    },
-    [focusWindow, restoreWindow],
-  );
+  // Phase machine (animations are state machines, not effects): "enter" paints
+  // the collapsed state for one frame, then flips to "open" so the CSS
+  // transition runs the spread. "leave" reverses it, then unmounts once the
+  // collapse has finished playing.
+  useEffect(() => {
+    if (phase === "enter") {
+      const id = window.requestAnimationFrame(() => {
+        setPhase("open");
+      });
+      return () => {
+        window.cancelAnimationFrame(id);
+      };
+    }
+    if (phase === "leave") {
+      const id = window.setTimeout(() => {
+        setPhase("closed");
+      }, duration);
+      return () => {
+        window.clearTimeout(id);
+      };
+    }
+    return undefined;
+  }, [phase, duration]);
 
-  if (!open) return null;
+  if (phase === "closed") return null;
 
-  if (visible.length === 0) {
-    return (
-      <Overlay theme={theme} onDismiss={() => setOpen(false)}>
-        <EmptyState theme={theme} />
-      </Overlay>
-    );
-  }
-
-  return (
-    <Overlay theme={theme} onDismiss={() => setOpen(false)}>
-      <Grid
-        windows={visible}
-        onPick={handlePick}
-        labelFor={(w) => labelFor(w, apps)}
-        accentFor={(w) => accentFor(w, apps)}
-      />
-    </Overlay>
-  );
-}
-
-function Overlay({
-  theme,
-  onDismiss,
-  children,
-}: {
-  theme: ReturnType<typeof useTheme>;
-  onDismiss: () => void;
-  children: React.ReactNode;
-}) {
-  const wrap: CSSProperties = {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.45)",
-    backdropFilter: theme.blur.surface,
-    WebkitBackdropFilter: theme.blur.surface,
-    zIndex: 1450,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    // Responsive padding: 48 px on a desktop, down to 16 px in a docs
-    // iframe so the grid actually has room to breathe instead of being
-    // squeezed by a quarter of the viewport on each side.
-    padding: "clamp(16px, 5vmin, 48px)",
-    boxSizing: "border-box",
+  const expanded = phase === "open";
+  const close = () => {
+    setPhase("leave");
   };
+  const pick = (win: OpenWindow) => {
+    if (win.state === "minimized") restoreWindow(win.id);
+    else focusWindow(win.id);
+    setPhase("leave");
+  };
+
   return (
     <div
       role="dialog"
       aria-label="Mission Control"
-      style={wrap}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onDismiss();
+        // A click anywhere but on a card collapses Mission Control.
+        if ((e.target as HTMLElement).closest("[data-mc-card]")) return;
+        close();
+      }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1450,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "clamp(16px, 5vmin, 56px)",
+        boxSizing: "border-box",
       }}
     >
-      {children}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          // The wallpaper stays visible, lightly dimmed. macOS moved away from
+          // a solid dark panel to a translucent scrim in OS X El Capitan.
+          background: "rgba(0,0,0,0.38)",
+          backdropFilter: theme.blur.surface,
+          WebkitBackdropFilter: theme.blur.surface,
+          opacity: expanded ? 1 : 0,
+          transition: `opacity ${String(duration)}ms ${easing}`,
+        }}
+      />
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          maxWidth: "min(1100px, 100%)",
+          maxHeight: "100%",
+          overflowY: "auto",
+          transformOrigin: "center",
+          transform: expanded ? "scale(1)" : "scale(0.96)",
+          opacity: expanded ? 1 : 0,
+          transition: `transform ${String(duration)}ms ${easing}, opacity ${String(duration)}ms ${easing}`,
+        }}
+      >
+        {visible.length === 0 ? (
+          <EmptyState theme={theme} />
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "clamp(16px, 2.6vmin, 34px)",
+            }}
+          >
+            {visible.map((win) => (
+              <Card
+                key={win.id}
+                win={win}
+                apps={apps}
+                theme={theme}
+                onPick={() => {
+                  pick(win);
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -143,15 +209,7 @@ function EmptyState({ theme }: { theme: ReturnType<typeof useTheme> }) {
         lineHeight: 1.5,
       }}
     >
-      <div
-        style={{
-          fontSize: 24,
-          opacity: 0.7,
-          marginBottom: 6,
-        }}
-      >
-        Nothing to show
-      </div>
+      <div style={{ fontSize: 24, opacity: 0.7, marginBottom: 6 }}>Nothing to show</div>
       <div style={{ color: theme.palette.textSecondary, fontSize: 12 }}>
         Open an app first, then press F3 to see them all at once.
       </div>
@@ -159,121 +217,135 @@ function EmptyState({ theme }: { theme: ReturnType<typeof useTheme> }) {
   );
 }
 
-function Grid({
-  windows,
-  onPick,
-  labelFor,
-  accentFor,
-}: {
-  windows: OpenWindow[];
-  onPick: (win: OpenWindow) => void;
-  labelFor: (win: OpenWindow) => string;
-  accentFor: (win: OpenWindow) => string;
-}) {
-  const theme = useTheme();
-  // Auto-fit so the grid finds the right column count on its own: cards
-  // never narrower than 180 px, never wider than 320 px. That avoids the
-  // ugly 2+1 layout 3 windows used to produce, and stops single cards
-  // from sprawling to fill 800 px just because there's room.
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(min(220px, 100%), max-content))",
-        justifyContent: "center",
-        gap: "clamp(8px, 1.5vmin, 18px)",
-        maxWidth: "min(1100px, 100%)",
-        width: "100%",
-      }}
-    >
-      {windows.map((win) => (
-        <Card
-          key={win.id}
-          win={win}
-          label={labelFor(win)}
-          accent={accentFor(win)}
-          onPick={() => onPick(win)}
-          theme={theme}
-        />
-      ))}
-    </div>
-  );
-}
-
 function Card({
   win,
-  label,
-  accent,
-  onPick,
+  apps,
   theme,
+  onPick,
 }: {
   win: OpenWindow;
-  label: string;
-  accent: string;
-  onPick: () => void;
+  apps: ReturnType<typeof useApps>;
   theme: ReturnType<typeof useTheme>;
+  onPick: () => void;
 }) {
-  // Card aspect mirrors the window's aspect, so a tall window reads tall
-  // in the grid. Clamped to a sensible range so a 320×360 utility doesn't
-  // dominate next to a 1000×700 doc. Width is capped so a single card
-  // never sprawls to fill the whole modal.
-  const ratio = clampRatio(win.w / Math.max(win.h, 1));
+  const label = labelFor(win, apps);
+  const Icon = iconFor(win, apps);
+  const scale = Math.min(THUMB_MAX_W / win.w, THUMB_MAX_H / win.h, THUMB_MAX_SCALE);
+  const frameW = Math.round(win.w * scale);
+  const frameH = Math.round(win.h * scale);
+
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    // Keep the duplicated preview content out of the tab order and pointer
+    // path; it is a thumbnail, not a usable second copy of the app.
+    stageRef.current?.setAttribute("inert", "");
+  }, []);
+
+  const baseShadow = "0 14px 34px -16px rgba(0,0,0,0.5)";
+  const hoverShadow = "0 20px 44px -14px rgba(0,0,0,0.55)";
+  const lift = () => {
+    const f = frameRef.current;
+    if (!f) return;
+    f.style.transform = "scale(1.03)";
+    f.style.boxShadow = hoverShadow;
+    f.style.borderColor = "rgba(255,255,255,0.45)";
+  };
+  const settle = () => {
+    const f = frameRef.current;
+    if (!f) return;
+    f.style.transform = "scale(1)";
+    f.style.boxShadow = baseShadow;
+    f.style.borderColor = theme.palette.border;
+  };
+
+  // The card is a div, not a button: the preview renders real app content that
+  // can contain its own buttons, and a button cannot nest a button. A
+  // transparent overlay button carries the click and keyboard focus.
   return (
-    <button
-      type="button"
-      onClick={onPick}
+    <div
+      data-mc-card
       style={{
-        appearance: "none",
-        border: `1px solid ${theme.palette.border}`,
-        background: theme.palette.surface,
-        backdropFilter: theme.blur.surface,
-        WebkitBackdropFilter: theme.blur.surface,
-        borderRadius: theme.shape.windowRadius,
-        padding: 0,
-        cursor: "pointer",
-        color: theme.palette.textPrimary,
-        textAlign: "left",
-        fontFamily: "inherit",
-        width: "min(280px, 100%)",
-        overflow: "hidden",
-        position: "relative",
-        aspectRatio: `${String(ratio)} / 1`,
-        boxShadow: "0 12px 28px -6px rgba(0,0,0,0.45)",
-        transition: "transform 80ms ease, box-shadow 80ms ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "scale(1.03)";
-        e.currentTarget.style.boxShadow = `0 16px 36px -6px rgba(0,0,0,0.55), 0 0 0 2px ${accent}aa`;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "scale(1)";
-        e.currentTarget.style.boxShadow = "0 12px 28px -6px rgba(0,0,0,0.45)";
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 9,
+        width: frameW,
       }}
     >
-      <span
-        aria-hidden
+      <div
+        ref={frameRef}
         style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: 0,
-          height: 4,
-          background: accent,
+          position: "relative",
+          width: frameW,
+          height: frameH,
+          borderRadius: theme.shape.windowRadius,
+          border: `1px solid ${theme.palette.border}`,
+          background: theme.palette.surface,
+          overflow: "hidden",
+          boxShadow: baseShadow,
+          transition: `transform ${String(theme.motion.dockHoverDurationMs)}ms ease, box-shadow ${String(theme.motion.dockHoverDurationMs)}ms ease, border-color ${String(theme.motion.dockHoverDurationMs)}ms ease`,
         }}
-      />
+      >
+        <div
+          ref={stageRef}
+          aria-hidden
+          style={{
+            width: win.w,
+            height: win.h,
+            transform: `scale(${String(scale)})`,
+            transformOrigin: "top left",
+            pointerEvents: "none",
+          }}
+        >
+          <MiniWindow win={win} label={label} apps={apps} theme={theme} />
+        </div>
+        <button
+          type="button"
+          onClick={onPick}
+          aria-label={label}
+          onPointerEnter={lift}
+          onPointerLeave={settle}
+          onFocus={lift}
+          onBlur={settle}
+          style={{
+            position: "absolute",
+            inset: 0,
+            appearance: "none",
+            border: "none",
+            background: "transparent",
+            padding: 0,
+            margin: 0,
+            cursor: "pointer",
+            borderRadius: theme.shape.windowRadius,
+          }}
+        />
+      </div>
       <div
         style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          padding: "10px 12px",
-          borderBottom: `1px solid ${theme.palette.border}`,
+          gap: 6,
+          maxWidth: frameW,
+          padding: "0 2px",
+          color: theme.palette.textPrimary,
         }}
       >
+        {Icon ? (
+          <span
+            style={{
+              display: "inline-flex",
+              flexShrink: 0,
+              color: theme.palette.textSecondary,
+            }}
+          >
+            <Icon size={15} />
+          </span>
+        ) : null}
         <span
           style={{
-            fontSize: 12,
-            fontWeight: 600,
+            fontSize: 12.5,
+            fontWeight: 500,
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -281,63 +353,163 @@ function Card({
         >
           {label}
         </span>
+      </div>
+    </div>
+  );
+}
+
+function MiniWindow({
+  win,
+  label,
+  apps,
+  theme,
+}: {
+  win: OpenWindow;
+  label: string;
+  apps: ReturnType<typeof useApps>;
+  theme: ReturnType<typeof useTheme>;
+}) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        background: theme.palette.surface,
+      }}
+    >
+      <div
+        style={{
+          height: MINI_TITLE_BAR_H,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "0 12px",
+          borderBottom: `1px solid ${theme.palette.border}`,
+        }}
+      >
         <TrafficLights />
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: theme.palette.textPrimary,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {label}
+        </span>
       </div>
       <div
         style={{
-          padding: 14,
-          color: theme.palette.textSecondary,
-          fontSize: 11,
-          height: "100%",
+          flex: 1,
+          minHeight: 0,
+          overflow: "hidden",
+          // Match the real window body padding so the thumbnail is faithful.
+          padding: 16,
+          background: theme.palette.background,
+          color: theme.palette.textPrimary,
         }}
       >
-        <div style={{ opacity: 0.6, marginBottom: 6 }}>
-          {String(Math.round(win.w))} × {String(Math.round(win.h))}
-        </div>
-        <WindowBodyFill theme={theme} />
+        <PreviewBoundary
+          fallback={
+            <PreviewFallback label={label} apps={apps} win={win} theme={theme} />
+          }
+        >
+          <PreviewContent win={win} apps={apps} />
+        </PreviewBoundary>
       </div>
-    </button>
+    </div>
   );
+}
+
+function PreviewContent({
+  win,
+  apps,
+}: {
+  win: OpenWindow;
+  apps: ReturnType<typeof useApps>;
+}): ReactNode {
+  const p = win.payload;
+  if (p.kind === "app") {
+    const app = apps.find((a) => a.id === p.appId);
+    if (!app) return null;
+    const Content = app.content;
+    return <Content appId={app.id} focused={false} />;
+  }
+  const def = getSystemWindow(p.systemId);
+  if (!def) return null;
+  const Content = def.content;
+  return <Content focused={false} args={p.args} />;
+}
+
+function PreviewFallback({
+  label,
+  apps,
+  win,
+  theme,
+}: {
+  label: string;
+  apps: ReturnType<typeof useApps>;
+  win: OpenWindow;
+  theme: ReturnType<typeof useTheme>;
+}) {
+  const Icon = iconFor(win, apps);
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "grid",
+        placeItems: "center",
+        color: theme.palette.textSecondary,
+      }}
+    >
+      {Icon ? (
+        <Icon size={48} />
+      ) : (
+        <span style={{ fontSize: 44, fontWeight: 700, opacity: 0.65 }}>
+          {label.charAt(0).toUpperCase()}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * A preview mounts app content a second time. If that content throws on this
+ * extra mount, degrade to a neutral fallback rather than taking the whole
+ * Mission Control overlay down with it.
+ */
+class PreviewBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { failed: boolean }
+> {
+  override state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  override render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
 }
 
 function TrafficLights() {
   const dots = ["#ff5f57", "#febc2e", "#28c840"];
   return (
-    <span aria-hidden style={{ display: "inline-flex", gap: 4 }}>
+    <span aria-hidden style={{ display: "inline-flex", gap: 6 }}>
       {dots.map((color) => (
         <span
           key={color}
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: color,
-          }}
+          style={{ width: 11, height: 11, borderRadius: "50%", background: color }}
         />
       ))}
     </span>
   );
-}
-
-function WindowBodyFill({ theme }: { theme: ReturnType<typeof useTheme> }) {
-  return (
-    <div
-      aria-hidden
-      style={{
-        height: "calc(100% - 28px)",
-        borderRadius: theme.shape.small,
-        background: theme.palette.background,
-        border: `1px solid ${theme.palette.border}`,
-      }}
-    />
-  );
-}
-
-function clampRatio(r: number): number {
-  if (!Number.isFinite(r) || r <= 0) return 4 / 3;
-  if (r > 2.4) return 2.4;
-  if (r < 0.7) return 0.7;
-  return r;
 }
 
 function labelFor(win: OpenWindow, apps: ReturnType<typeof useApps>): string {
@@ -349,12 +521,14 @@ function labelFor(win: OpenWindow, apps: ReturnType<typeof useApps>): string {
   return def ? resolveSystemWindowName(def, p.args) : p.systemId;
 }
 
-function accentFor(win: OpenWindow, apps: ReturnType<typeof useApps>): string {
+function iconFor(
+  win: OpenWindow,
+  apps: ReturnType<typeof useApps>,
+): ComponentType<{ size?: number }> | null {
   const p = win.payload;
   if (p.kind === "app") {
     const app = apps.find((a) => a.id === p.appId);
-    return app?.accent ?? "#6b8afd";
+    return app?.icon ?? app?.iconArt ?? null;
   }
-  const def = getSystemWindow(p.systemId);
-  return def?.accent ?? "#6b8afd";
+  return getSystemWindow(p.systemId)?.desktopIcon ?? null;
 }

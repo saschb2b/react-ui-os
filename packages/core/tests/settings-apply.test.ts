@@ -61,6 +61,8 @@ const baseTheme: OsTheme = {
     dockHoverDurationMs: 140,
     genieDurationMs: 280,
     genieEasing: "ease",
+    missionControlDurationMs: 220,
+    missionControlEasing: "ease-out",
   },
   blur: { surface: "blur(20px)", spotlight: "blur(28px)" },
   wallpaper: {},

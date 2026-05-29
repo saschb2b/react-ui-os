@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-29T10:38:31.498Z",
+  "generatedAt": "2026-05-29T11:43:22.989Z",
   "types": {
     "App": {
       "name": "App",
@@ -229,6 +229,17 @@
         },
         {
           "name": "genieEasing",
+          "type": "string",
+          "optional": false
+        },
+        {
+          "name": "missionControlDurationMs",
+          "type": "number",
+          "optional": false,
+          "description": "Mission Control spread and collapse. Its own gesture, distinct from the\nwindow open and genie pacing (the macOS expose zoom runs roughly 0.2 to\n0.25s)."
+        },
+        {
+          "name": "missionControlEasing",
           "type": "string",
           "optional": false
         }
