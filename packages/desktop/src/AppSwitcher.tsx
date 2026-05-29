@@ -233,7 +233,7 @@ function Tile({
         borderRadius: theme.shape.dockTileRadius,
         background: `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
         boxShadow: focused
-          ? `0 0 0 3px ${accent}aa, 0 12px 24px rgba(0,0,0,0.45)`
+          ? `0 0 0 3px ${theme.palette.textPrimary}, 0 12px 24px rgba(0,0,0,0.45)`
           : "0 4px 10px rgba(0,0,0,0.35)",
         display: "grid",
         placeItems: "center",
