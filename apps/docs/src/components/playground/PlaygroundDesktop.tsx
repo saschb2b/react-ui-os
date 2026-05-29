@@ -168,7 +168,13 @@ export default function PlaygroundDesktop() {
   const theme = useMemo<OsTheme>(() => {
     if (themeChoice === "saas") return createSaasTheme();
     if (themeChoice === "default") return defaultTheme;
-    return createMintablesTheme({ wallpaperSrc: "wallpaper.jpg" });
+    // Prefix the configured base path (e.g. "/react-ui-os/" on GitHub Pages).
+    // A bare relative path would resolve against the current page URL and 404
+    // on a sub-path deploy.
+    const base = import.meta.env.BASE_URL.endsWith("/")
+      ? import.meta.env.BASE_URL
+      : `${import.meta.env.BASE_URL}/`;
+    return createMintablesTheme({ wallpaperSrc: `${base}wallpaper.jpg` });
   }, [themeChoice]);
 
   return (
