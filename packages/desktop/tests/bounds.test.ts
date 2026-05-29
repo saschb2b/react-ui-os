@@ -50,7 +50,7 @@ describe("clampWindowToWorkArea", () => {
 // That makes the placement math deterministic without a DOM: margin 12 gives
 // a usable area of 776x576.
 const theme = {
-  chrome: { menuBar: "default", dockPosition: "bottom" },
+  chrome: { menuBar: "top", dockPosition: "bottom" },
 } as unknown as OsTheme;
 
 describe("pickInitialBounds", () => {
