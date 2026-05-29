@@ -51,8 +51,13 @@ export function MissionControl() {
   phaseRef.current = phase;
   const [keyIndex, setKeyIndex] = useState(-1);
 
-  const duration = theme.motion.missionControlDurationMs;
   const easing = theme.motion.missionControlEasing;
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Honor the OS reduced-motion setting: collapse the spread to an instant cut.
+  const duration = reduceMotion ? 0 : theme.motion.missionControlDurationMs;
 
   // Show the current space only, minus minimized windows (those live in the
   // dock). The Spaces bar switches which space is shown, like macOS.
@@ -231,7 +236,12 @@ export function MissionControl() {
             />
           ) : null}
           {visible.length === 0 ? (
-            <EmptyState theme={theme} />
+            <EmptyState
+              theme={theme}
+              hasWindowsElsewhere={windows.some(
+                (w) => w.state !== "minimized" && w.workspaceId !== activeWorkspace,
+              )}
+            />
           ) : (
             <div
               style={{
@@ -262,7 +272,13 @@ export function MissionControl() {
   );
 }
 
-function EmptyState({ theme }: { theme: ReturnType<typeof useTheme> }) {
+function EmptyState({
+  theme,
+  hasWindowsElsewhere,
+}: {
+  theme: ReturnType<typeof useTheme>;
+  hasWindowsElsewhere: boolean;
+}) {
   return (
     <div
       style={{
@@ -272,9 +288,13 @@ function EmptyState({ theme }: { theme: ReturnType<typeof useTheme> }) {
         lineHeight: 1.5,
       }}
     >
-      <div style={{ fontSize: 24, opacity: 0.7, marginBottom: 6 }}>Nothing to show</div>
+      <div style={{ fontSize: 24, opacity: 0.7, marginBottom: 6 }}>
+        {hasWindowsElsewhere ? "No windows in this space" : "Nothing to show"}
+      </div>
       <div style={{ color: theme.palette.textSecondary, fontSize: 12 }}>
-        Open an app first, then press F3 to see them all at once.
+        {hasWindowsElsewhere
+          ? "Pick another space above, or open an app here."
+          : "Open an app first, then press F3 to see them all at once."}
       </div>
     </div>
   );
