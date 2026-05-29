@@ -19,9 +19,9 @@ type Phase = "closed" | "enter" | "open" | "leave";
 // and scaled down, so it reads as a faithful miniature like macOS. Windows are
 // fit into a shared envelope so a small utility and a large document end up at
 // comparable, recognizable sizes rather than one dwarfing the other.
-const THUMB_MAX_W = 300;
-const THUMB_MAX_H = 200;
-const THUMB_MAX_SCALE = 0.72;
+const THUMB_MAX_W = 380;
+const THUMB_MAX_H = 280;
+const THUMB_MAX_SCALE = 0.9;
 const MINI_TITLE_BAR_H = 30;
 
 /**
@@ -43,7 +43,8 @@ const MINI_TITLE_BAR_H = 30;
 export function MissionControl() {
   const theme = useTheme();
   const apps = useApps();
-  const { windows, focusWindow, restoreWindow } = useWindowManager();
+  const { state, windows, focusWindow, restoreWindow, switchWorkspace } =
+    useWindowManager();
 
   const [phase, setPhase] = useState<Phase>("closed");
   const phaseRef = useRef(phase);
@@ -52,11 +53,15 @@ export function MissionControl() {
   const duration = theme.motion.missionControlDurationMs;
   const easing = theme.motion.missionControlEasing;
 
-  // Only surface what is actually on screen. Minimized windows live in the
-  // dock, not here, matching macOS.
+  // Show the current space only, minus minimized windows (those live in the
+  // dock). The Spaces bar switches which space is shown, like macOS.
+  const activeWorkspace = state.activeWorkspaceId;
   const visible = useMemo<OpenWindow[]>(
-    () => windows.filter((w) => w.state !== "minimized"),
-    [windows],
+    () =>
+      windows.filter(
+        (w) => w.state !== "minimized" && w.workspaceId === activeWorkspace,
+      ),
+    [windows, activeWorkspace],
   );
 
   useEffect(() => {
@@ -127,8 +132,10 @@ export function MissionControl() {
       role="dialog"
       aria-label="Mission Control"
       onClick={(e) => {
-        // A click anywhere but on a card collapses Mission Control.
-        if ((e.target as HTMLElement).closest("[data-mc-card]")) return;
+        // A click on empty space collapses Mission Control; clicks on a card
+        // or a space chip are handled by those controls.
+        if ((e.target as HTMLElement).closest("[data-mc-card], [data-mc-space]"))
+          return;
         close();
       }}
       style={{
@@ -160,7 +167,7 @@ export function MissionControl() {
         style={{
           position: "relative",
           width: "100%",
-          maxWidth: "min(1100px, 100%)",
+          maxWidth: "min(1320px, 100%)",
           maxHeight: "100%",
           overflowY: "auto",
           transformOrigin: "center",
@@ -169,31 +176,49 @@ export function MissionControl() {
           transition: `transform ${String(duration)}ms ${easing}, opacity ${String(duration)}ms ${easing}`,
         }}
       >
-        {visible.length === 0 ? (
-          <EmptyState theme={theme} />
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: "clamp(16px, 2.6vmin, 34px)",
-            }}
-          >
-            {visible.map((win) => (
-              <Card
-                key={win.id}
-                win={win}
-                apps={apps}
-                theme={theme}
-                onPick={() => {
-                  pick(win);
-                }}
-              />
-            ))}
-          </div>
-        )}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "clamp(20px, 4vmin, 44px)",
+          }}
+        >
+          {state.workspaces.length > 1 ? (
+            <SpacesBar
+              workspaces={state.workspaces}
+              activeId={state.activeWorkspaceId}
+              onSwitch={switchWorkspace}
+              wallpaperSrc={theme.wallpaper.src}
+              theme={theme}
+            />
+          ) : null}
+          {visible.length === 0 ? (
+            <EmptyState theme={theme} />
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "clamp(16px, 2.6vmin, 34px)",
+              }}
+            >
+              {visible.map((win) => (
+                <Card
+                  key={win.id}
+                  win={win}
+                  apps={apps}
+                  theme={theme}
+                  onPick={() => {
+                    pick(win);
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -213,6 +238,96 @@ function EmptyState({ theme }: { theme: ReturnType<typeof useTheme> }) {
       <div style={{ color: theme.palette.textSecondary, fontSize: 12 }}>
         Open an app first, then press F3 to see them all at once.
       </div>
+    </div>
+  );
+}
+
+function SpacesBar({
+  workspaces,
+  activeId,
+  onSwitch,
+  wallpaperSrc,
+  theme,
+}: {
+  workspaces: string[];
+  activeId: string;
+  onSwitch: (id: string) => void;
+  wallpaperSrc: string | undefined;
+  theme: ReturnType<typeof useTheme>;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Spaces"
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "flex-end",
+        gap: 14,
+        flexWrap: "wrap",
+      }}
+    >
+      {workspaces.map((id, i) => {
+        const active = id === activeId;
+        return (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            data-mc-space
+            aria-selected={active}
+            aria-label={`Desktop ${String(i + 1)}`}
+            onClick={() => {
+              onSwitch(id);
+            }}
+            onPointerEnter={(e) => {
+              e.currentTarget.style.opacity = "1";
+            }}
+            onPointerLeave={(e) => {
+              e.currentTarget.style.opacity = active ? "1" : "0.6";
+            }}
+            style={{
+              appearance: "none",
+              border: "none",
+              background: "transparent",
+              padding: 0,
+              cursor: "pointer",
+              fontFamily: "inherit",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 6,
+              opacity: active ? 1 : 0.6,
+              transition: `opacity ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+            }}
+          >
+            <span
+              aria-hidden
+              style={{
+                width: 124,
+                height: 74,
+                borderRadius: theme.shape.small,
+                border: active
+                  ? "2px solid rgba(255,255,255,0.85)"
+                  : `1px solid ${theme.palette.border}`,
+                background: wallpaperSrc
+                  ? `center / cover no-repeat url("${wallpaperSrc}")`
+                  : theme.palette.background,
+                boxShadow: "0 6px 16px -8px rgba(0,0,0,0.5)",
+              }}
+            />
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: active ? 600 : 500,
+                color: active ? theme.palette.textPrimary : theme.palette.textSecondary,
+              }}
+            >
+              {`Desktop ${String(i + 1)}`}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
