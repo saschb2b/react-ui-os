@@ -334,7 +334,11 @@ function ColorFromPaletteControl({
 }) {
   const theme = useTheme();
   return (
-    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+    <div
+      role="group"
+      aria-label={field.label}
+      style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+    >
       {field.options.map((color) => {
         const selected = value === color;
         return (
@@ -345,6 +349,7 @@ function ColorFromPaletteControl({
               onChange(color);
             }}
             aria-label={color}
+            aria-pressed={selected}
             style={{
               width: 28,
               height: 28,
@@ -376,6 +381,8 @@ function ImagePickControl({
   const theme = useTheme();
   return (
     <div
+      role="group"
+      aria-label={field.label}
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))",
@@ -388,6 +395,7 @@ function ImagePickControl({
           <button
             key={opt.src}
             type="button"
+            aria-pressed={selected}
             onClick={() => {
               onChange(opt.src);
             }}
@@ -464,6 +472,8 @@ function SelectControl({
   const theme = useTheme();
   return (
     <div
+      role="group"
+      aria-label={field.label}
       style={{
         display: "inline-flex",
         border: `1px solid ${theme.palette.border}`,
@@ -477,6 +487,7 @@ function SelectControl({
           <button
             key={opt.value}
             type="button"
+            aria-pressed={selected}
             onClick={() => {
               onChange(opt.value);
             }}
