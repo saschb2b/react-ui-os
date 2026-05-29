@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type {
   ColorFromPaletteField,
   CustomizableField,
@@ -14,10 +14,12 @@ import { useBaseTheme, useSettings, useTheme } from "./desktop-context";
 import { Slider, Toggle } from "./primitives";
 
 /**
- * Settings system app body. Reads the active theme's `customizable` schema
- * and renders one editor per field, grouped by `section`. Edits write
- * directly to the prefs store; the effective theme rebuilds on every change
- * so the desktop reflects tweaks live.
+ * Settings system app body. Reads the active theme's `customizable` schema and
+ * renders one editor per field. Layout follows modern settings apps (macOS
+ * Ventura, Windows 11, GNOME): a category sidebar on the left and a content
+ * pane of grouped rows on the right, each row a label and description on the
+ * left with its control on the right. Edits write straight to the prefs store,
+ * so the effective theme rebuilds live.
  */
 export function Settings() {
   const theme = useTheme();
@@ -36,165 +38,240 @@ export function Settings() {
   }, [schema]);
 
   const hasPrefs = Object.keys(prefs).length > 0;
-  const isEmpty = Object.keys(schema).length === 0;
+  const [active, setActive] = useState<string>(() => grouped[0]?.[0] ?? "");
+
+  if (grouped.length === 0) {
+    return (
+      <p
+        style={{
+          fontSize: 13,
+          color: theme.palette.textSecondary,
+          margin: 0,
+        }}
+      >
+        The active theme exposes no customizable settings.
+      </p>
+    );
+  }
+
+  const activeEntry = grouped.find(([name]) => name === active) ??
+    grouped[0] ?? ["", []];
+  const [activeName, activeFields] = activeEntry;
 
   return (
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
-        gap: 24,
+        gap: 18,
         color: theme.palette.textPrimary,
+        minHeight: 300,
       }}
     >
-      <header
+      <aside
+        aria-label="Settings categories"
         style={{
+          width: 150,
+          flexShrink: 0,
+          borderRight: `1px solid ${theme.palette.border}`,
+          paddingRight: 12,
           display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          gap: 12,
+          flexDirection: "column",
+          gap: 2,
         }}
       >
-        <div>
-          <h2 style={{ margin: 0, fontSize: 18 }}>Settings</h2>
-          <p
-            style={{
-              margin: "4px 0 0",
-              fontSize: 12,
-              color: theme.palette.textSecondary,
-            }}
-          >
-            Tweaks to the {baseTheme.name} theme.
-          </p>
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: 0.2,
+            padding: "2px 10px 8px",
+          }}
+        >
+          Settings
         </div>
+        {grouped.map(([name]) => {
+          const isActive = name === activeName;
+          return (
+            <button
+              key={name}
+              type="button"
+              aria-current={isActive}
+              onClick={() => {
+                setActive(name);
+              }}
+              style={{
+                appearance: "none",
+                border: 0,
+                textAlign: "left",
+                padding: "7px 10px",
+                borderRadius: theme.shape.small,
+                background: isActive ? `${theme.palette.accent}30` : "transparent",
+                color: isActive
+                  ? theme.palette.textPrimary
+                  : theme.palette.textSecondary,
+                fontWeight: isActive ? 600 : 500,
+                fontSize: 13,
+                fontFamily: "inherit",
+                cursor: "pointer",
+                transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive)
+                  e.currentTarget.style.background = `${theme.palette.textPrimary}12`;
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) e.currentTarget.style.background = "transparent";
+              }}
+            >
+              {name}
+            </button>
+          );
+        })}
+        <div style={{ flex: 1 }} />
         {hasPrefs && (
           <button
             type="button"
             onClick={resetAll}
             style={{
-              border: `1px solid ${theme.palette.border}`,
-              borderRadius: theme.shape.small,
+              border: 0,
               background: "transparent",
+              textAlign: "left",
               color: theme.palette.textSecondary,
               fontSize: 12,
-              padding: "4px 10px",
+              padding: "7px 10px",
               cursor: "pointer",
               fontFamily: "inherit",
+              borderRadius: theme.shape.small,
             }}
           >
             Reset all
           </button>
         )}
-      </header>
+      </aside>
 
-      {isEmpty ? (
-        <p
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <h2 style={{ margin: "0 0 12px", fontSize: 16 }}>{activeName}</h2>
+        <div
           style={{
-            fontSize: 13,
-            color: theme.palette.textSecondary,
-            margin: 0,
+            border: `1px solid ${theme.palette.border}`,
+            borderRadius: theme.shape.small + 2,
+            background: theme.palette.background,
+            overflow: "hidden",
           }}
         >
-          The active theme exposes no customizable settings.
-        </p>
-      ) : (
-        grouped.map(([sectionName, fields]) => (
-          <section
-            key={sectionName}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 14,
-            }}
-          >
-            <h3
-              style={{
-                margin: 0,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: 0.6,
-                color: theme.palette.textSecondary,
-                fontWeight: 600,
-              }}
-            >
-              {sectionName}
-            </h3>
-            {fields.map(([path, field]) => {
-              const overridden = path in prefs;
-              const value = path in prefs ? prefs[path] : getPath(baseTheme, path);
-              return (
-                <FieldRow
-                  key={path}
-                  field={field}
-                  value={value}
-                  overridden={overridden}
-                  onChange={(v) => {
-                    setPref(path, v);
-                  }}
-                  onReset={() => {
-                    resetPref(path);
-                  }}
-                />
-              );
-            })}
-          </section>
-        ))
-      )}
+          {activeFields.map(([path, field], i) => {
+            const overridden = path in prefs;
+            const value = path in prefs ? prefs[path] : getPath(baseTheme, path);
+            return (
+              <SettingRow
+                key={path}
+                field={field}
+                value={value}
+                overridden={overridden}
+                isLast={i === activeFields.length - 1}
+                onChange={(v) => {
+                  setPref(path, v);
+                }}
+                onReset={() => {
+                  resetPref(path);
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
 
-interface FieldRowProps {
+interface SettingRowProps {
   field: CustomizableField;
   value: unknown;
   overridden: boolean;
+  isLast: boolean;
   onChange: (value: unknown) => void;
   onReset: () => void;
 }
 
-function FieldRow({ field, value, overridden, onChange, onReset }: FieldRowProps) {
+function SettingRow({
+  field,
+  value,
+  overridden,
+  isLast,
+  onChange,
+  onReset,
+}: SettingRowProps) {
   const theme = useTheme();
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
-      >
-        <label style={{ fontSize: 13, fontWeight: 500 }}>{field.label}</label>
-        {overridden && (
-          <button
-            type="button"
-            onClick={onReset}
-            style={{
-              border: "none",
-              background: "transparent",
-              color: theme.palette.textSecondary,
-              fontSize: 11,
-              cursor: "pointer",
-              padding: 0,
-              fontFamily: "inherit",
-            }}
-          >
-            Reset
-          </button>
-        )}
-      </div>
+  // Wide controls read better stacked under the label; the rest sit inline on
+  // the right, the macOS / Windows / GNOME row pattern.
+  const stacked = field.kind === "image-pick";
+  const control = <FieldControl field={field} value={value} onChange={onChange} />;
+  const controlNode =
+    field.kind === "range" ? <div style={{ width: 180 }}>{control}</div> : control;
+  const reset = overridden ? (
+    <button
+      type="button"
+      onClick={onReset}
+      style={{
+        border: 0,
+        background: "transparent",
+        color: theme.palette.textSecondary,
+        fontSize: 11,
+        cursor: "pointer",
+        padding: 0,
+        fontFamily: "inherit",
+      }}
+    >
+      Reset
+    </button>
+  ) : null;
+
+  const labelBlock = (
+    <div style={{ minWidth: 0 }}>
+      <div style={{ fontSize: 13, fontWeight: 500 }}>{field.label}</div>
       {field.description && (
-        <p
+        <div
           style={{
-            margin: 0,
             fontSize: 11,
             color: theme.palette.textSecondary,
+            marginTop: 2,
           }}
         >
           {field.description}
-        </p>
+        </div>
       )}
-      <FieldControl field={field} value={value} onChange={onChange} />
+    </div>
+  );
+
+  return (
+    <div
+      style={{
+        padding: "12px 14px",
+        borderBottom: isLast ? "none" : `1px solid ${theme.palette.border}`,
+        display: "flex",
+        flexDirection: stacked ? "column" : "row",
+        alignItems: stacked ? "stretch" : "center",
+        justifyContent: "space-between",
+        gap: stacked ? 10 : 16,
+      }}
+    >
+      {labelBlock}
+      {stacked ? (
+        controlNode
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexShrink: 0,
+          }}
+        >
+          {reset}
+          {controlNode}
+        </div>
+      )}
+      {stacked && reset}
     </div>
   );
 }

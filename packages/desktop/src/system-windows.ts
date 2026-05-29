@@ -55,7 +55,7 @@ export const systemWindows: Record<string, SystemWindowDef> = {
     name: "Settings",
     tagline: "Tweak the theme",
     accent: "#8a8a93",
-    defaultBounds: { w: 560, h: 520 },
+    defaultBounds: { w: 660, h: 540 },
     content: Settings,
     // Settings doesn't get a desktop shortcut by default; it's expected to
     // be reached via Cmd-, or Spotlight. Consumers can override per-app.
