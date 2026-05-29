@@ -227,6 +227,7 @@ function DockTile({
   const isFocused = focusedWindow?.id === id;
   const isMinimized = win?.state === "minimized";
   const badgeCount = unreadByApp[app.id] ?? 0;
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -282,6 +283,7 @@ function DockTile({
         { kind: "app", appId: app.id },
         pickInitialBounds({ kind: "app", appId: app.id }, theme, apps),
       );
+      bounce(buttonRef.current, position === "left");
       return;
     }
     if (isMinimized) {
@@ -304,6 +306,7 @@ function DockTile({
 
   return (
     <button
+      ref={buttonRef}
       type="button"
       onClick={handleClick}
       onContextMenu={handleContextMenu}
@@ -401,6 +404,26 @@ function DockTile({
         </span>
       )}
     </button>
+  );
+}
+
+// macOS-style launch bounce when a dock click opens an app. Uses the Web
+// Animations API so it composes with the magnification (which drives
+// width/height, not transform) and leaves no residual transform behind.
+function bounce(el: HTMLButtonElement | null, isLeft: boolean): void {
+  if (!el || typeof el.animate !== "function") return;
+  const up = isLeft ? "translateX(18px)" : "translateY(-18px)";
+  const up2 = isLeft ? "translateX(7px)" : "translateY(-7px)";
+  const rest = "translate(0, 0)";
+  el.animate(
+    [
+      { transform: rest },
+      { transform: up, offset: 0.3 },
+      { transform: rest, offset: 0.55 },
+      { transform: up2, offset: 0.78 },
+      { transform: rest, offset: 1 },
+    ],
+    { duration: 560, easing: "ease-out" },
   );
 }
 

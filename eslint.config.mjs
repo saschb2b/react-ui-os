@@ -44,6 +44,7 @@ export default [
         HTMLElement: "readonly",
         HTMLDivElement: "readonly",
         HTMLInputElement: "readonly",
+        HTMLButtonElement: "readonly",
         DOMRect: "readonly",
       },
     },

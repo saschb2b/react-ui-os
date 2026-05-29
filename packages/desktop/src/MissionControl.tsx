@@ -125,7 +125,7 @@ export function MissionControl() {
     return () => {
       window.removeEventListener("keydown", onKey);
     };
-  }, []);
+  }, [focusWindow, restoreWindow]);
 
   // Phase machine (animations are state machines, not effects): "enter" paints
   // the collapsed state for one frame, then flips to "open" so the CSS
