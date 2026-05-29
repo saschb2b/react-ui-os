@@ -5,9 +5,9 @@ import { useSyncExternalStore } from "react";
 /**
  * The desktop has two layouts:
  *
- *   regular  Standard sizes: 56 px dock tiles, 28 px menu bar, 32 px
+ *   regular  Standard sizes: 56 px dock tiles, 24 px menu bar, 32 px
  *            window title bars. The default at any desktop-class viewport.
- *   compact  Tighter chrome: 40 px dock tiles, 24 px menu bar, 28 px
+ *   compact  Tighter chrome: 40 px dock tiles, 22 px menu bar, 28 px
  *            title bars. Triggered when the desktop is rendered into a
  *            tiny viewport (a docs iframe, a phone, etc.) where the
  *            full-size chrome would consume too much of the work area.
