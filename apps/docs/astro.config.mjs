@@ -3,6 +3,7 @@ import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
 import starlight from "@astrojs/starlight";
+import { rehypeBaseLinks } from "./plugins/rehype-base-links.mjs";
 
 // Resolve every @react-ui-os/* workspace package to its TypeScript source.
 // The docs site is built straight from source (the deploy workflow runs
@@ -43,6 +44,9 @@ export default defineConfig({
   base: BASE,
   // The dev toolbar overlaps the docs UI in local dev. Turn it off.
   devToolbar: { enabled: false },
+  // Rewrite root-absolute markdown links to carry the deploy base so they work
+  // on GitHub Pages (served under /react-ui-os). Content stays base-agnostic.
+  markdown: { rehypePlugins: [rehypeBaseLinks(BASE)] },
   integrations: [
     starlight({
       title: "react-ui-os",
