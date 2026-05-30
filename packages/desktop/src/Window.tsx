@@ -77,6 +77,10 @@ interface DragState {
   startY: number;
   lastX: number;
   lastY: number;
+  /** Pointer's fraction along the title-bar width at grab time (0..1). */
+  grabFracX: number;
+  /** Pointer's pixel offset below the title-bar top at grab time. */
+  grabOffsetY: number;
   /**
    * The window was maximized when this drag began. It stays maximized until the
    * pointer crosses the tear-off threshold, at which point it restores under
@@ -84,11 +88,18 @@ interface DragState {
    * double-click is left to their own handlers.
    */
   fromMaximized?: boolean;
+  /**
+   * The window was snapped to a zone when this drag began; this is the size it
+   * had before snapping. Like {@link fromMaximized}, crossing the tear-off
+   * threshold restores it to this size under the cursor.
+   */
+  snapRestore?: { w: number; h: number };
 }
 
-// Pointer travel before a drag on a maximized title bar tears the window off
-// and restores it. Keeps a click or double-click from restoring by accident.
-const MAXIMIZED_TEAR_OFF_PX = 6;
+// Pointer travel before a drag on a maximized or snapped title bar tears the
+// window off and restores it. Keeps a click or double-click from restoring by
+// accident.
+const TEAR_OFF_PX = 6;
 
 interface ResizeState {
   pointerId: number;
@@ -170,6 +181,10 @@ export function Window({ win, hidden = false }: WindowProps) {
   const elRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const resizeRef = useRef<ResizeState | null>(null);
+  // Size the window had before it was snapped to a zone, so dragging it away
+  // restores that size (Windows). Set when a drag snaps, cleared on tear-off or
+  // a manual resize. A ref, not state: it never affects rendering on its own.
+  const preSnapSizeRef = useRef<{ w: number; h: number } | null>(null);
   const [phase, setPhase] = useState<AnimationPhase>("opening");
   // True only while a pointer drag or resize is in flight. Those write the
   // transform (and size) to the DOM every frame, so the CSS geometry
@@ -327,11 +342,17 @@ export function Window({ win, hidden = false }: WindowProps) {
     (e: ReactPointerEvent<HTMLDivElement>) => {
       if (e.button !== 0) return;
       const fromMaximized = win.state === "maximized";
+      const snapRestore =
+        !fromMaximized && preSnapSizeRef.current ? preSnapSizeRef.current : undefined;
+      // Anchor the pointer on the title bar so a tear-off can keep it there.
+      const bar = e.currentTarget.getBoundingClientRect();
+      const grabFracX = bar.width > 0 ? (e.clientX - bar.left) / bar.width : 0.5;
+      const grabOffsetY = e.clientY - bar.top;
       focusWindow(win.id);
       e.currentTarget.setPointerCapture(e.pointerId);
-      // A maximized window stays put (and keeps its transition) until the
-      // pointer tears it off in moveDrag; a normal drag starts gesturing now.
-      if (!fromMaximized) setGesturing(true);
+      // A maximized or snapped window stays put (and keeps its transition) until
+      // the pointer tears it off in moveDrag; a plain drag starts gesturing now.
+      if (!fromMaximized && !snapRestore) setGesturing(true);
       dragRef.current = {
         pointerId: e.pointerId,
         startClientX: e.clientX,
@@ -340,7 +361,10 @@ export function Window({ win, hidden = false }: WindowProps) {
         startY: win.y,
         lastX: win.x,
         lastY: win.y,
+        grabFracX,
+        grabOffsetY,
         fromMaximized,
+        snapRestore,
       };
     },
     [focusWindow, win.id, win.state, win.x, win.y],
@@ -351,30 +375,35 @@ export function Window({ win, hidden = false }: WindowProps) {
       const drag = dragRef.current;
       if (!drag || drag.pointerId !== e.pointerId) return;
       const work = getWorkArea(theme);
-      if (drag.fromMaximized) {
-        // Wait for real travel so a click or double-click on the maximized
-        // title bar is not mistaken for a tear-off.
+      if (drag.fromMaximized || drag.snapRestore) {
+        // Wait for real travel so a click or double-click on a maximized or
+        // snapped title bar is not mistaken for a tear-off.
         if (
           Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) <
-          MAXIMIZED_TEAR_OFF_PX
+          TEAR_OFF_PX
         ) {
           return;
         }
-        // Restore the window under the cursor (Windows 11): keep the pointer at
-        // the same horizontal fraction of the now-narrower title bar, and at
-        // the same vertical offset within it as the original grab, so the
-        // title bar lands right under the cursor rather than jumping away.
-        const fracX = work.width > 0 ? (e.clientX - work.x) / work.width : 0.5;
+        // Restore the window under the cursor (Windows 11): a maximized window
+        // returns to its normal size, a snapped one to its pre-snap size, with
+        // the pointer kept at the same fraction along, and the same offset down,
+        // the now-narrower title bar, so it lands right under the cursor.
+        const restoreW = drag.snapRestore ? drag.snapRestore.w : win.w;
+        const restoreH = drag.snapRestore ? drag.snapRestore.h : win.h;
         const restoredX = Math.max(
           work.x,
-          Math.min(e.clientX - win.w * fracX, work.x + work.width - win.w),
+          Math.min(
+            e.clientX - restoreW * drag.grabFracX,
+            work.x + work.width - restoreW,
+          ),
         );
-        const grabOffsetY = drag.startClientY - work.y;
-        const restoredY = Math.max(work.y, e.clientY - grabOffsetY);
-        toggleMaximize(win.id);
-        setBounds(win.id, restoredX, restoredY, win.w, win.h);
+        const restoredY = Math.max(work.y, e.clientY - drag.grabOffsetY);
+        if (drag.fromMaximized) toggleMaximize(win.id);
+        setBounds(win.id, restoredX, restoredY, restoreW, restoreH);
         setGesturing(true);
+        preSnapSizeRef.current = null;
         drag.fromMaximized = false;
+        drag.snapRestore = undefined;
         drag.startX = restoredX;
         drag.startY = restoredY;
         drag.startClientX = e.clientX;
@@ -384,8 +413,8 @@ export function Window({ win, hidden = false }: WindowProps) {
         const elNow = elRef.current;
         if (elNow) {
           elNow.style.transform = `translate3d(${String(restoredX)}px, ${String(restoredY)}px, 0)`;
-          elNow.style.width = `${String(win.w)}px`;
-          elNow.style.height = `${String(win.h)}px`;
+          elNow.style.width = `${String(restoreW)}px`;
+          elNow.style.height = `${String(restoreH)}px`;
         }
         return;
       }
@@ -418,10 +447,11 @@ export function Window({ win, hidden = false }: WindowProps) {
     (e: ReactPointerEvent<HTMLDivElement>) => {
       const drag = dragRef.current;
       if (!drag || drag.pointerId !== e.pointerId) return;
-      if (drag.fromMaximized) {
+      if (drag.fromMaximized || drag.snapRestore) {
         // Released without ever tearing off: a click (or the first half of a
-        // double-click) on a maximized title bar. Leave the window maximized
-        // and untouched; double-click restores it through its own handler.
+        // double-click) on a maximized or snapped title bar. Leave the window
+        // as it is; double-click still restores a maximized one via its own
+        // handler, and a snapped one stays snapped.
         dragRef.current = null;
         return;
       }
@@ -431,6 +461,12 @@ export function Window({ win, hidden = false }: WindowProps) {
       setGesturing(false);
       const snap = getSnapPreview();
       if (snap && snap.windowId === win.id) {
+        // Remember the size to come back to when this snap is later dragged
+        // off. Only the first snap records it, so re-snapping keeps the
+        // original pre-snap size.
+        if (!preSnapSizeRef.current) {
+          preSnapSizeRef.current = { w: win.w, h: win.h };
+        }
         setBounds(win.id, snap.rect.x, snap.rect.y, snap.rect.w, snap.rect.h);
         showHud({ title: snapZoneLabel(snap.zone) });
       } else {
@@ -506,6 +542,8 @@ export function Window({ win, hidden = false }: WindowProps) {
       const r = resizeRef.current;
       if (!r || r.pointerId !== e.pointerId) return;
       setGesturing(false);
+      // A hand-picked size cancels the snap memory: dragging away now keeps it.
+      preSnapSizeRef.current = null;
       setBounds(win.id, r.lastX, r.lastY, r.lastW, r.lastH);
       resizeRef.current = null;
     },
