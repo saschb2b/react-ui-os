@@ -8,6 +8,7 @@ import {
 } from "@react-ui-os/desktop";
 import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
+import { createRedmondTheme } from "@react-ui-os/theme-redmond";
 import { createSaasTheme } from "@react-ui-os/theme-saas";
 import { exampleApps } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
@@ -51,9 +52,10 @@ function HelloContent({ focused }: { focused: boolean }) {
         <kbd>open calendar</kbd> to launch an app straight from the shell.
       </p>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
-        Try a different theme: append <kbd>?theme=mintables</kbd> or{" "}
-        <kbd>?theme=saas</kbd> to the URL and reload. SaaS pins the dock to the left
-        edge and hides the menu bar.
+        Try a different theme: append <kbd>?theme=mintables</kbd>,{" "}
+        <kbd>?theme=saas</kbd>, or <kbd>?theme=redmond</kbd> to the URL and reload.
+        SaaS pins the dock to the left edge and hides the menu bar; Redmond swaps in
+        Windows-style caption buttons and a taskbar that does not magnify.
       </p>
       <div
         style={{
@@ -111,7 +113,7 @@ const apps: OsApp[] = [
   ...exampleApps,
 ];
 
-type ThemeChoice = "default" | "mintables" | "saas";
+type ThemeChoice = "default" | "mintables" | "saas" | "redmond";
 
 function readThemeFromUrl(): ThemeChoice {
   if (typeof window === "undefined") return "default";
@@ -119,6 +121,7 @@ function readThemeFromUrl(): ThemeChoice {
   const requested = params.get("theme");
   if (requested === "mintables") return "mintables";
   if (requested === "saas") return "saas";
+  if (requested === "redmond") return "redmond";
   return "default";
 }
 
@@ -130,6 +133,9 @@ export default function App() {
     }
     if (themeChoice === "saas") {
       return createSaasTheme();
+    }
+    if (themeChoice === "redmond") {
+      return createRedmondTheme();
     }
     return defaultTheme;
   }, [themeChoice]);
