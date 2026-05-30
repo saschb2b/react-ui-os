@@ -44,6 +44,16 @@ That single tag produces the wallpaper, dock, draggable resizable windows, focus
 
 There is more in the box: workspaces, Mission Control, an app switcher (Cmd-Tab), window snapping, a Finder-style file explorer, and a context-menu system. See the [docs](https://saschb2b.github.io/react-ui-os/) for the full tour.
 
+## App Store
+
+Apps are not bundled into the library. Prebuilt ones live in a registry, and you copy the ones you want into your project with the [shadcn](https://ui.shadcn.com/docs/cli) CLI:
+
+```bash
+npx shadcn@latest add https://saschb2b.github.io/react-ui-os/r/notes.json
+```
+
+The files land in your codebase, so you own them and can edit them after install. Notes, Calculator, Clock, Calendar, Reminders, Sketch, and Terminal are in the registry today. Browse them in the [App Store](https://saschb2b.github.io/react-ui-os/app-store/), or [publish your own](https://saschb2b.github.io/react-ui-os/app-store/publish/) so others can install it.
+
 ## Why this exists
 
 Most React UI libraries ship fifty components and let you wire them. That produces tidy webapps, not a coherent OS feeling, because nobody wants to wire fifty pieces into a desktop and keep them consistent. This library inverts the contract: you register apps; the library composes the system. The same `App` object lights up four surfaces, and a theme is pure data that decides how the whole thing reads.
@@ -105,10 +115,12 @@ react-ui-os/
   packages/
     core/                        # @react-ui-os/core (window-manager, types, storage)
     desktop/                     # @react-ui-os/desktop (components)
+    example-apps/                # @react-ui-os/example-apps (the registry's seed apps)
     theme-default/               # @react-ui-os/theme-default
     theme-mintables/             # @react-ui-os/theme-mintables
     theme-saas/                  # @react-ui-os/theme-saas
   .github/workflows/             # CI + Pages deploy
+  registry.json                  # shadcn app registry (built and served by the docs site)
   CLAUDE.md                      # architecture and contribution rules
   DESIGN.md                      # visual direction and design tokens
 ```
