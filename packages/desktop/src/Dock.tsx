@@ -5,6 +5,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -17,6 +18,8 @@ import {
 import type { App } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { openContextMenu, type ContextMenuItem } from "./context-menu";
+import { NOTIFICATION_CENTER_TOGGLE_EVENT, SPOTLIGHT_OPEN_EVENT } from "./events";
+import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
 import { pickInitialBounds } from "./util/initial-bounds";
 import { getChromeMetrics } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
@@ -312,7 +315,227 @@ export function Dock() {
           {focusedApp.name}
         </span>
       ) : null}
+      {isBar && <StartButton vertical={isLeft} />}
+      {isBar && <TaskbarTray vertical={isLeft} />}
     </nav>
+  );
+}
+
+/**
+ * Taskbar launcher pinned to the leading edge (Start's place on Windows).
+ * A neutral 2x2 grid glyph, not the Windows logo: it opens Spotlight, the
+ * library's app launcher, respecting the pattern without copying the mark.
+ */
+function StartButton({ vertical }: { vertical: boolean }) {
+  const theme = useTheme();
+  const hover = `${theme.palette.textPrimary}14`;
+  return (
+    <button
+      type="button"
+      aria-label="Open launcher"
+      onClick={() => {
+        window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT));
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = hover;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+      }}
+      style={{
+        position: "absolute",
+        ...(vertical
+          ? { top: 6, left: "50%", transform: "translateX(-50%)" }
+          : { left: 8, top: "50%", transform: "translateY(-50%)" }),
+        width: 32,
+        height: 32,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "none",
+        background: "transparent",
+        borderRadius: theme.shape.small,
+        cursor: "pointer",
+        color: theme.palette.accent,
+        transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+      }}
+    >
+      <svg width={16} height={16} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+        <rect x="1" y="1" width="6" height="6" rx="1.5" />
+        <rect x="9" y="1" width="6" height="6" rx="1.5" />
+        <rect x="1" y="9" width="6" height="6" rx="1.5" />
+        <rect x="9" y="9" width="6" height="6" rx="1.5" />
+      </svg>
+    </button>
+  );
+}
+
+/**
+ * Taskbar system tray pinned to the trailing edge: the registered status
+ * items and a clock (time over date), the cluster Windows keeps bottom-right.
+ * Clicking the clock toggles the Notification Center, as the Windows clock
+ * opens the notification panel.
+ */
+function TaskbarTray({ vertical }: { vertical: boolean }) {
+  const theme = useTheme();
+  const items = useSyncExternalStore(
+    subscribeStatusItems,
+    listStatusItems,
+    listStatusItems,
+  );
+  const { unreadCount } = useNotifications();
+  const [now, setNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    // Mount-time read avoids the SSR "rendered HH:MM != current" mismatch.
+    setNow(new Date());
+    const id = window.setInterval(() => {
+      setNow(new Date());
+    }, 30_000);
+    return () => {
+      window.clearInterval(id);
+    };
+  }, []);
+
+  const hover = `${theme.palette.textPrimary}14`;
+  const time = now
+    ? now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    : "";
+  const date = now ? now.toLocaleDateString() : "";
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        display: "flex",
+        alignItems: "center",
+        gap: 2,
+        ...(vertical
+          ? { left: 0, right: 0, bottom: 6, flexDirection: "column" }
+          : { right: 6, top: 0, bottom: 0 }),
+      }}
+    >
+      {items.map((item) => (
+        <TrayStatusItem key={item.id} item={item} />
+      ))}
+      <button
+        type="button"
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT));
+        }}
+        aria-label={
+          unreadCount > 0
+            ? `${String(unreadCount)} unread notifications. Open Notification Center.`
+            : "Clock and notifications"
+        }
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = hover;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+        }}
+        style={{
+          position: "relative",
+          appearance: "none",
+          border: "none",
+          background: "transparent",
+          cursor: "pointer",
+          borderRadius: theme.shape.small,
+          padding: vertical ? "4px 6px" : "0 8px",
+          height: vertical ? undefined : "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: vertical ? "center" : "flex-end",
+          justifyContent: "center",
+          gap: 1,
+          color: theme.palette.textPrimary,
+          fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+          fontVariantNumeric: "tabular-nums",
+          lineHeight: 1.2,
+          transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+        }}
+      >
+        {unreadCount > 0 && (
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              top: 4,
+              right: 4,
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: theme.palette.accent,
+            }}
+          />
+        )}
+        <span style={{ fontSize: 11 }}>{time}</span>
+        {!vertical && (
+          <span style={{ fontSize: 11, color: theme.palette.textSecondary }}>
+            {date}
+          </span>
+        )}
+      </button>
+    </div>
+  );
+}
+
+function TrayStatusItem({ item }: { item: StatusItem }) {
+  const theme = useTheme();
+  const hover = `${theme.palette.textPrimary}14`;
+  return (
+    <button
+      type="button"
+      onClick={item.onClick}
+      disabled={!item.onClick}
+      aria-label={item.tooltip ?? item.id}
+      onMouseEnter={(e) => {
+        if (item.onClick) e.currentTarget.style.background = hover;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+      }}
+      style={{
+        position: "relative",
+        appearance: "none",
+        border: "none",
+        background: "transparent",
+        cursor: item.onClick ? "pointer" : "default",
+        borderRadius: theme.shape.small,
+        padding: 5,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: theme.palette.textSecondary,
+        transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+      }}
+    >
+      {item.icon}
+      {item.badge !== undefined && item.badge !== "" && item.badge !== 0 && (
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            top: -1,
+            right: -1,
+            minWidth: 12,
+            height: 12,
+            borderRadius: 6,
+            background: theme.palette.accent,
+            color: "#fff",
+            fontSize: 9,
+            fontWeight: 700,
+            padding: "0 3px",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            lineHeight: 1,
+          }}
+        >
+          {String(item.badge)}
+        </span>
+      )}
+    </button>
   );
 }
 
