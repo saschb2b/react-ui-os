@@ -311,7 +311,7 @@ const monogram = (item: AppEntry) => item.name.charAt(0).toUpperCase();
 
   .rui-store__install {
     display: flex;
-    align-items: stretch;
+    align-items: flex-start;
     gap: 0.4rem;
     margin-top: auto;
   }
@@ -322,8 +322,9 @@ const monogram = (item: AppEntry) => item.name.charAt(0).toUpperCase();
     padding: 0.4rem 0.55rem;
     font-size: 0.72rem;
     line-height: 1.4;
-    overflow-x: auto;
-    white-space: nowrap;
+    /* Wrap rather than scroll so the app id at the end is always visible. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
     color: var(--sl-color-gray-1);
     background: var(--sl-color-black);
     border: 1px solid var(--sl-color-gray-5);
