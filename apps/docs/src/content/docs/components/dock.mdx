@@ -35,6 +35,17 @@ The dock honors `theme.chrome.dockPosition`:
 | `"left"`   | Vertical rail centered on the left edge; magnified icons grow inward.                  |
 | `"hidden"` | Returns `null`. Apps are reachable via Spotlight, keyboard shortcuts, or `openWindow`. |
 
+## Form
+
+`theme.chrome.dockStyle` chooses the dock's shape:
+
+| Value        | Shape                                                                                                                                                                  |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"floating"` | The macOS dock: a centered rounded pill hovering above the edge with a gap, accent-gradient squircle tiles, a dot indicator under running apps. The default.          |
+| `"bar"`      | The Windows taskbar / GNOME panel: a flat bar flush to the edge, spanning the full width (bottom) or height (left), square corners, flat brand-colored icon buttons, and an accent underline under running apps (wider for the focused app). 48px thick, matching the Windows 11 taskbar. |
+
+The work area reserves the dock's thickness either way, so maximized windows stop above a taskbar just as they stop above a floating dock. The [Redmond theme](/themes/overview/) ships `"bar"`; every other theme uses `"floating"`.
+
 ## Magnification
 
 Hovering tracks the cursor and magnifies the icon beneath it, with its neighbors falling off smoothly over a fixed influence radius, like the macOS dock fisheye. The panel's cross-axis is pinned so magnified icons overflow above (or beside) it rather than ballooning the panel, and the dock makes room by widening. The app name shows in a label centered above the magnified icon.

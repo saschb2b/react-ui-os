@@ -34,7 +34,7 @@ Six required token categories, an optional `elevation` token, and an optional **
 | `blur`      | `backdrop-filter` strings for the menu bar / dock surface and for Spotlight separately.                    |
 | `elevation` | Optional. Focused and unfocused window drop shadows (`windowFocused`, `windowUnfocused`). Falls back to a neutral default; a flat theme can set both to `"none"`.                  |
 | `wallpaper` | `src` (image URL), `parallax` (cursor-driven shift), `vignette` (dark radial overlay).                     |
-| `chrome`    | Structural variants: window control style, dock position, menu-bar placement.                              |
+| `chrome`    | Structural variants: window control style, dock position, dock style (floating pill vs flush taskbar), menu-bar placement. |
 
 ## `chrome`: the structural lever
 
@@ -43,6 +43,8 @@ Six required token categories, an optional `elevation` token, and an optional **
 This is the part that does not exist in component libraries. It is what lets a SaaS dashboard hide the wallpaper and put the dock on the left, and lets a maker tool keep the full macOS register. Same components, different stance.
 
 `windowControls` has three registers: `"traffic-lights"` (macOS, on the left), `"windows"` (a minimize / maximize / close caption cluster on the right, close turning red on hover), and `"minimal"` (a single close glyph). The Redmond theme below picks `"windows"`; the default theme picks `"traffic-lights"`.
+
+`dockStyle` chooses the dock's form: `"floating"` (the macOS dock, a centered rounded pill that hovers above the edge) or `"bar"` (the Windows taskbar / GNOME panel shape, a flat bar flush to the edge, full width on the bottom or full height on the left, with an accent underline under running apps). It defaults to `"floating"`; Redmond sets `"bar"`.
 
 ## Themes that ship
 
