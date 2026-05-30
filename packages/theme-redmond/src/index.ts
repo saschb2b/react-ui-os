@@ -75,6 +75,8 @@ export function createRedmondTheme(options: RedmondThemeOptions = {}): OsTheme {
     chrome: {
       windowControls: "windows",
       dockPosition: "bottom",
+      // A full-width taskbar flush to the bottom edge, not the floating pill.
+      dockStyle: "bar",
       menuBar: "none",
     },
     customizable: {
@@ -112,6 +114,16 @@ export function createRedmondTheme(options: RedmondThemeOptions = {}): OsTheme {
           { value: "bottom", label: "Bottom" },
           { value: "left", label: "Left" },
           { value: "hidden", label: "Hidden" },
+        ],
+      },
+      "chrome.dockStyle": {
+        kind: "select",
+        section: "Layout",
+        label: "Dock style",
+        description: "A flush taskbar or the floating macOS pill.",
+        options: [
+          { value: "bar", label: "Taskbar" },
+          { value: "floating", label: "Floating" },
         ],
       },
       "chrome.menuBar": {

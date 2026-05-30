@@ -319,6 +319,12 @@
           "optional": false
         },
         {
+          "name": "dockStyle",
+          "type": "\"floating\" | \"bar\"",
+          "optional": true,
+          "description": "Dock form. `\"floating\"` is the macOS dock: a centered rounded pill that\nhovers above the edge with a gap. `\"bar\"` is the Windows taskbar / GNOME\npanel shape: a flat bar flush to the edge, spanning the full width (bottom)\nor height (left), square corners, an accent underline under running apps.\nOptional, defaults to `\"floating\"`. Ignored when `dockPosition` is\n`\"hidden\"`."
+        },
+        {
           "name": "menuBar",
           "type": "\"top\" | \"in-window\" | \"none\"",
           "optional": false

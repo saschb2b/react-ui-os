@@ -114,6 +114,15 @@ export interface OsThemeWallpaper {
 export interface OsThemeChrome {
   windowControls: "traffic-lights" | "windows" | "minimal";
   dockPosition: "bottom" | "left" | "hidden";
+  /**
+   * Dock form. `"floating"` is the macOS dock: a centered rounded pill that
+   * hovers above the edge with a gap. `"bar"` is the Windows taskbar / GNOME
+   * panel shape: a flat bar flush to the edge, spanning the full width (bottom)
+   * or height (left), square corners, an accent underline under running apps.
+   * Optional, defaults to `"floating"`. Ignored when `dockPosition` is
+   * `"hidden"`.
+   */
+  dockStyle?: "floating" | "bar";
   menuBar: "top" | "in-window" | "none";
 }
 

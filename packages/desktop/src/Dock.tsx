@@ -5,6 +5,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import {
@@ -60,8 +61,10 @@ export function Dock() {
   const position = theme.chrome.dockPosition;
 
   const isLeft = position === "left";
-  const base = metrics.dockTileSize;
-  const span = base + metrics.dockGap;
+  const isBar = theme.chrome.dockStyle === "bar";
+  const base = isBar ? metrics.taskbarTileSize : metrics.dockTileSize;
+  const gap = isBar ? 4 : metrics.dockGap;
+  const span = base + gap;
   const count = apps.length;
   const mag = theme.motion.dockMagnification ?? MAG_SCALE;
 
@@ -172,9 +175,78 @@ export function Dock() {
   const focusedSize = focusedIndex >= 0 ? (sizes[focusedIndex] ?? base) : base;
   let labelOffset = metrics.dockPadding;
   for (let i = 0; i < focusedIndex; i++) {
-    labelOffset += (sizes[i] ?? base) + metrics.dockGap;
+    labelOffset += (sizes[i] ?? base) + gap;
   }
   if (focusedIndex >= 0) labelOffset += focusedSize / 2;
+  // The taskbar centers its tiles in a full-width bar, so the hover label
+  // tracks the tile's resting center (the same anchor magnification uses)
+  // rather than the left-packed offset the floating pill needs.
+  const barLabelMain =
+    typeof window !== "undefined" && focusedIndex >= 0
+      ? (isLeft ? window.innerHeight : window.innerWidth) / 2 +
+        (focusedIndex - (count - 1) / 2) * span
+      : 0;
+
+  const navStyle: CSSProperties = {
+    position: "fixed",
+    boxSizing: "border-box",
+    display: "flex",
+    flexDirection: isLeft ? "column" : "row",
+    backgroundColor: theme.palette.surface,
+    backdropFilter: theme.blur.surface,
+    WebkitBackdropFilter: theme.blur.surface,
+    overflow: "visible",
+    zIndex: 1200,
+    userSelect: "none",
+    ...(isBar
+      ? {
+          // Flush taskbar: full span, square, only an edge-facing hairline.
+          alignItems: "center",
+          justifyContent: "center",
+          gap,
+          padding: 0,
+          borderRadius: 0,
+          ...(isLeft
+            ? {
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: metrics.taskbarSize,
+                borderRight: `1px solid ${theme.palette.border}`,
+                boxShadow: "1px 0 8px rgba(0,0,0,0.12)",
+              }
+            : {
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: metrics.taskbarSize,
+                borderTop: `1px solid ${theme.palette.border}`,
+                boxShadow: "0 -1px 8px rgba(0,0,0,0.12)",
+              }),
+        }
+      : {
+          // Floating macOS pill: centered, offset from the edge, rounded.
+          alignItems: isLeft ? "flex-start" : "flex-end",
+          gap,
+          padding: metrics.dockPadding,
+          border: `1px solid ${theme.palette.border}`,
+          borderRadius: theme.shape.dockTileRadius + metrics.dockPadding - 4,
+          boxShadow: "0 12px 32px -8px rgba(0,0,0,0.45)",
+          ...(isLeft
+            ? {
+                left: metrics.dockEdgeOffset,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: crossSize,
+              }
+            : {
+                bottom: metrics.dockEdgeOffset,
+                left: "50%",
+                transform: "translateX(-50%)",
+                height: crossSize,
+              }),
+        }),
+  };
 
   return (
     <nav
@@ -183,43 +255,14 @@ export function Dock() {
       data-rui-dock=""
       onPointerMove={handleMove}
       onPointerLeave={handleLeave}
-      style={{
-        position: "fixed",
-        boxSizing: "border-box",
-        ...(isLeft
-          ? {
-              left: metrics.dockEdgeOffset,
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: crossSize,
-            }
-          : {
-              bottom: metrics.dockEdgeOffset,
-              left: "50%",
-              transform: "translateX(-50%)",
-              height: crossSize,
-            }),
-        display: "flex",
-        flexDirection: isLeft ? "column" : "row",
-        alignItems: isLeft ? "flex-start" : "flex-end",
-        gap: metrics.dockGap,
-        padding: metrics.dockPadding,
-        backgroundColor: theme.palette.surface,
-        backdropFilter: theme.blur.surface,
-        WebkitBackdropFilter: theme.blur.surface,
-        border: `1px solid ${theme.palette.border}`,
-        borderRadius: theme.shape.dockTileRadius + metrics.dockPadding - 4,
-        boxShadow: "0 12px 32px -8px rgba(0,0,0,0.45)",
-        overflow: "visible",
-        zIndex: 1200,
-        userSelect: "none",
-      }}
+      style={navStyle}
     >
       {apps.map((app, i) => (
         <DockTile
           key={app.id}
           app={app}
           position={position}
+          bar={isBar}
           size={Math.round(sizes[i] ?? base)}
           base={base}
         />
@@ -229,17 +272,29 @@ export function Dock() {
           aria-hidden
           style={{
             position: "absolute",
-            ...(isLeft
-              ? {
-                  top: labelOffset,
-                  left: metrics.dockPadding + focusedSize + 12,
-                  transform: "translateY(-50%)",
-                }
-              : {
-                  left: labelOffset,
-                  bottom: metrics.dockPadding + focusedSize + 12,
-                  transform: "translateX(-50%)",
-                }),
+            ...(isBar
+              ? isLeft
+                ? {
+                    top: barLabelMain,
+                    left: metrics.taskbarSize + 8,
+                    transform: "translateY(-50%)",
+                  }
+                : {
+                    left: barLabelMain,
+                    bottom: metrics.taskbarSize + 8,
+                    transform: "translateX(-50%)",
+                  }
+              : isLeft
+                ? {
+                    top: labelOffset,
+                    left: metrics.dockPadding + focusedSize + 12,
+                    transform: "translateY(-50%)",
+                  }
+                : {
+                    left: labelOffset,
+                    bottom: metrics.dockPadding + focusedSize + 12,
+                    transform: "translateX(-50%)",
+                  }),
             pointerEvents: "none",
             background: theme.palette.surface,
             backdropFilter: theme.blur.surface,
@@ -264,11 +319,13 @@ export function Dock() {
 function DockTile({
   app,
   position,
+  bar,
   size,
   base,
 }: {
   app: App;
   position: "bottom" | "left" | "hidden";
+  bar: boolean;
   size: number;
   base: number;
 }) {
@@ -345,7 +402,8 @@ function DockTile({
         { kind: "app", appId: app.id },
         pickInitialBounds({ kind: "app", appId: app.id }, theme, apps),
       );
-      bounce(buttonRef.current, position === "left");
+      // Windows taskbar buttons do not bounce on launch; the macOS dock does.
+      if (!bar) bounce(buttonRef.current, position === "left");
       return;
     }
     if (isMinimized) {
@@ -364,7 +422,12 @@ function DockTile({
   const Icon = app.icon;
   const isLeft = position === "left";
   const dur = theme.motion.dockHoverDurationMs;
-  const radius = Math.round(theme.shape.dockTileRadius * (size / base));
+  // The taskbar button is a flat icon button (transparent, hover-highlighted,
+  // brand-colored glyph); the floating dock tile is an accent-gradient squircle.
+  const radius = bar
+    ? theme.shape.small
+    : Math.round(theme.shape.dockTileRadius * (size / base));
+  const hoverBg = `${theme.palette.textPrimary}14`;
 
   return (
     <button
@@ -374,6 +437,12 @@ function DockTile({
       onContextMenu={handleContextMenu}
       aria-label={app.name}
       data-dock-app-id={app.id}
+      onMouseEnter={(e) => {
+        if (bar) e.currentTarget.style.background = hoverBg;
+      }}
+      onMouseLeave={(e) => {
+        if (bar) e.currentTarget.style.background = "transparent";
+      }}
       style={{
         position: "relative",
         flexShrink: 0,
@@ -382,13 +451,18 @@ function DockTile({
         padding: 0,
         border: "none",
         borderRadius: radius,
-        background: `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 6px rgba(0,0,0,0.35)",
+        background: bar
+          ? "transparent"
+          : `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
+        boxShadow: bar
+          ? "none"
+          : "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 6px rgba(0,0,0,0.35)",
         cursor: "pointer",
-        color: "#fff",
+        color: bar ? accent : "#fff",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        transition: bar ? `background ${String(dur)}ms ease` : undefined,
       }}
     >
       {Art ? (
@@ -401,31 +475,60 @@ function DockTile({
             fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
             fontWeight: 700,
             fontSize: Math.round(size * 0.4),
-            textShadow: "0 1px 2px rgba(0,0,0,0.4)",
+            textShadow: bar ? undefined : "0 1px 2px rgba(0,0,0,0.4)",
           }}
         >
           {app.name.charAt(0).toUpperCase()}
         </span>
       )}
-      {win && (
-        <span
-          aria-hidden
-          style={{
-            position: "absolute",
-            ...(isLeft
-              ? { right: -6, top: "50%", transform: "translateY(-50%)" }
-              : { bottom: -6, left: "50%", transform: "translateX(-50%)" }),
-            width: 4,
-            height: 4,
-            borderRadius: "50%",
-            backgroundColor: isFocused
-              ? theme.palette.textPrimary
-              : theme.palette.textSecondary,
-            opacity: isFocused ? 1 : 0.6,
-            transition: `opacity ${String(dur)}ms ease`,
-          }}
-        />
-      )}
+      {win &&
+        (bar ? (
+          // Windows-style running indicator: an accent underline beneath the
+          // icon, wider when focused, a short dim line when running unfocused.
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              borderRadius: 2,
+              backgroundColor: isFocused ? accent : theme.palette.textSecondary,
+              opacity: isFocused ? 1 : 0.7,
+              transition: `width ${String(dur)}ms ease, height ${String(dur)}ms ease, opacity ${String(dur)}ms ease`,
+              ...(isLeft
+                ? {
+                    left: 0,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: 3,
+                    height: isFocused ? 16 : 8,
+                  }
+                : {
+                    bottom: 0,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: isFocused ? 16 : 8,
+                    height: 3,
+                  }),
+            }}
+          />
+        ) : (
+          <span
+            aria-hidden
+            style={{
+              position: "absolute",
+              ...(isLeft
+                ? { right: -6, top: "50%", transform: "translateY(-50%)" }
+                : { bottom: -6, left: "50%", transform: "translateX(-50%)" }),
+              width: 4,
+              height: 4,
+              borderRadius: "50%",
+              backgroundColor: isFocused
+                ? theme.palette.textPrimary
+                : theme.palette.textSecondary,
+              opacity: isFocused ? 1 : 0.6,
+              transition: `opacity ${String(dur)}ms ease`,
+            }}
+          />
+        ))}
       {badgeCount > 0 && (
         <span
           aria-label={`${String(badgeCount)} unread notifications`}

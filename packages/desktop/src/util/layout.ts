@@ -12,6 +12,10 @@ export interface ChromeMetrics {
   dockGap: number;
   dockPadding: number;
   dockEdgeOffset: number;
+  /** Thickness of the edge-flush taskbar form (chrome.dockStyle "bar"). */
+  taskbarSize: number;
+  /** Icon-button size inside the taskbar form. */
+  taskbarTileSize: number;
   titleBarHeight: number;
   /** Computed: the full bottom-dock footprint along its axis. */
   dockHeight: number;
@@ -26,6 +30,9 @@ const REGULAR_METRICS = {
   dockGap: 10,
   dockPadding: 10,
   dockEdgeOffset: 14,
+  // Windows 11 taskbar default (Medium) is 48px; icons sit ~24px inside it.
+  taskbarSize: 48,
+  taskbarTileSize: 36,
   titleBarHeight: 32,
 } as const;
 
@@ -35,6 +42,8 @@ const COMPACT_METRICS = {
   dockGap: 6,
   dockPadding: 6,
   dockEdgeOffset: 8,
+  taskbarSize: 40,
+  taskbarTileSize: 30,
   titleBarHeight: 28,
 } as const;
 
@@ -92,18 +101,25 @@ export function getDockReservation(theme: OsTheme): {
     return { top: 0, right: 0, bottom: 0, left: 0 };
   }
   const metrics = getChromeMetrics();
+  // The taskbar form sits flush to the edge, so it reserves its own thickness
+  // with no surrounding gap. The floating dock adds its edge offset.
+  const isBar = theme.chrome.dockStyle === "bar";
   if (theme.chrome.dockPosition === "left") {
     return {
       top: 0,
       right: 0,
       bottom: 0,
-      left: metrics.dockWidth + metrics.dockEdgeOffset * 2,
+      left: isBar
+        ? metrics.taskbarSize
+        : metrics.dockWidth + metrics.dockEdgeOffset * 2,
     };
   }
   return {
     top: 0,
     right: 0,
-    bottom: metrics.dockHeight + metrics.dockEdgeOffset,
+    bottom: isBar
+      ? metrics.taskbarSize
+      : metrics.dockHeight + metrics.dockEdgeOffset,
     left: 0,
   };
 }
