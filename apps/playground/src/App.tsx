@@ -9,8 +9,10 @@ import { RecentsFolder } from "./RecentsFolder";
 import { calculatorApp } from "./apps/calculator";
 import { notesApp } from "./apps/notes";
 import { clockApp } from "./apps/clock";
+import { calendarApp } from "./apps/calendar";
 import { remindersApp } from "./apps/reminders";
 import { sketchApp } from "./apps/sketch";
+import { terminalApp } from "./apps/terminal";
 
 // Register the Recents system window once at module load. The desktop
 // icon for it surfaces only when `hasRecents(storage)` returns true, so
@@ -100,8 +102,10 @@ const apps: OsApp[] = [
   notesApp,
   calculatorApp,
   clockApp,
+  calendarApp,
   remindersApp,
   sketchApp,
+  terminalApp,
 ];
 
 type ThemeChoice = "default" | "mintables" | "saas";
