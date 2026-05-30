@@ -450,6 +450,7 @@ export function Window({ win }: WindowProps) {
         focused={focused}
         accent={accent}
         height={titleBarHeight}
+        maximized={maximized}
         onClose={handleClose}
         onMinimize={handleMinimize}
         onMaximize={handleMaximize}
@@ -585,6 +586,7 @@ interface TitleBarProps {
   focused: boolean;
   accent: string;
   height: number;
+  maximized: boolean;
   onClose: () => void;
   onMinimize: () => void;
   onMaximize: () => void;
@@ -601,6 +603,7 @@ function TitleBar({
   focused,
   accent,
   height,
+  maximized,
   onClose,
   onMinimize,
   onMaximize,
@@ -612,6 +615,8 @@ function TitleBar({
   onContextMenu,
 }: TitleBarProps) {
   const theme = useTheme();
+  const controls = theme.chrome.windowControls;
+  const trafficLights = controls === "traffic-lights";
   return (
     <div
       onPointerDown={onPointerDown}
@@ -625,8 +630,11 @@ function TitleBar({
         height: height,
         display: "flex",
         alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 10px",
+        justifyContent: trafficLights ? "space-between" : undefined,
+        // Windows 11 draws its caption buttons flush into the top-right corner
+        // with no inset; macOS and minimal chrome keep a gutter on both sides.
+        paddingLeft: trafficLights ? 10 : 12,
+        paddingRight: controls === "windows" ? 0 : 10,
         borderBottom: `1px solid ${theme.palette.border}`,
         userSelect: "none",
         cursor: "grab",
@@ -647,25 +655,264 @@ function TitleBar({
           opacity: 0.75,
         }}
       />
-      <TrafficLights
-        focused={focused}
-        onClose={onClose}
-        onMinimize={onMinimize}
-        onMaximize={onMaximize}
-      />
-      <span
-        style={{
-          fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
-          fontSize: 12,
-          fontWeight: 500,
-          color: focused ? theme.palette.textPrimary : theme.palette.textSecondary,
-        }}
-      >
-        {title}
-      </span>
-      <span style={{ width: 60 }} aria-hidden />
+      {trafficLights ? (
+        <>
+          <TrafficLights
+            focused={focused}
+            onClose={onClose}
+            onMinimize={onMinimize}
+            onMaximize={onMaximize}
+          />
+          <TitleLabel title={title} focused={focused} centered />
+          <span style={{ width: 60 }} aria-hidden />
+        </>
+      ) : (
+        <>
+          <TitleLabel title={title} focused={focused} />
+          {controls === "windows" ? (
+            <WindowsControls
+              focused={focused}
+              maximized={maximized}
+              onClose={onClose}
+              onMinimize={onMinimize}
+              onMaximize={onMaximize}
+            />
+          ) : (
+            <MinimalControls focused={focused} onClose={onClose} />
+          )}
+        </>
+      )}
     </div>
   );
+}
+
+function TitleLabel({
+  title,
+  focused,
+  centered = false,
+}: {
+  title: string;
+  focused: boolean;
+  centered?: boolean;
+}) {
+  const theme = useTheme();
+  return (
+    <span
+      style={{
+        fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+        fontSize: 12,
+        // macOS centers a medium-weight title; Windows and minimal chrome
+        // left-align a regular-weight one and let it truncate.
+        fontWeight: centered ? 500 : 400,
+        color: focused ? theme.palette.textPrimary : theme.palette.textSecondary,
+        ...(centered
+          ? {}
+          : {
+              flex: 1,
+              minWidth: 0,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              paddingRight: 8,
+            }),
+      }}
+    >
+      {title}
+    </span>
+  );
+}
+
+/**
+ * Windows 11 caption cluster: minimize, maximize/restore, close, flush in the
+ * top-right corner. Each button is 46px wide (the Windows shell metric) and
+ * fills the title-bar height; the close button turns red (#c42b1c) on hover.
+ * Glyphs are drawn as 1px-stroke SVGs so they don't depend on the Segoe Fluent
+ * Icons font being installed.
+ */
+function WindowsControls({
+  focused,
+  maximized,
+  onClose,
+  onMinimize,
+  onMaximize,
+}: {
+  focused: boolean;
+  maximized: boolean;
+  onClose: () => void;
+  onMinimize: () => void;
+  onMaximize: () => void;
+}) {
+  return (
+    <div
+      onPointerDown={(e) => {
+        // Keep caption clicks from starting a window drag.
+        e.stopPropagation();
+      }}
+      style={{ display: "flex", alignSelf: "stretch" }}
+    >
+      <CaptionButton
+        glyph="minimize"
+        focused={focused}
+        onClick={onMinimize}
+        ariaLabel="Minimize"
+      />
+      <CaptionButton
+        glyph={maximized ? "restore" : "maximize"}
+        focused={focused}
+        onClick={onMaximize}
+        ariaLabel={maximized ? "Restore" : "Maximize"}
+      />
+      <CaptionButton
+        glyph="close"
+        focused={focused}
+        onClick={onClose}
+        ariaLabel="Close"
+        danger
+      />
+    </div>
+  );
+}
+
+function CaptionButton({
+  glyph,
+  focused,
+  onClick,
+  ariaLabel,
+  danger = false,
+}: {
+  glyph: CaptionGlyphKind;
+  focused: boolean;
+  onClick: () => void;
+  ariaLabel: string;
+  danger?: boolean;
+}) {
+  const theme = useTheme();
+  // Neutral hover tint (a translucent slice of the text color) reads on light
+  // and dark surfaces alike; the close button overrides it with red.
+  const hover = `${theme.palette.textPrimary}1a`;
+  const idleColor = focused
+    ? theme.palette.textPrimary
+    : theme.palette.textSecondary;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      style={{
+        appearance: "none",
+        border: 0,
+        background: "transparent",
+        width: 46,
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 0,
+        cursor: "pointer",
+        color: idleColor,
+        transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = danger ? "#c42b1c" : hover;
+        if (danger) e.currentTarget.style.color = "#fff";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+        if (danger) e.currentTarget.style.color = idleColor;
+      }}
+    >
+      <CaptionGlyph glyph={glyph} />
+    </button>
+  );
+}
+
+/**
+ * Minimal chrome: a single close affordance, top-right. The neutral / SaaS
+ * register that wants window dismissal without a full traffic-light or caption
+ * cluster (DESIGN.md spectrum point 2).
+ */
+function MinimalControls({
+  focused,
+  onClose,
+}: {
+  focused: boolean;
+  onClose: () => void;
+}) {
+  const theme = useTheme();
+  const hover = `${theme.palette.textPrimary}1a`;
+  return (
+    <button
+      type="button"
+      onPointerDown={(e) => {
+        e.stopPropagation();
+      }}
+      onClick={onClose}
+      aria-label="Close"
+      style={{
+        appearance: "none",
+        border: 0,
+        background: "transparent",
+        width: 24,
+        height: 24,
+        borderRadius: theme.shape.small,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 0,
+        cursor: "pointer",
+        color: focused ? theme.palette.textPrimary : theme.palette.textSecondary,
+        transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = hover;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+      }}
+    >
+      <CaptionGlyph glyph="close" />
+    </button>
+  );
+}
+
+type CaptionGlyphKind = "minimize" | "maximize" | "restore" | "close";
+
+function CaptionGlyph({ glyph }: { glyph: CaptionGlyphKind }) {
+  const stroke = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1,
+  } as const;
+  switch (glyph) {
+    case "minimize":
+      return (
+        <svg width={10} height={10} viewBox="0 0 10 10" aria-hidden {...stroke}>
+          <line x1="0" y1="5" x2="10" y2="5" />
+        </svg>
+      );
+    case "maximize":
+      return (
+        <svg width={10} height={10} viewBox="0 0 10 10" aria-hidden {...stroke}>
+          <rect x="0.5" y="0.5" width="9" height="9" />
+        </svg>
+      );
+    case "restore":
+      // Two overlapping squares: the front one full, the back one showing only
+      // its top and right edges, as Windows draws the restore glyph.
+      return (
+        <svg width={11} height={11} viewBox="0 0 11 11" aria-hidden {...stroke}>
+          <rect x="0.5" y="3.5" width="7" height="7" />
+          <path d="M3.5 3.5 V0.5 H10.5 V7.5 H7.5" />
+        </svg>
+      );
+    case "close":
+      return (
+        <svg width={10} height={10} viewBox="0 0 10 10" aria-hidden {...stroke}>
+          <line x1="0.5" y1="0.5" x2="9.5" y2="9.5" />
+          <line x1="9.5" y1="0.5" x2="0.5" y2="9.5" />
+        </svg>
+      );
+  }
 }
 
 function TrafficLights({
