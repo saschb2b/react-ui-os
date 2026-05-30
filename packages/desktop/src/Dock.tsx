@@ -63,6 +63,7 @@ export function Dock() {
   const base = metrics.dockTileSize;
   const span = base + metrics.dockGap;
   const count = apps.length;
+  const mag = theme.motion.dockMagnification ?? MAG_SCALE;
 
   const [sizes, setSizes] = useState<number[]>(() => apps.map(() => base));
   const sizesRef = useRef<number[]>(sizes);
@@ -71,8 +72,8 @@ export function Dock() {
   const lastRef = useRef(0);
   // Latest geometry, refreshed every render so the animation loop (which is
   // created once) always reads current values.
-  const geomRef = useRef({ count, base, span, isLeft });
-  geomRef.current = { count, base, span, isLeft };
+  const geomRef = useRef({ count, base, span, isLeft, mag });
+  geomRef.current = { count, base, span, isLeft, mag };
 
   const tick = useCallback((ts: number) => {
     const dt = lastRef.current ? Math.min((ts - lastRef.current) / 1000, 0.05) : 0.016;
@@ -94,7 +95,7 @@ export function Dock() {
         const d = Math.abs(cursor - center - off);
         const t = Math.max(0, 1 - d / MAG_DISTANCE);
         const ease = t * t * (3 - 2 * t);
-        target = g.base * (1 + (MAG_SCALE - 1) * ease);
+        target = g.base * (1 + (g.mag - 1) * ease);
       }
       const c0 = prev[i] ?? g.base;
       let v = c0 + (target - c0) * k;

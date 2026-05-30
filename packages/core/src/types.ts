@@ -68,6 +68,12 @@ export interface OsThemeMotion {
   windowOpenDurationMs: number;
   windowOpenEasing: string;
   dockHoverDurationMs: number;
+  /**
+   * Peak scale of the hovered dock tile (the macOS fisheye magnification).
+   * Optional: defaults to the macOS-like 1.5. Set to 1 to switch the fisheye
+   * off entirely, the register a Windows taskbar or GNOME dash uses.
+   */
+  dockMagnification?: number;
   genieDurationMs: number;
   genieEasing: string;
   /**

@@ -228,6 +228,12 @@
           "optional": false
         },
         {
+          "name": "dockMagnification",
+          "type": "number",
+          "optional": true,
+          "description": "Peak scale of the hovered dock tile (the macOS fisheye magnification).\nOptional: defaults to the macOS-like 1.5. Set to 1 to switch the fisheye\noff entirely, the register a Windows taskbar or GNOME dash uses."
+        },
+        {
           "name": "genieDurationMs",
           "type": "number",
           "optional": false
