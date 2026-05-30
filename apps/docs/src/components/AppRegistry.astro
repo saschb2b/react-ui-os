@@ -1,0 +1,362 @@
+---
+/**
+ * The App Store gallery. Renders one card per registry item, sourced from the
+ * repo-root registry.json (the same file `shadcn build` consumes), so the
+ * gallery and the installable JSON never drift. Search and category filtering
+ * run client-side with a small vanilla script; the cards themselves are
+ * server-rendered so Pagefind indexes them and the page works without JS.
+ */
+import registry from "../../../../registry.json";
+
+interface RegistryFile {
+  path: string;
+  type: string;
+  target?: string;
+}
+
+interface RegistryItem {
+  name: string;
+  type: string;
+  title?: string;
+  description?: string;
+  categories?: string[];
+  dependencies?: string[];
+  meta?: { accent?: string };
+  files?: RegistryFile[];
+}
+
+interface Registry {
+  name: string;
+  homepage?: string;
+  items: RegistryItem[];
+}
+
+const reg = registry as Registry;
+const items = [...reg.items].sort((a, b) =>
+  (a.title ?? a.name).localeCompare(b.title ?? b.name),
+);
+
+// The docs site serves the built per-item JSON at <homepage>/r/<name>.json.
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const origin = Astro.site?.origin ?? "";
+const homepage = reg.homepage ?? `${origin}${base}`;
+const installUrl = (name: string) => `${homepage}/r/${name}.json`;
+const installCommand = (name: string) =>
+  `npx shadcn@latest add ${installUrl(name)}`;
+
+const categories = Array.from(
+  new Set(items.flatMap((i) => i.categories ?? [])),
+).sort();
+
+const fileCount = (item: RegistryItem) => item.files?.length ?? 0;
+const accentOf = (item: RegistryItem) =>
+  item.meta?.accent ?? "var(--sl-color-accent)";
+const monogram = (item: RegistryItem) =>
+  (item.title ?? item.name).charAt(0).toUpperCase();
+---
+
+<div class="rui-store">
+  <div class="rui-store__controls">
+    <input
+      type="search"
+      class="rui-store__search"
+      placeholder="Search apps…"
+      aria-label="Search apps"
+      autocomplete="off"
+    />
+    <div class="rui-store__chips" role="group" aria-label="Filter by category">
+      <button type="button" class="rui-store__chip is-active" data-category="">
+        All
+      </button>
+      {
+        categories.map((c) => (
+          <button type="button" class="rui-store__chip" data-category={c}>
+            {c}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="rui-store__grid">
+    {
+      items.map((item) => {
+        const title = item.title ?? item.name;
+        const haystack =
+          `${title} ${item.description ?? ""} ${(item.categories ?? []).join(" ")}`.toLowerCase();
+        return (
+          <article
+            class="rui-store__card"
+            data-name={item.name}
+            data-categories={(item.categories ?? []).join(" ")}
+            data-haystack={haystack}
+          >
+            <header class="rui-store__head">
+              <span
+                class="rui-store__mono"
+                style={`--accent:${accentOf(item)}`}
+                aria-hidden="true"
+              >
+                {monogram(item)}
+              </span>
+              <div class="rui-store__titles">
+                <h3 class="rui-store__title">{title}</h3>
+                {item.categories?.[0] && (
+                  <span class="rui-store__cat">{item.categories[0]}</span>
+                )}
+              </div>
+            </header>
+
+            {item.description && (
+              <p class="rui-store__desc">{item.description}</p>
+            )}
+
+            <div class="rui-store__meta">
+              <span>
+                {fileCount(item)} {fileCount(item) === 1 ? "file" : "files"}
+              </span>
+            </div>
+
+            <div class="rui-store__install">
+              <code class="rui-store__cmd">{installCommand(item.name)}</code>
+              <button
+                type="button"
+                class="rui-store__copy"
+                data-copy={installCommand(item.name)}
+                aria-label={`Copy install command for ${title}`}
+              >
+                Copy
+              </button>
+            </div>
+          </article>
+        );
+      })
+    }
+  </div>
+
+  <p class="rui-store__empty" hidden>No apps match that search.</p>
+</div>
+
+<script>
+  const store = document.querySelector<HTMLElement>(".rui-store");
+  if (store) {
+    const search = store.querySelector<HTMLInputElement>(".rui-store__search");
+    const chips = Array.from(
+      store.querySelectorAll<HTMLButtonElement>(".rui-store__chip"),
+    );
+    const cards = Array.from(
+      store.querySelectorAll<HTMLElement>(".rui-store__card"),
+    );
+    const empty = store.querySelector<HTMLElement>(".rui-store__empty");
+
+    let activeCategory = "";
+
+    const apply = () => {
+      const q = (search?.value ?? "").trim().toLowerCase();
+      let visible = 0;
+      for (const card of cards) {
+        const matchesText =
+          !q || (card.dataset.haystack ?? "").includes(q);
+        const matchesCat =
+          !activeCategory ||
+          (card.dataset.categories ?? "").split(" ").includes(activeCategory);
+        const show = matchesText && matchesCat;
+        card.hidden = !show;
+        if (show) visible++;
+      }
+      if (empty) empty.hidden = visible !== 0;
+    };
+
+    search?.addEventListener("input", apply);
+    for (const chip of chips) {
+      chip.addEventListener("click", () => {
+        activeCategory = chip.dataset.category ?? "";
+        for (const c of chips) c.classList.toggle("is-active", c === chip);
+        apply();
+      });
+    }
+
+    for (const button of store.querySelectorAll<HTMLButtonElement>(
+      ".rui-store__copy",
+    )) {
+      button.addEventListener("click", async () => {
+        const text = button.dataset.copy ?? "";
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          return;
+        }
+        const original = button.textContent;
+        button.textContent = "Copied";
+        button.classList.add("is-copied");
+        window.setTimeout(() => {
+          button.textContent = original;
+          button.classList.remove("is-copied");
+        }, 1400);
+      });
+    }
+  }
+</script>
+
+<style>
+  .rui-store {
+    margin: 1.5rem 0;
+  }
+
+  .rui-store__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .rui-store__search {
+    flex: 1 1 14rem;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    color: var(--sl-color-white);
+    background: var(--sl-color-black);
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 8px;
+  }
+
+  .rui-store__search:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -1px;
+  }
+
+  .rui-store__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .rui-store__chip {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+    text-transform: capitalize;
+    color: var(--sl-color-gray-2);
+    background: transparent;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+
+  .rui-store__chip.is-active {
+    color: var(--sl-color-black);
+    background: var(--sl-color-white);
+    border-color: var(--sl-color-white);
+  }
+
+  .rui-store__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1rem;
+  }
+
+  .rui-store__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 12px;
+    background: var(--sl-color-gray-6);
+  }
+
+  .rui-store__head {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .rui-store__mono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    border-radius: 10px;
+  }
+
+  .rui-store__titles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+
+  .rui-store__title {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .rui-store__cat {
+    font-size: 0.72rem;
+    text-transform: capitalize;
+    color: var(--sl-color-gray-3);
+  }
+
+  .rui-store__desc {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--sl-color-gray-2);
+  }
+
+  .rui-store__meta {
+    font-size: 0.75rem;
+    color: var(--sl-color-gray-4);
+  }
+
+  .rui-store__install {
+    display: flex;
+    align-items: stretch;
+    gap: 0.4rem;
+    margin-top: auto;
+  }
+
+  .rui-store__cmd {
+    flex: 1;
+    min-width: 0;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: nowrap;
+    color: var(--sl-color-gray-1);
+    background: var(--sl-color-black);
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 6px;
+  }
+
+  .rui-store__copy {
+    flex-shrink: 0;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem;
+    color: var(--sl-color-white);
+    background: var(--sl-color-gray-5);
+    border: 1px solid var(--sl-color-gray-4);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .rui-store__copy.is-copied {
+    color: var(--sl-color-black);
+    background: var(--sl-color-accent-high);
+    border-color: var(--sl-color-accent-high);
+  }
+
+  .rui-store__empty {
+    margin-top: 1rem;
+    color: var(--sl-color-gray-3);
+  }
+</style>

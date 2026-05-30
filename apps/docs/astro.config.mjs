@@ -93,6 +93,10 @@ export default defineConfig({
           ],
         },
         {
+          label: "App Store",
+          items: [{ autogenerate: { directory: "app-store" } }],
+        },
+        {
           label: "Components",
           items: [{ autogenerate: { directory: "components" } }],
         },
