@@ -18,7 +18,7 @@ import {
   type SystemWindowDef,
 } from "./system-windows";
 import { nextIconIndex } from "./util/desktop-icon-nav";
-import { pickInitialBounds } from "./util/initial-bounds";
+import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { getChromeMetrics } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
 
@@ -61,7 +61,7 @@ export function DesktopIcons() {
   const theme = useTheme();
   const apps = useApps();
   const { storage } = useDesktopContext();
-  const { openWindow } = useWindowManager();
+  const { state, openWindow } = useWindowManager();
   const [visible, setVisible] = useState<VisibleIcon[]>(() => computeVisible(storage));
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const listboxRef = useRef<HTMLDivElement | null>(null);
@@ -104,9 +104,12 @@ export function DesktopIcons() {
   const openIcon = useCallback(
     (systemId: string) => {
       const payload = { kind: "system" as const, systemId };
-      openWindow(payload, pickInitialBounds(payload, theme, apps));
+      openWindow(
+        payload,
+        pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+      );
     },
-    [openWindow, theme, apps],
+    [openWindow, theme, apps, state],
   );
 
   const mode = useViewportMode();

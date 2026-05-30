@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useWindowManager, windowIdOf, type App } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
-import { pickInitialBounds } from "./util/initial-bounds";
+import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 
 /**
  * Cmd/Ctrl + Tab application switcher. Holds while the modifier is down,
@@ -19,7 +19,8 @@ import { pickInitialBounds } from "./util/initial-bounds";
 export function AppSwitcher() {
   const theme = useTheme();
   const apps = useApps();
-  const { windows, focusWindow, openWindow, restoreWindow } = useWindowManager();
+  const { state, windows, focusWindow, openWindow, restoreWindow } =
+    useWindowManager();
 
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
@@ -53,7 +54,13 @@ export function AppSwitcher() {
       if (!win) {
         openWindow(
           { kind: "app", appId: target.id },
-          pickInitialBounds({ kind: "app", appId: target.id }, theme, apps),
+          pickInitialBounds(
+            { kind: "app", appId: target.id },
+            theme,
+            apps,
+            undefined,
+            nextCascadeIndex(state),
+          ),
         );
       } else if (win.state === "minimized") {
         restoreWindow(id);
@@ -61,7 +68,7 @@ export function AppSwitcher() {
         focusWindow(id);
       }
     },
-    [apps, candidates, focusWindow, openWindow, restoreWindow, theme, windows],
+    [apps, candidates, focusWindow, openWindow, restoreWindow, theme, windows, state],
   );
 
   // Modifier-state machine: open on Cmd/Ctrl+Tab, cycle on Tab, commit on

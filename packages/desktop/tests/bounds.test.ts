@@ -124,4 +124,67 @@ describe("pickInitialBounds", () => {
       }),
     ).toEqual({ x: 12, y: 12, w: 300, h: 200 });
   });
+
+  describe("cascade", () => {
+    // 400x300 window centers at (200, 150) in the 800x600 node fallback. The
+    // cascade step is the regular-mode title-bar height (32px).
+    const apps: App[] = [
+      {
+        id: "notes",
+        name: "Notes",
+        defaultBounds: { w: 400, h: 300 },
+        content: () => null,
+      },
+    ];
+    const payload: WindowPayload = { kind: "app", appId: "notes" };
+
+    it("centers the first window (index 0)", () => {
+      expect(pickInitialBounds(payload, theme, apps, undefined, 0)).toMatchObject({
+        x: 200,
+        y: 150,
+      });
+    });
+
+    it("steps one title-bar height down and right per index", () => {
+      expect(pickInitialBounds(payload, theme, apps, undefined, 1)).toMatchObject({
+        x: 232,
+        y: 182,
+      });
+      expect(pickInitialBounds(payload, theme, apps, undefined, 4)).toMatchObject({
+        x: 328,
+        y: 278,
+      });
+    });
+
+    it("wraps back to the top, drifted right, when it reaches the bottom", () => {
+      // index 5 would land at y=310 (310+300 > the 588 bottom limit), so it
+      // resets to the top margin while x keeps the rightward drift.
+      expect(pickInitialBounds(payload, theme, apps, undefined, 5)).toMatchObject({
+        x: 360,
+        y: 12,
+      });
+    });
+
+    it("wraps a wide window back to the left margin when it reaches the right", () => {
+      // A 720-wide window centered at x=40 only has 40px of slack each side, so
+      // the first step overflows the right edge and snaps back to the left.
+      const wide: App[] = [
+        { id: "wide", name: "Wide", defaultBounds: { w: 720, h: 480 }, content: () => null },
+      ];
+      expect(
+        pickInitialBounds({ kind: "app", appId: "wide" }, theme, wide, undefined, 1),
+      ).toMatchObject({ x: 12, y: 92 });
+    });
+
+    it("never places a cascaded window off-screen", () => {
+      const work = { x: 0, y: 0, width: 800, height: 600 };
+      for (let i = 0; i < 60; i++) {
+        const b = pickInitialBounds(payload, theme, apps, undefined, i);
+        expect(b.x).toBeGreaterThanOrEqual(work.x);
+        expect(b.y).toBeGreaterThanOrEqual(work.y);
+        expect(b.x + b.w).toBeLessThanOrEqual(work.x + work.width);
+        expect(b.y + b.h).toBeLessThanOrEqual(work.y + work.height);
+      }
+    });
+  });
 });

@@ -6,7 +6,7 @@ import { useApps, useTheme } from "./desktop-context";
 import { SPOTLIGHT_OPEN_EVENT } from "./events";
 import { rectForZone, type SnapZone } from "./snap";
 import { showHud } from "./hud";
-import { pickInitialBounds } from "./util/initial-bounds";
+import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { getWorkArea } from "./util/layout";
 
 /**
@@ -70,7 +70,10 @@ export function KeyboardShortcuts() {
       if (mod && e.key === ",") {
         e.preventDefault();
         const payload = { kind: "system" as const, systemId: "settings" };
-        openWindow(payload, pickInitialBounds(payload, theme, apps));
+        openWindow(
+          payload,
+          pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+        );
         return;
       }
 
@@ -104,7 +107,10 @@ export function KeyboardShortcuts() {
         const win = windowById(id);
         if (!win) {
           const payload = { kind: "app" as const, appId: app.id };
-          openWindow(payload, pickInitialBounds(payload, theme, apps));
+          openWindow(
+            payload,
+            pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+          );
           return;
         }
         if (win.state === "minimized") {

@@ -8,7 +8,7 @@ import {
   openContextMenu,
   type ContextMenuItem,
 } from "./context-menu";
-import { pickInitialBounds } from "./util/initial-bounds";
+import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { NOTIFICATION_CENTER_TOGGLE_EVENT, SPOTLIGHT_OPEN_EVENT } from "./events";
 
 interface DesktopBackdropProps {
@@ -38,7 +38,7 @@ interface DesktopBackdropProps {
  * item set.
  */
 export function DesktopBackdrop({ extraItems, buildItems }: DesktopBackdropProps = {}) {
-  const { windows, minimizeWindow, openWindow } = useWindowManager();
+  const { state, windows, minimizeWindow, openWindow } = useWindowManager();
   const theme = useTheme();
   const apps = useApps();
 
@@ -82,7 +82,10 @@ export function DesktopBackdrop({ extraItems, buildItems }: DesktopBackdropProps
           shortcut: "⌘,",
           onSelect: () => {
             const payload = { kind: "system" as const, systemId: "settings" };
-            openWindow(payload, pickInitialBounds(payload, theme, apps));
+            openWindow(
+              payload,
+              pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+            );
           },
         },
         {
@@ -119,7 +122,7 @@ export function DesktopBackdrop({ extraItems, buildItems }: DesktopBackdropProps
       // toggles the backdrop off.
       closeContextMenu();
     };
-  }, [windows, minimizeWindow, openWindow, theme, apps, extraItems, buildItems]);
+  }, [state, windows, minimizeWindow, openWindow, theme, apps, extraItems, buildItems]);
 
   return null;
 }

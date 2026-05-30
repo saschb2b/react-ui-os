@@ -76,7 +76,7 @@ export { FolderSvg } from "./folder-svg";
 // that open windows programmatically should do the same; calling openWindow
 // without bounds falls back to a fixed default that can overflow small
 // viewports (a docs iframe, a phone).
-export { pickInitialBounds } from "./util/initial-bounds";
+export { pickInitialBounds, nextCascadeIndex } from "./util/initial-bounds";
 export {
   systemWindows,
   getSystemWindow,

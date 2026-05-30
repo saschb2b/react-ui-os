@@ -144,6 +144,17 @@ export function Window({ win }: WindowProps) {
     };
   }, [theme.motion.windowOpenDurationMs]);
 
+  // Stagger this window in the cascade by how many windows on its workspace
+  // opened before it (every existing window sits below the just-opened one in
+  // z, so this counts them). Only computed while the window still needs auto
+  // placement; once placed, the ternary skips the scan.
+  const cascadeIndex = win.autoBounds
+    ? wm.state.windows.filter(
+        (w) =>
+          w.id !== win.id && w.workspaceId === win.workspaceId && w.z < win.z,
+      ).length
+    : 0;
+
   // Place a window that was opened without explicit bounds. core flags these
   // (autoBounds) because it can't see the viewport; we resolve them here to
   // the same centered, work-area-clamped bounds every surface uses, so a bare
@@ -153,9 +164,9 @@ export function Window({ win }: WindowProps) {
   // remount (workspace switch) won't re-place a window the user has moved.
   useLayoutEffect(() => {
     if (!win.autoBounds) return;
-    const b = pickInitialBounds(win.payload, theme, apps);
+    const b = pickInitialBounds(win.payload, theme, apps, undefined, cascadeIndex);
     setBounds(win.id, b.x, b.y, b.w, b.h);
-  }, [win.autoBounds, win.id, win.payload, theme, apps, setBounds]);
+  }, [win.autoBounds, win.id, win.payload, theme, apps, setBounds, cascadeIndex]);
 
   const handleClose = useCallback(() => {
     setPhase("closing");

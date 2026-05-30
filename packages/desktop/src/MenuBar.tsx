@@ -5,7 +5,7 @@ import { notify, useNotifications, useWindowManager } from "@react-ui-os/core";
 import { useApp, useApps, useTheme } from "./desktop-context";
 import { openContextMenu } from "./context-menu";
 import { NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
-import { pickInitialBounds } from "./util/initial-bounds";
+import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { Tooltip } from "./tooltip";
@@ -24,7 +24,7 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
   const apps = useApps();
-  const { focusedWindow, openWindow } = useWindowManager();
+  const { state, focusedWindow, openWindow } = useWindowManager();
   const focusedApp = useApp(
     focusedWindow?.payload.kind === "app" ? focusedWindow.payload.appId : "__none__",
   );
@@ -65,7 +65,10 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
           shortcut: "⌘,",
           onSelect: () => {
             const payload = { kind: "system" as const, systemId: "settings" };
-            openWindow(payload, pickInitialBounds(payload, theme, apps));
+            openWindow(
+              payload,
+              pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+            );
           },
         },
       ],

@@ -14,7 +14,7 @@ import {
 import type { App } from "@react-ui-os/core";
 import { useWindowManager } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
-import { pickInitialBounds } from "./util/initial-bounds";
+import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { SPOTLIGHT_OPEN_EVENT } from "./events";
 import {
   listSystemWindows,
@@ -79,7 +79,7 @@ function spotlightOptionId(index: number): string {
 export function Spotlight() {
   const theme = useTheme();
   const apps = useApps();
-  const { openWindow } = useWindowManager();
+  const { state, openWindow } = useWindowManager();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -240,16 +240,22 @@ export function Spotlight() {
     (result: Result) => {
       if (result.kind === "app") {
         const payload = { kind: "app" as const, appId: result.app.id };
-        openWindow(payload, pickInitialBounds(payload, theme, apps));
+        openWindow(
+          payload,
+          pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+        );
       } else if (result.kind === "system") {
         const payload = { kind: "system" as const, systemId: result.systemId };
-        openWindow(payload, pickInitialBounds(payload, theme, apps));
+        openWindow(
+          payload,
+          pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+        );
       } else {
         result.onActivate();
       }
       handleClose();
     },
-    [apps, openWindow, handleClose, theme],
+    [apps, openWindow, handleClose, theme, state],
   );
 
   const handlePaletteKey = useCallback(

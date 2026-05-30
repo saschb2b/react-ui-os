@@ -20,7 +20,7 @@ import { useApps, useTheme } from "./desktop-context";
 import { openContextMenu, type ContextMenuItem } from "./context-menu";
 import { NOTIFICATION_CENTER_TOGGLE_EVENT, SPOTLIGHT_OPEN_EVENT } from "./events";
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
-import { pickInitialBounds } from "./util/initial-bounds";
+import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { getChromeMetrics } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
 
@@ -555,6 +555,7 @@ function DockTile({
   const theme = useTheme();
   const apps = useApps();
   const {
+    state,
     windows,
     focusedWindow,
     openWindow,
@@ -580,7 +581,13 @@ function DockTile({
         onSelect: () =>
           openWindow(
             { kind: "app", appId: app.id },
-            pickInitialBounds({ kind: "app", appId: app.id }, theme, apps),
+            pickInitialBounds(
+              { kind: "app", appId: app.id },
+              theme,
+              apps,
+              undefined,
+              nextCascadeIndex(state),
+            ),
           ),
       });
     } else {
@@ -623,7 +630,13 @@ function DockTile({
     if (!win) {
       openWindow(
         { kind: "app", appId: app.id },
-        pickInitialBounds({ kind: "app", appId: app.id }, theme, apps),
+        pickInitialBounds(
+          { kind: "app", appId: app.id },
+          theme,
+          apps,
+          undefined,
+          nextCascadeIndex(state),
+        ),
       );
       // Windows taskbar buttons do not bounce on launch; the macOS dock does.
       if (!bar) bounce(buttonRef.current, position === "left");
