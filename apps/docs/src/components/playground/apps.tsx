@@ -3,6 +3,7 @@ import type { App } from "@react-ui-os/core";
 import { notify } from "@react-ui-os/core";
 import { registerStatusItem, registerSystemWindow } from "@react-ui-os/desktop";
 import { useDesktopContext } from "@react-ui-os/desktop";
+import { exampleApps } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
 
@@ -113,30 +114,9 @@ function HelloContent({ focused }: { focused: boolean }) {
   );
 }
 
-function NotesContent() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <h2 style={{ margin: 0, fontSize: 18 }}>Notes</h2>
-      <p style={{ margin: 0, opacity: 0.78 }}>
-        Plain notes app. Open me by clicking my dock tile, by pressing <kbd>Cmd-2</kbd>,
-        or by typing "notes" into Spotlight.
-      </p>
-    </div>
-  );
-}
-
-function CalculatorContent() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <h2 style={{ margin: 0, fontSize: 18 }}>Calculator</h2>
-      <p style={{ margin: 0, opacity: 0.78 }}>
-        Three apps gives Spotlight something to search. Try <kbd>Cmd-K</kbd> then
-        "calc".
-      </p>
-    </div>
-  );
-}
-
+// The docs demo carries its own Hello window (with the "Fire a toast" button
+// above), then shares the real app suite with the playground so both surfaces
+// stay in sync. See @react-ui-os/example-apps.
 export const docsApps: App[] = [
   {
     id: "hello",
@@ -146,20 +126,5 @@ export const docsApps: App[] = [
     content: HelloContent,
     defaultBounds: { w: 560, h: 380 },
   },
-  {
-    id: "notes",
-    name: "Notes",
-    tagline: "Plain-text scratchpad",
-    accent: "#f59e0b",
-    content: NotesContent,
-    defaultBounds: { w: 480, h: 300 },
-  },
-  {
-    id: "calculator",
-    name: "Calculator",
-    tagline: "Arithmetic and conversions",
-    accent: "#22c55e",
-    content: CalculatorContent,
-    defaultBounds: { w: 320, h: 360 },
-  },
+  ...exampleApps,
 ];

@@ -11,7 +11,14 @@ import starlight from "@astrojs/starlight";
 // condition handles this for the dev server, but the production build's
 // commonjs resolver ignores it and falls back to the missing `dist/index.js`.
 // An explicit alias is honored by every resolver in both dev and build.
-const PACKAGES = ["core", "desktop", "theme-default", "theme-mintables", "theme-saas"];
+const PACKAGES = [
+  "core",
+  "desktop",
+  "example-apps",
+  "theme-default",
+  "theme-mintables",
+  "theme-saas",
+];
 const sourceAliases = PACKAGES.map((name) => ({
   find: `@react-ui-os/${name}`,
   replacement: fileURLToPath(

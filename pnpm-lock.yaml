@@ -56,6 +56,9 @@ importers:
       '@react-ui-os/desktop':
         specifier: workspace:*
         version: link:../../packages/desktop
+      '@react-ui-os/example-apps':
+        specifier: workspace:*
+        version: link:../../packages/example-apps
       '@react-ui-os/theme-default':
         specifier: workspace:*
         version: link:../../packages/theme-default
@@ -96,6 +99,9 @@ importers:
       '@react-ui-os/desktop':
         specifier: workspace:*
         version: link:../../packages/desktop
+      '@react-ui-os/example-apps':
+        specifier: workspace:*
+        version: link:../../packages/example-apps
       '@react-ui-os/theme-default':
         specifier: workspace:*
         version: link:../../packages/theme-default
@@ -167,6 +173,31 @@ importers:
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/debug@4.1.13)(@types/node@24.12.4)(yaml@2.9.0)
+
+  packages/example-apps:
+    dependencies:
+      '@react-ui-os/core':
+        specifier: workspace:*
+        version: link:../core
+      '@react-ui-os/desktop':
+        specifier: workspace:*
+        version: link:../desktop
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.15
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.15)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.6
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.6(react@19.2.6)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/theme-default:
     dependencies:

@@ -9,15 +9,9 @@ import {
 import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
 import { createSaasTheme } from "@react-ui-os/theme-saas";
+import { exampleApps } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
-import { calculatorApp } from "./apps/calculator";
-import { notesApp } from "./apps/notes";
-import { clockApp } from "./apps/clock";
-import { calendarApp } from "./apps/calendar";
-import { remindersApp } from "./apps/reminders";
-import { sketchApp } from "./apps/sketch";
-import { terminalApp } from "./apps/terminal";
 
 // Register the Recents system window once at module load. The desktop
 // icon for it surfaces only when `hasRecents(storage)` returns true, so
@@ -114,13 +108,7 @@ const apps: OsApp[] = [
     content: HelloContent,
     defaultBounds: { w: 580, h: 460 },
   },
-  notesApp,
-  calculatorApp,
-  clockApp,
-  calendarApp,
-  remindersApp,
-  sketchApp,
-  terminalApp,
+  ...exampleApps,
 ];
 
 type ThemeChoice = "default" | "mintables" | "saas";
