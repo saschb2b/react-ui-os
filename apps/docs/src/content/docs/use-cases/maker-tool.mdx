@@ -1,0 +1,146 @@
+---
+title: Maker tool
+description: A single creative or generator app that accumulates files. Its outputs live in a FileExplorer folder that earns its desktop icon, saved presets are recalled from Spotlight, and the Mintables theme gives the one app a home.
+sidebar:
+  order: 5
+---
+
+The product is one focused app that makes things: a parametric part generator, a chart builder, a label designer, a loop sketcher. Unlike the other shapes, the dock is not full of tools; there is essentially one. What the app needs from an OS is everything around the canvas: somewhere to keep the exports, a way to reopen a reference while editing, saved presets you can recall by name. A desktop shell hands all of that to a single app for free.
+
+This is the shape react-ui-os grew out of. [Mintables](/showcase/#mintables) was a 3D-part generator that built an OS-style desktop around itself; the library is that desktop, generalized.
+
+## Why the metaphor fits
+
+- A generator produces artifacts the user accumulates. They need a file browser, and [FileExplorer](/components/fileexplorer/) is the Finder interaction model without building one.
+- Makers keep a reference open while they work: the last export beside the new attempt, a preset next to the live canvas. Windows hold both.
+- Presets, exports, and recents want a home that is not a modal stuffed into the canvas. System windows and desktop folders give them one.
+
+## The app is just content
+
+The generator is an ordinary [`App`](/components/desktop/#props). Everything below hangs off it; the app itself only renders its canvas.
+
+```tsx title="src/generator.tsx"
+import type { App } from "@react-ui-os/core";
+import { GeneratorIcon } from "./icon";
+import { Canvas } from "./Canvas";
+
+export const generatorApp: App = {
+  id: "generator",
+  name: "Part Generator",
+  accent: "#7c66f5",
+  icon: GeneratorIcon,
+  defaultBounds: { w: 900, h: 620 },
+  content: Canvas,
+};
+```
+
+## Outputs that earn their folder
+
+Each export lands in a Downloads folder backed by `FileExplorer`. The folder is a [system window](/components/window/), and its desktop icon only appears once the first export exists: `appearsAsDesktopIcon` as a function is the state-earned-folder gate, read from the [storage adapter](/api/storageadapter/) so a multi-user deploy sees per-user state.
+
+```tsx title="src/downloads-folder.tsx"
+import {
+  registerSystemWindow,
+  FileExplorer,
+  type ExplorerItem,
+} from "@react-ui-os/desktop";
+import { useDownloads, hasDownloads, removeDownload, reopen } from "./downloads";
+
+function DownloadsFolder() {
+  // useDownloads subscribes via storage.subscribe, so a new export
+  // refreshes the list without a poll.
+  const downloads = useDownloads();
+  const items: ExplorerItem[] = downloads.map((d) => ({
+    id: d.id,
+    name: d.filename,
+    kind: d.format,
+    timestamp: d.createdAt,
+  }));
+
+  return (
+    <FileExplorer
+      items={items}
+      onOpen={(item) => reopen(item.id)}
+      emptyState="No exports yet. Generate a part to fill this folder."
+      actions={[
+        {
+          id: "delete",
+          label: "Delete",
+          shortcut: "⌫",
+          danger: true,
+          onClick: (selected) => selected.forEach((s) => removeDownload(s.id)),
+        },
+      ]}
+    />
+  );
+}
+
+registerSystemWindow("downloads", {
+  name: "Downloads",
+  defaultBounds: { w: 640, h: 460 },
+  content: DownloadsFolder,
+  // Icon shows once the first export is written, and disappears when the
+  // folder is emptied. Same storage write that adds the file flips this.
+  appearsAsDesktopIcon: (storage) => hasDownloads(storage),
+});
+```
+
+The write that records the first export fires the storage change event, the predicate re-runs, and the desktop icon appears in the same tick. Empty the folder and it goes away. See [state-earned folders](/components/desktopicons/#state-earned-folders) and the [conditional desktop folders recipe](/recipes/overview/#conditional-desktop-folders).
+
+## Recall a preset from Spotlight
+
+A maker tool lives and dies by its saved presets. Register a [Spotlight source](/api/registerspotlightsource/) and every saved preset becomes findable with **Cmd-K**, no preset drawer to build.
+
+```tsx title="src/preset-source.tsx"
+import { useEffect } from "react";
+import { registerSpotlightSource } from "@react-ui-os/desktop";
+import { listPresets, applyPreset } from "./presets";
+
+export function PresetSpotlightSource() {
+  useEffect(() => {
+    return registerSpotlightSource("presets", (query) =>
+      listPresets()
+        .filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))
+        .map((p) => ({
+          id: `preset:${p.id}`,
+          name: p.name,
+          tagline: `${p.params.length} parameters`,
+          kindLabel: "Preset",
+          onActivate: () => applyPreset(p.id),
+        })),
+    );
+  }, []);
+  return null;
+}
+```
+
+Mount `<PresetSpotlightSource />` inside `<Desktop>`. Typing a preset's name in Spotlight and pressing Enter applies it to the live canvas. For a source that hits a remote API, debounce it; see the [debounced Spotlight source recipe](/recipes/overview/#debounced-spotlight-source).
+
+## Give the one app a home
+
+`theme-mintables` is the cinematic frosted-glass theme this shape was tuned for. Build it with your wallpaper and mount the single app:
+
+```tsx title="src/App.tsx"
+import { Desktop } from "@react-ui-os/desktop";
+import { createMintablesTheme } from "@react-ui-os/theme-mintables";
+import { generatorApp } from "./generator";
+
+const theme = createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
+
+export default function App() {
+  return (
+    <Desktop apps={[generatorApp]} theme={theme} brand="partsmith">
+      <PresetSpotlightSource />
+    </Desktop>
+  );
+}
+```
+
+One app, and around it: a file browser, state-earned folders, preset recall, Settings, the genie minimize, drag and snap and resize. The canvas was the only thing left to build.
+
+## See also
+
+- [FileExplorer](/components/fileexplorer/) for the Finder primitive the outputs folder uses.
+- [DesktopIcons: state-earned folders](/components/desktopicons/#state-earned-folders) for the icon-earns-its-place pattern.
+- [registerSpotlightSource](/api/registerspotlightsource/) for preset recall.
+- [Showcase: Mintables](/showcase/#mintables) for the product this shape came from.
