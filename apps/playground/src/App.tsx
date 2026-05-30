@@ -1,6 +1,11 @@
 import { useMemo } from "react";
 import type { App as OsApp, OsTheme } from "@react-ui-os/core";
-import { Desktop, registerSystemWindow, useDesktopContext } from "@react-ui-os/desktop";
+import {
+  Desktop,
+  registerSystemWindow,
+  useDesktopContext,
+  useTheme,
+} from "@react-ui-os/desktop";
 import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
 import { createSaasTheme } from "@react-ui-os/theme-saas";
@@ -29,17 +34,27 @@ registerSystemWindow("recents", {
 
 function HelloContent({ focused }: { focused: boolean }) {
   const { storage } = useDesktopContext();
+  const theme = useTheme();
   return (
     <div>
       <h2 style={{ margin: "0 0 8px" }}>Hello, desktop.</h2>
+      <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
+        Seven working apps share the dock with this one: Notes, Calculator, Clock,
+        Calendar, Reminders, Sketch, and Terminal. Each is a real app, not a screenshot.
+        Open one from the dock, from Spotlight, or with its number key.
+      </p>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
         Drag the title bar. Drag any edge or corner to resize. Double-click the title
         bar (or click the green light) to maximize, then press Escape to restore.
       </p>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
         Press <kbd>Cmd-K</kbd> or <kbd>Ctrl-K</kbd> for Spotlight, <kbd>Cmd-,</kbd> for
-        Settings. <kbd>Cmd-W</kbd> closes, <kbd>Cmd-M</kbd> minimizes, <kbd>Cmd-1</kbd>/
-        <kbd>2</kbd>/<kbd>3</kbd> jumps between apps.
+        Settings. <kbd>Cmd-W</kbd> closes, <kbd>Cmd-M</kbd> minimizes, and{" "}
+        <kbd>Cmd-1</kbd> through <kbd>Cmd-9</kbd> jump straight to an app.
+      </p>
+      <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
+        Notes, reminders, and calendar events persist across reloads. In Terminal, type{" "}
+        <kbd>open calendar</kbd> to launch an app straight from the shell.
       </p>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
         Try a different theme: append <kbd>?theme=mintables</kbd> or{" "}
@@ -67,10 +82,10 @@ function HelloContent({ focused }: { focused: boolean }) {
             });
           }}
           style={{
-            border: "1px solid rgba(255,255,255,0.18)",
-            background: "rgba(255,255,255,0.06)",
+            border: `1px solid ${theme.palette.border}`,
+            background: "transparent",
             color: "inherit",
-            borderRadius: 6,
+            borderRadius: theme.shape.small,
             padding: "5px 12px",
             fontSize: 12,
             fontFamily: "inherit",
@@ -94,7 +109,7 @@ const apps: OsApp[] = [
   {
     id: "hello",
     name: "Hello",
-    tagline: "Phase 1 demo",
+    tagline: "Start here",
     accent: "#6b8afd",
     content: HelloContent,
     defaultBounds: { w: 580, h: 460 },
