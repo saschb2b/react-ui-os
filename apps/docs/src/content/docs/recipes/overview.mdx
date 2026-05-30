@@ -13,7 +13,8 @@ The playground reads `?demo=spotlight` and opens the palette on load. Same patte
 
 ```tsx
 import { useEffect } from "react";
-import { useWindowManager, SPOTLIGHT_OPEN_EVENT } from "@react-ui-os/desktop";
+import { useWindowManager } from "@react-ui-os/core";
+import { SPOTLIGHT_OPEN_EVENT } from "@react-ui-os/desktop";
 
 function DemoActivator() {
   const { openWindow } = useWindowManager();
@@ -45,30 +46,45 @@ The activator must be rendered as a child of `<Desktop>` so `useWindowManager()`
 
 ## Persist windows across reloads
 
-Pass a custom [`StorageAdapter`](/api/storageadapter/) that writes to your backend instead of `localStorage`. The window manager treats it the same way.
+Pass a custom [`StorageAdapter`](/api/storageadapter/) that writes to your backend instead of `localStorage`. The window manager treats it the same way. The interface is synchronous: `get` returns a value now, not a promise. Back a remote store with an in-memory cache, hydrate it before mounting, and write through in the background.
 
 ```tsx
 import type { StorageAdapter } from "@react-ui-os/core";
 
-const remoteStorage: StorageAdapter = {
-  get: async (key) => {
-    const res = await fetch(`/api/prefs/${key}`);
-    return res.ok ? res.text() : null;
-  },
-  set: (key, value) => {
-    void fetch(`/api/prefs/${key}`, { method: "PUT", body: value });
-  },
-  remove: (key) => {
-    void fetch(`/api/prefs/${key}`, { method: "DELETE" });
-  },
-  subscribe: (listener) => {
-    const es = new EventSource("/api/prefs/stream");
-    es.onmessage = (e) => listener(e.data);
-    return () => es.close();
-  },
-};
+function createRemoteStorage(initial: Record<string, unknown>): StorageAdapter {
+  const cache = new Map<string, unknown>(Object.entries(initial));
+  const listeners = new Set<(key: string) => void>();
 
-<Desktop apps={apps} theme={theme} storage={remoteStorage} />;
+  const events = new EventSource("/api/prefs/stream");
+  events.onmessage = (e) => {
+    const { key, value } = JSON.parse(e.data) as { key: string; value: unknown };
+    cache.set(key, value);
+    listeners.forEach((listener) => listener(key));
+  };
+
+  return {
+    get<T = unknown>(key: string) {
+      return cache.has(key) ? (cache.get(key) as T) : null;
+    },
+    set(key, value) {
+      cache.set(key, value);
+      void fetch(`/api/prefs/${key}`, { method: "PUT", body: JSON.stringify(value) });
+    },
+    remove(key) {
+      cache.delete(key);
+      void fetch(`/api/prefs/${key}`, { method: "DELETE" });
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => void listeners.delete(listener);
+    },
+  };
+}
+
+// Hydrate before mounting so the first synchronous read already has data.
+const initial = await fetch("/api/prefs").then((r) => r.json());
+
+<Desktop apps={apps} theme={theme} storage={createRemoteStorage(initial)} />;
 ```
 
 A user's accent, dock position, and window arrangement now follow them across devices.
