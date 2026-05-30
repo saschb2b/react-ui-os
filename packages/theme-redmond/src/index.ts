@@ -7,6 +7,12 @@ export interface RedmondThemeOptions {
    * accent is set.
    */
   accent?: string;
+  /**
+   * URL of the wallpaper image. Themes do not bundle assets; the consumer
+   * supplies the path. When omitted, the desktop falls back to the light
+   * palette background.
+   */
+  wallpaperSrc?: string;
 }
 
 /**
@@ -68,7 +74,8 @@ export function createRedmondTheme(options: RedmondThemeOptions = {}): OsTheme {
       windowUnfocused: "0 4px 12px -8px rgba(0,0,0,0.20)",
     },
     wallpaper: {
-      src: undefined,
+      src: options.wallpaperSrc,
+      // Windows does not shift the wallpaper on cursor move; keep it static.
       parallax: false,
       vignette: false,
     },

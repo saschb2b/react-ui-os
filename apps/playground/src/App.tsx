@@ -135,7 +135,7 @@ export default function App() {
       return createSaasTheme();
     }
     if (themeChoice === "redmond") {
-      return createRedmondTheme();
+      return createRedmondTheme({ wallpaperSrc: "/redmond-wallpaper.jpg" });
     }
     return defaultTheme;
   }, [themeChoice]);
