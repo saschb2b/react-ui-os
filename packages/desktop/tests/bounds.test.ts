@@ -43,6 +43,20 @@ describe("clampWindowToWorkArea", () => {
       clampWindowToWorkArea(100, 1000, 300, 200, work, 50).y,
     ).toBe(550);
   });
+
+  it("clamps against an offset work-area origin (menu bar + left dock)", () => {
+    // A work area inset by a 24px menu bar and a 100px left dock. The title
+    // bar must stay below the menu bar (y >= 24) and right of the dock, never
+    // sliding under either.
+    const inset = { x: 100, y: 24, width: 700, height: 576 };
+    expect(clampWindowToWorkArea(100, -50, 300, 200, inset).y).toBe(24);
+    expect(clampWindowToWorkArea(-1000, 100, 300, 200, inset).x).toBe(
+      100 - 300 + 64,
+    );
+    expect(clampWindowToWorkArea(100, 5000, 300, 200, inset).y).toBe(
+      24 + 576 - 24,
+    );
+  });
 });
 
 // vitest runs in the node environment, so getWorkArea() (called inside

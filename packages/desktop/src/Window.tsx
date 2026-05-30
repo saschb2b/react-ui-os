@@ -43,7 +43,7 @@ function snapZoneLabel(zone: SnapZone): string {
   }
 }
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
-import { getChromeMetrics, getMenuBarHeight, getWorkArea } from "./util/layout";
+import { getChromeMetrics, getWorkArea } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
 
 interface WindowProps {
@@ -294,10 +294,7 @@ export function Window({ win }: WindowProps) {
       const targetX = drag.startX + (e.clientX - drag.startClientX);
       const targetY = drag.startY + (e.clientY - drag.startClientY);
       const work = getWorkArea(theme);
-      const clamped = clampWindowToWorkArea(targetX, targetY, win.w, win.h, {
-        width: work.width,
-        height: work.height,
-      });
+      const clamped = clampWindowToWorkArea(targetX, targetY, win.w, win.h, work);
       drag.lastX = clamped.x;
       drag.lastY = clamped.y;
       const el = elRef.current;
@@ -407,10 +404,14 @@ export function Window({ win }: WindowProps) {
 
   const maximized = win.state === "maximized";
   const work = getWorkArea(theme);
-  const menuBarHeight = getMenuBarHeight(theme);
 
+  // Window bounds are viewport-absolute (win.x / win.y are screen pixels), so
+  // the element anchors at the viewport origin (top/left 0) and the transform
+  // carries the full position. Maximized fills the work area, which starts
+  // below the menu bar at (work.x, work.y). pickInitialBounds, snap rects, and
+  // the SnapPreview overlay all speak these same absolute coords.
   const baseTransform = maximized
-    ? `translate3d(${String(work.x)}px, 0, 0)`
+    ? `translate3d(${String(work.x)}px, ${String(work.y)}px, 0)`
     : `translate3d(${String(win.x)}px, ${String(win.y)}px, 0)`;
 
   const animationStyle =
@@ -442,7 +443,7 @@ export function Window({ win }: WindowProps) {
       style={{
         position: "fixed",
         left: 0,
-        top: menuBarHeight,
+        top: 0,
         width: maximized ? work.width : win.w,
         height: maximized ? work.height : win.h,
         transform: baseTransform,
