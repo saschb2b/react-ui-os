@@ -77,7 +77,18 @@ interface DragState {
   startY: number;
   lastX: number;
   lastY: number;
+  /**
+   * The window was maximized when this drag began. It stays maximized until the
+   * pointer crosses the tear-off threshold, at which point it restores under
+   * the cursor and the drag continues from there. Until then a bare click or a
+   * double-click is left to their own handlers.
+   */
+  fromMaximized?: boolean;
 }
+
+// Pointer travel before a drag on a maximized title bar tears the window off
+// and restores it. Keeps a click or double-click from restoring by accident.
+const MAXIMIZED_TEAR_OFF_PX = 6;
 
 interface ResizeState {
   pointerId: number;
@@ -315,10 +326,12 @@ export function Window({ win, hidden = false }: WindowProps) {
   const startDrag = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
       if (e.button !== 0) return;
-      if (win.state === "maximized") return;
-      setGesturing(true);
+      const fromMaximized = win.state === "maximized";
       focusWindow(win.id);
       e.currentTarget.setPointerCapture(e.pointerId);
+      // A maximized window stays put (and keeps its transition) until the
+      // pointer tears it off in moveDrag; a normal drag starts gesturing now.
+      if (!fromMaximized) setGesturing(true);
       dragRef.current = {
         pointerId: e.pointerId,
         startClientX: e.clientX,
@@ -327,6 +340,7 @@ export function Window({ win, hidden = false }: WindowProps) {
         startY: win.y,
         lastX: win.x,
         lastY: win.y,
+        fromMaximized,
       };
     },
     [focusWindow, win.id, win.state, win.x, win.y],
@@ -336,9 +350,47 @@ export function Window({ win, hidden = false }: WindowProps) {
     (e: ReactPointerEvent<HTMLDivElement>) => {
       const drag = dragRef.current;
       if (!drag || drag.pointerId !== e.pointerId) return;
+      const work = getWorkArea(theme);
+      if (drag.fromMaximized) {
+        // Wait for real travel so a click or double-click on the maximized
+        // title bar is not mistaken for a tear-off.
+        if (
+          Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) <
+          MAXIMIZED_TEAR_OFF_PX
+        ) {
+          return;
+        }
+        // Restore the window under the cursor (Windows 11): keep the pointer at
+        // the same horizontal fraction of the now-narrower title bar, and at
+        // the same vertical offset within it as the original grab, so the
+        // title bar lands right under the cursor rather than jumping away.
+        const fracX = work.width > 0 ? (e.clientX - work.x) / work.width : 0.5;
+        const restoredX = Math.max(
+          work.x,
+          Math.min(e.clientX - win.w * fracX, work.x + work.width - win.w),
+        );
+        const grabOffsetY = drag.startClientY - work.y;
+        const restoredY = Math.max(work.y, e.clientY - grabOffsetY);
+        toggleMaximize(win.id);
+        setBounds(win.id, restoredX, restoredY, win.w, win.h);
+        setGesturing(true);
+        drag.fromMaximized = false;
+        drag.startX = restoredX;
+        drag.startY = restoredY;
+        drag.startClientX = e.clientX;
+        drag.startClientY = e.clientY;
+        drag.lastX = restoredX;
+        drag.lastY = restoredY;
+        const elNow = elRef.current;
+        if (elNow) {
+          elNow.style.transform = `translate3d(${String(restoredX)}px, ${String(restoredY)}px, 0)`;
+          elNow.style.width = `${String(win.w)}px`;
+          elNow.style.height = `${String(win.h)}px`;
+        }
+        return;
+      }
       const targetX = drag.startX + (e.clientX - drag.startClientX);
       const targetY = drag.startY + (e.clientY - drag.startClientY);
-      const work = getWorkArea(theme);
       const clamped = clampWindowToWorkArea(targetX, targetY, win.w, win.h, work);
       drag.lastX = clamped.x;
       drag.lastY = clamped.y;
@@ -359,13 +411,20 @@ export function Window({ win, hidden = false }: WindowProps) {
         setSnapPreview(null);
       }
     },
-    [theme, win.id, win.w, win.h],
+    [theme, win.id, win.w, win.h, toggleMaximize, setBounds],
   );
 
   const endDrag = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
       const drag = dragRef.current;
       if (!drag || drag.pointerId !== e.pointerId) return;
+      if (drag.fromMaximized) {
+        // Released without ever tearing off: a click (or the first half of a
+        // double-click) on a maximized title bar. Leave the window maximized
+        // and untouched; double-click restores it through its own handler.
+        dragRef.current = null;
+        return;
+      }
       // The gesture is over, so the transition comes back on: a snap glides
       // into its zone, while a plain release commits to the spot the window
       // already sits at (same value, so nothing animates).
