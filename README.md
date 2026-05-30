@@ -40,6 +40,9 @@ That single tag produces the wallpaper, dock, draggable resizable windows, focus
     <td width="50%"><img src=".github/assets/notifications.png" alt="Notification toast stack in the top-right corner"><br><b>Notifications</b><br>Call <code>notify(...)</code> from anywhere. Toasts, dock badges, and a Notification Center, all wired.</td>
     <td width="50%"><img src=".github/assets/themes-saas.png" alt="SaaS theme with a left dock and light chrome"><br><b>Themes change the stance</b><br>Move the dock to the side, hide the menu bar, swap traffic lights for Windows controls.</td>
   </tr>
+  <tr>
+    <td colspan="2"><img src=".github/assets/themes-redmond.png" alt="Redmond theme: caption-button windows and a bottom taskbar with a Start launcher and a clock on a Windows 11 wallpaper"><br><b>The Redmond theme</b><br>The same components, a Windows desktop: caption buttons, a flush taskbar with a Start launcher and a clock, no fisheye. Not a clone, the Windows visual patterns expressed through tokens.</td>
+  </tr>
 </table>
 
 There is more in the box: workspaces, Mission Control, an app switcher (Cmd-Tab), window snapping, a Finder-style file explorer, and a context-menu system. See the [docs](https://saschb2b.github.io/react-ui-os/) for the full tour.

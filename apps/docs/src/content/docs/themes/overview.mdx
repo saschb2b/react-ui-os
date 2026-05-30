@@ -6,6 +6,7 @@ sidebar:
 ---
 
 import TypeTable from "~/components/TypeTable.astro";
+import redmondShot from "../../../assets/themes-redmond.png";
 
 The library splits "the system" from "the look." The **window manager**, the **dock**, the **menu bar**, the **windowing rules**, the **keyboard shortcuts**: all of that is the skeleton. **Themes** are token bags that dress it.
 
@@ -54,6 +55,14 @@ This is the part that does not exist in component libraries. It is what lets a S
 | `@react-ui-os/theme-mintables` | Cinematic frosted glass. Deep blur, teal accent, parallax + vignette wallpaper, traffic lights.                                                |
 | `@react-ui-os/theme-saas`      | Neutral light workspace. Dock on the left, menu bar hidden, modest blur. Exercises `chrome.dockPosition: "left"` and `chrome.menuBar: "none"`. |
 | `@react-ui-os/theme-redmond`   | Windows-style light register. Caption-button window controls, a bottom taskbar that does not magnify, no menu bar, lighter shadows. Exercises `chrome.windowControls: "windows"` and `motion.dockMagnification: 1`. |
+
+The same components, in the Redmond stance: caption-button windows, a bottom taskbar with a Start launcher and a clock, on a Windows 11 wallpaper.
+
+<img
+  src={redmondShot.src}
+  alt="The Redmond theme: a light Windows-style desktop with caption-button windows and a bottom taskbar showing a Start launcher, centered app icons, and a clock, over a dark Windows 11 wallpaper"
+  style={{ maxWidth: "100%", height: "auto", borderRadius: "8px", border: "1px solid var(--sl-color-gray-5)" }}
+/>
 
 ## Picking a theme
 
