@@ -41,6 +41,8 @@ Hovering tracks the cursor and magnifies the icon beneath it, with its neighbors
 
 Each tile's size eases toward a target derived from the cursor's distance to that tile's resting center (anchored to the dock center, so there is no layout-measurement feedback). The easing has no overshoot, the overdamped-spring character of the macOS dock, so nothing snaps. The values follow the common macOS approximation (a 110 px radius and a 2.25x peak), kept gentler here at 1.5x of a 56 px base tile.
 
+The peak is the `theme.motion.dockMagnification` token. Set it to `1` to turn the fisheye off entirely, the register a Windows taskbar or GNOME dash uses; the [Redmond theme](/themes/overview/) ships it that way. The hover label still appears, only the growth stops.
+
 ## Tile appearance
 
 Each tile renders the app's accent as a linear gradient with a top sheen. The library accepts three optional visual hooks per app:

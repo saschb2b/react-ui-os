@@ -1,6 +1,6 @@
 ---
 title: Window
-description: A single draggable resizable window with macOS-style traffic lights, focus tracking, and minimize-to-dock genie animation.
+description: A single draggable resizable window with theme-selectable controls (macOS traffic lights, Windows caption buttons, or a minimal close), focus tracking, and minimize-to-dock genie animation.
 sidebar:
   order: 2
 ---
@@ -36,11 +36,23 @@ import type { OpenWindow } from "@react-ui-os/core";
 | Double-click title bar              | Toggles maximize / restore                                                                |
 | Drag an edge                        | Resizes along that axis                                                                   |
 | Drag a corner                       | Resizes along both axes                                                                   |
-| Click traffic light: red            | Plays the close animation then dispatches `closeWindow(id)`                               |
-| Click traffic light: yellow         | Plays the genie minimize toward the matching dock tile                                    |
-| Click traffic light: green          | Toggles maximize                                                                          |
+| Click the close control             | Plays the close animation then dispatches `closeWindow(id)`                               |
+| Click the minimize control          | Plays the genie minimize toward the matching dock tile                                    |
+| Click the maximize control          | Toggles maximize / restore                                                                |
 | Click anywhere on the window        | Focuses it (z-bumps and updates `focusedId`)                                              |
 | Escape (when focused and maximized) | Restores to the previous bounds                                                           |
+
+## Window controls
+
+The control cluster follows `theme.chrome.windowControls`. The behavior above is identical in every register; only the look and placement change.
+
+| Value              | Reads as   | Layout                                                                                                  |
+| ------------------ | ---------- | ------------------------------------------------------------------------------------------------------ |
+| `"traffic-lights"` | macOS      | Red / yellow / green dots on the left, title centered.                                                 |
+| `"windows"`        | Windows 11 | Minimize / maximize-restore / close caption buttons flush on the right (close turns red on hover), title left-aligned. |
+| `"minimal"`        | A close glyph | A single close on the right, title left-aligned.                                                     |
+
+The focused window's accent top-edge highlight is drawn in every register.
 
 ## Animations
 
@@ -59,7 +71,7 @@ Drag and resize avoid React re-renders entirely during the gesture. The pointer 
 ## Accessibility
 
 - The root is a `<div role="region" aria-label="<Name> window">`.
-- Traffic lights are `<button>` elements with `aria-label="Close"`, `"Minimize"`, `"Maximize"`.
+- The window controls are `<button>` elements with `aria-label` of `"Close"`, `"Minimize"`, and `"Maximize"` (or `"Restore"` when the window is maximized), in whichever register the theme selects.
 - Title-bar drag is pointer-only; keyboard users move and resize windows via the shortcuts handled by [KeyboardShortcuts](/components/desktopicons/#see-also).
 
 ## See also
