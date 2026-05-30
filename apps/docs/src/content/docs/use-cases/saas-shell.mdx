@@ -1,0 +1,86 @@
+---
+title: SaaS application shell
+description: A multi-tenant product whose modules are apps. The theme-saas chrome (left dock, no menu bar), a tenant-branded accent built per request, and the runtime Settings panel the theme exposes for free.
+sidebar:
+  order: 3
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+The product is your application's outer frame. Dashboard, billing, team, integrations, reports: each is a module a customer opens, sometimes two at once. The dock is the module switcher, each module is an [`App`](/components/desktop/#props), and the whole thing reads as an application instead of a website with a sidebar.
+
+This is the same registry idea as the [internal ops console](/use-cases/internal-console/), pointed outward at customers. The difference is the chrome. An internal tool can look like macOS; a customer-facing product usually wants its own restrained frame.
+
+## Why the metaphor fits
+
+- A SaaS product is already a set of modules. The dock is a switcher that scales as you ship more of them, with no nav-bar redesign each time.
+- Customers run modules side by side: a report open next to the settings that drive it, billing open while you check the team roster. Windows hold that; a single-pane router throws one view away to show the next.
+- "It feels like an app, not a website" is the pitch of most SaaS products. A desktop shell delivers that literally.
+
+## A different stance: theme-saas
+
+`theme-saas` deliberately drops the macOS furniture. The dock sits on the left edge and the menu bar is hidden, so the shell reads like Linear, Notion, or a Vercel dashboard rather than a desktop OS. It is a light palette with calm motion. The structural levers are real theme tokens, not component branches:
+
+```ts
+chrome: {
+  windowControls: "traffic-lights",
+  dockPosition: "left",   // not the bottom
+  menuBar: "none",        // hidden
+}
+```
+
+Because the menu bar is hidden, there is no status tray and no clock in this stance. System-wide widgets that the [internal console](/use-cases/internal-console/) puts in the menu bar have nowhere to render here; a SaaS shell leans on the dock and on [Spotlight](/components/spotlight/) instead. (The theme ships a `chrome.menuBar` setting, so a customer who wants the bar back can turn it on; see below.)
+
+## Brand the accent per tenant
+
+Themes are pure data, so build the active theme per request from the tenant's config. `createSaasTheme` takes the one override most tenants care about, the brand accent that tints the dock tiles and the focused-window highlight.
+
+```tsx title="src/Shell.tsx"
+import { Desktop } from "@react-ui-os/desktop";
+import { createSaasTheme } from "@react-ui-os/theme-saas";
+import { modulesForPlan } from "./modules";
+import type { Tenant } from "./tenant";
+
+export function Shell({ tenant }: { tenant: Tenant }) {
+  // Fresh theme object per render; createSaasTheme never shares state
+  // between tenants.
+  const theme = createSaasTheme({ accent: tenant.brandColor });
+  const apps = modulesForPlan(tenant.plan);
+
+  return <Desktop apps={apps} theme={theme} />;
+}
+```
+
+`brand` is omitted on purpose: it labels the menu bar, which this theme hides. `modulesForPlan` is the same shape as the console's role map; gate a module behind a plan by leaving its `App` out of the returned array. See the [dynamic app registry recipe](/recipes/overview/#dynamic-app-registry).
+
+<LivePreview
+  src="?theme=saas"
+  label="theme-saas: left dock, no menu bar, light palette"
+  height="480px"
+/>
+
+## Settings, for free
+
+`theme-saas` declares a [`customizable`](/themes/customizable/) schema, so the Settings system window renders a real panel with no extra work. Out of the box a customer can change the accent, the window and dock-tile radius, the window-open speed, the dock position, and whether the menu bar shows:
+
+```ts
+customizable: {
+  "palette.accent": { kind: "color-from-palette", section: "Appearance", /* ... */ },
+  "shape.windowRadius": { kind: "range", section: "Appearance", min: 0, max: 20, step: 2 },
+  "chrome.dockPosition": { kind: "select", section: "Layout", /* left | bottom | hidden */ },
+  "chrome.menuBar": { kind: "select", section: "Layout", /* none | top */ },
+}
+```
+
+The library persists each choice through the [storage adapter](/api/storageadapter/) and overlays it on the theme to produce the effective theme. With the menu bar hidden, a customer opens Settings with **Cmd-,** or by finding it in Spotlight (**Cmd-K**). Want per-tenant control over which knobs appear? Trim or extend the schema in your own theme; see [Writing a theme](/themes/writing/) and [Customizable schema](/themes/customizable/).
+
+## When to go further than the accent
+
+`createSaasTheme` exposes only the accent because it is the override almost every tenant wants. A tenant that needs its own full palette, radius scale, or wallpaper is past what a single option should carry: write a theme. It is one static `OsTheme` object (or a factory like this one), it depends on `@react-ui-os/core` for types only, and components never branch on its `id`. [Writing a theme](/themes/writing/) is the whole process.
+
+## See also
+
+- [Themes overview](/themes/overview/) for the skeleton-versus-look split this shape relies on.
+- [Customizable schema](/themes/customizable/) for the Settings panel the theme generates.
+- [Internal ops console](/use-cases/internal-console/) for the same registry idea with macOS chrome and a menu-bar tray.
+- [Showcase](/showcase/) to see the SaaS theme swapped onto the playground live.
