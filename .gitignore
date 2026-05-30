@@ -5,6 +5,9 @@ dist
 *.tsbuildinfo
 *.tsup.log
 
+# Scratch files (screenshots, one-off scripts) used while iterating locally.
+.tmp-*
+
 # OS / editor
 .DS_Store
 Thumbs.db
