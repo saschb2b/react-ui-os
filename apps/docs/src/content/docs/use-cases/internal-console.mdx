@@ -1,0 +1,124 @@
+---
+title: Internal ops console
+description: A company's internal tools behind one desktop. Per-role app registry, Spotlight to jump between tools, status items for system health, notifications for background jobs, server-backed storage so a layout follows the user.
+sidebar:
+  order: 2
+---
+
+The product is the hub every engineer and operator opens at the start of a shift. Deploys, feature flags, a user-lookup tool, the on-call schedule, a metrics board: today each lives at its own URL and everyone keeps ten bookmarks. As one desktop, each tool is an [`App`](/components/desktop/#props), the dock holds them, and Spotlight finds them by name.
+
+## Why the metaphor fits
+
+- Ops work is multi-window by nature. You look up a customer while a deploy runs while a dashboard ticks. Separate tabs lose the shared context; windows on one desktop keep it.
+- The audience is power users. Cmd-K to jump to a tool and Cmd-1..9 to cycle is faster than a nav bar, and it is muscle memory they already have from the OS.
+- The tool count only grows. A registry the dock, menu bar, and Spotlight all read from means a new internal tool is one `App` object, not a new route plus a nav entry plus a search hookup.
+
+## Per-role registry
+
+Not every operator sees every tool. Resolve the app list from the signed-in user's role; anything that produces an `App[]` works as the `apps` prop. Render a splash while it loads.
+
+```tsx title="src/Console.tsx"
+import { useEffect, useState } from "react";
+import { Desktop } from "@react-ui-os/desktop";
+import { defaultTheme } from "@react-ui-os/theme-default";
+import type { App } from "@react-ui-os/core";
+import { deployApp, flagsApp, userLookupApp, onCallApp, metricsApp } from "./tools";
+
+const TOOLS_BY_ROLE: Record<string, App[]> = {
+  engineer: [deployApp, flagsApp, userLookupApp, onCallApp, metricsApp],
+  support: [userLookupApp, onCallApp],
+  viewer: [metricsApp],
+};
+
+export function Console({ role }: { role: string }) {
+  const [apps, setApps] = useState<App[] | null>(null);
+
+  useEffect(() => {
+    setApps(TOOLS_BY_ROLE[role] ?? TOOLS_BY_ROLE.viewer);
+  }, [role]);
+
+  if (!apps) return <Splash />;
+  return <Desktop apps={apps} theme={defaultTheme} brand="acme ops" />;
+}
+```
+
+A support agent gets a two-tile dock; an engineer gets five. The window manager re-keys windows when the registry changes, so a role change mid-session cleans up the tools that went away without manual teardown. See the [dynamic app registry recipe](/recipes/overview/#dynamic-app-registry) for the remote-fetch variant.
+
+## System health in the menu bar
+
+Incident state, deploy-in-progress, queue depth: anything an operator needs to glance at without opening a window belongs in the menu-bar tray. Register it once and re-register when the value changes.
+
+```tsx title="src/IncidentStatus.tsx"
+import { useEffect } from "react";
+import { registerStatusItem } from "@react-ui-os/desktop";
+import { IncidentDot } from "./icons";
+import { useIncidentLevel } from "./incidents";
+
+export function IncidentStatus() {
+  const level = useIncidentLevel(); // "ok" | "degraded" | "down"
+  useEffect(() => {
+    return registerStatusItem({
+      id: "incident",
+      icon: <IncidentDot level={level} size={14} />,
+      tooltip: level === "ok" ? "All systems operational" : `Incident: ${level}`,
+      badge: level === "ok" ? undefined : level === "down" ? "!" : undefined,
+      order: 40,
+      onClick: () => window.open("/status", "_blank", "noopener"),
+    });
+  }, [level]);
+  return null;
+}
+```
+
+Mount `<IncidentStatus />` as a [headless companion](/components/desktop/#with-a-headless-companion) inside `<Desktop>`. The tray dedups by `id`, so re-registering on every level change updates the widget in place. See [Status items](/components/statusitems/).
+
+## Notify when a job finishes
+
+A deploy or a backfill runs longer than anyone watches. Fire a notification from the job's completion handler; it surfaces as a toast and lands in the Notification Center even if the operator was in another tool. The handler can call `notify` from anywhere, no dispatcher to thread through.
+
+```tsx title="src/deploy.ts"
+import { notify } from "@react-ui-os/core";
+
+export async function runDeploy(service: string) {
+  const job = await startDeploy(service);
+  await job.done;
+  notify({
+    title: `Deploy finished: ${service}`,
+    body: `${job.commit.slice(0, 7)} is live in production.`,
+    level: "success",
+    appId: "deploy", // badges the deploy dock tile
+    actions: [
+      {
+        label: "View logs",
+        onClick: () => window.open(job.logsUrl, "_blank"),
+        primary: true,
+      },
+    ],
+  });
+}
+```
+
+`appId` ties the toast to the deploy tile so the dock shows an unread badge until the operator looks. A `level: "error"` notification stays pinned instead of auto-dismissing, which is what you want for a failed deploy. See [Notifications](/components/notifications/).
+
+## Layouts that follow the operator
+
+Engineers move between a laptop and a desk machine. Back the desktop with a [`StorageAdapter`](/api/storageadapter/) that writes to your service instead of `localStorage`, and the accent, dock position, and window arrangement they set on one machine are there on the next.
+
+```tsx
+import { Desktop } from "@react-ui-os/desktop";
+
+<Desktop apps={apps} theme={defaultTheme} storage={remoteStorage} />;
+```
+
+The interface is synchronous, so hydrate the cache before mounting and write through in the background. The full adapter is in the [persist-windows recipe](/recipes/overview/#persist-windows-across-reloads).
+
+## What you did not have to build
+
+The dock, the Cmd-K search across every tool, the focused-tool indicator in the menu bar, drag and resize and snap, the minimize animation, the keyboard map: all of it came from the one `<Desktop>` tag reading the same `App[]` the registry already produced. The work that remained was the tools themselves.
+
+## See also
+
+- [Dynamic app registry](/recipes/overview/#dynamic-app-registry) for the per-tenant fetch.
+- [Status items](/components/statusitems/) and [Notifications](/components/notifications/) for the system-wide widgets.
+- [StorageAdapter](/api/storageadapter/) for cross-device sync.
+- [SaaS application shell](/use-cases/saas-shell/) for the customer-facing cousin of this shape.

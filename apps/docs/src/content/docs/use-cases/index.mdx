@@ -1,0 +1,25 @@
+---
+title: Use cases
+description: Four product shapes built on react-ui-os, each grounded in the real API. An internal ops console, a SaaS application shell, a support workspace, and a maker tool.
+sidebar:
+  order: 1
+---
+
+The [Introduction](/introduction/) lists when to reach for react-ui-os. These pages go one step further: they take four products people actually build with a desktop metaphor and show how each one is structured on top of the library.
+
+They sit between two neighbours. [Recipes](/recipes/overview/) answer a single "how do I do X" with a snippet. [Showcase](/showcase/) lists shipped products. A use case is the middle layer: a whole product shape, which API depth it uses, which theme, which surfaces light up, and the code that wires them.
+
+None of these introduce new API. Every line is in the [component](/components/desktop/) and [API](/api/usewindowmanager/) references already; the use cases just put the pieces in the order a real build needs them.
+
+## The four shapes
+
+| Use case                                             | The product                                       | What it leans on                                                                  |
+| ---------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [Internal ops console](/use-cases/internal-console/) | A company's internal tools behind one shell       | Per-role dynamic registry, Spotlight, status items, notifications, server storage |
+| [SaaS application shell](/use-cases/saas-shell/)     | A multi-tenant product's modules as apps          | `theme-saas` left dock, tenant-branded accent, the runtime Settings panel         |
+| [Support workspace](/use-cases/support-workspace/)   | An agent handling many tickets at once            | Per-instance system windows, window snapping, workspaces, notifications           |
+| [Maker tool](/use-cases/maker-tool/)                 | A single creative or generator app with its files | FileExplorer, state-earned desktop folders, the Mintables theme                   |
+
+## How to read them
+
+Each page opens with the product and why the desktop metaphor earns its place there, then shows the structure as code. Pick the one closest to what you're building and adapt; the four overlap deliberately, so a real product usually borrows from more than one.

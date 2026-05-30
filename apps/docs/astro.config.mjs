@@ -121,6 +121,10 @@ export default defineConfig({
           items: [{ autogenerate: { directory: "recipes" } }],
         },
         {
+          label: "Use cases",
+          items: [{ autogenerate: { directory: "use-cases" } }],
+        },
+        {
           label: "Showcase",
           items: [
             { label: "Showcase", link: "/showcase/" },
