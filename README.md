@@ -67,8 +67,9 @@ Most React UI libraries ship fifty components and let you wire them. That produc
 | `@react-ui-os/theme-default`   | Unbranded baseline theme.                                                                                                                                                             |
 | `@react-ui-os/theme-mintables` | Cinematic frosted-glass theme with parallax wallpaper, deep blur, teal accent.                                                                                                        |
 | `@react-ui-os/theme-saas`      | Neutral light theme. Left dock, hidden menu bar, exercises the non-Mac chrome variants.                                                                                               |
+| `@react-ui-os/theme-redmond`   | Windows-style light theme. Caption-button controls, a bottom taskbar that does not magnify, lighter shadows.                                                                          |
 
-All five packages ship dual ESM/CJS bundles + TypeScript declarations via `tsup`. Source-exported during in-repo development via a `source` Vite condition; consumers resolve through the bundled `dist/` output.
+All six packages ship dual ESM/CJS bundles + TypeScript declarations via `tsup`. Source-exported during in-repo development via a `source` Vite condition; consumers resolve through the bundled `dist/` output.
 
 ## Concepts
 
@@ -120,6 +121,7 @@ react-ui-os/
     theme-default/               # @react-ui-os/theme-default
     theme-mintables/             # @react-ui-os/theme-mintables
     theme-saas/                  # @react-ui-os/theme-saas
+    theme-redmond/               # @react-ui-os/theme-redmond
   .github/workflows/             # CI + Pages deploy
   registry.json                  # the app registry the CLI and docs gallery read
   CLAUDE.md                      # architecture and contribution rules
