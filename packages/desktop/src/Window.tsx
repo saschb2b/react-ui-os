@@ -56,7 +56,7 @@ interface WindowProps {
   hidden?: boolean;
 }
 
-type AnimationPhase = "idle" | "opening" | "closing" | "minimizing";
+type AnimationPhase = "idle" | "opening" | "closing" | "minimizing" | "restoring";
 
 type ResizeDir = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 
@@ -92,6 +92,28 @@ interface ResizeState {
   lastY: number;
   lastW: number;
   lastH: number;
+}
+
+/**
+ * Set the four custom properties the genie keyframe reads: `from` is the
+ * window's current top-left, `to` is the translate that lands the window's
+ * center on its dock tile once the scale shrinks it. Minimize plays the
+ * keyframe forward (window to tile); restore plays it reversed (tile to
+ * window). Without a dock tile the window collapses in place.
+ */
+function setGenieVars(el: HTMLDivElement, appId: string | undefined): void {
+  const winRect = el.getBoundingClientRect();
+  const dockRect = appId ? getDockTileRect(appId) : null;
+  const toCenterX = dockRect
+    ? dockRect.left + dockRect.width / 2
+    : winRect.left + winRect.width / 2;
+  const toCenterY = dockRect
+    ? dockRect.top + dockRect.height / 2
+    : winRect.top + winRect.height / 2;
+  el.style.setProperty("--genie-from-x", `${String(winRect.left)}px`);
+  el.style.setProperty("--genie-from-y", `${String(winRect.top)}px`);
+  el.style.setProperty("--genie-to-x", `${String(toCenterX - winRect.width / 2)}px`);
+  el.style.setProperty("--genie-to-y", `${String(toCenterY - winRect.height / 2)}px`);
 }
 
 /**
@@ -144,6 +166,7 @@ export function Window({ win, hidden = false }: WindowProps) {
   // the per-frame transform writes during a drag or resize never transition.
   const [maximizeAnimating, setMaximizeAnimating] = useState(false);
   const prevMaximizedRef = useRef(win.state === "maximized");
+  const prevStateRef = useRef(win.state);
 
   // After the open animation finishes, drop the phase so subsequent re-renders
   // don't replay it. Tied to the theme's window-open duration.
@@ -171,6 +194,25 @@ export function Window({ win, hidden = false }: WindowProps) {
       window.clearTimeout(id);
     };
   }, [win.state, theme.motion.windowOpenDurationMs]);
+
+  // Un-minimize plays the genie in reverse: the window grows out of its dock
+  // tile back to where it sat. Detected here (not at the restore call site)
+  // because restore can come from the dock, Spotlight, the app switcher, or a
+  // shortcut. Runs before paint so the first frame is already at the tile,
+  // never a flash of the full-size window.
+  useLayoutEffect(() => {
+    const prev = prevStateRef.current;
+    prevStateRef.current = win.state;
+    if (prev !== "minimized" || win.state !== "normal") return;
+    if (elRef.current) setGenieVars(elRef.current, appPayload);
+    setPhase("restoring");
+    const id = window.setTimeout(() => {
+      setPhase("idle");
+    }, theme.motion.genieDurationMs);
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, [win.state, appPayload, theme.motion.genieDurationMs]);
 
   // Stagger this window in the cascade by how many windows on its workspace
   // opened before it (every existing window sits below the just-opened one in
@@ -207,24 +249,7 @@ export function Window({ win, hidden = false }: WindowProps) {
   }, [closeWindow, theme.motion.windowOpenDurationMs, win.id]);
 
   const handleMinimize = useCallback(() => {
-    const el = elRef.current;
-    if (el) {
-      const winRect = el.getBoundingClientRect();
-      const dockRect = appPayload ? getDockTileRect(appPayload) : null;
-      // The genie shrinks the window about its own center, so the target
-      // translate is the one that lands that center on the dock tile's center.
-      // Without a tile (system windows, hidden dock) it shrinks in place.
-      const toCenterX = dockRect
-        ? dockRect.left + dockRect.width / 2
-        : winRect.left + winRect.width / 2;
-      const toCenterY = dockRect
-        ? dockRect.top + dockRect.height / 2
-        : winRect.top + winRect.height / 2;
-      el.style.setProperty("--genie-from-x", `${String(winRect.left)}px`);
-      el.style.setProperty("--genie-from-y", `${String(winRect.top)}px`);
-      el.style.setProperty("--genie-to-x", `${String(toCenterX - winRect.width / 2)}px`);
-      el.style.setProperty("--genie-to-y", `${String(toCenterY - winRect.height / 2)}px`);
-    }
+    if (elRef.current) setGenieVars(elRef.current, appPayload);
     setPhase("minimizing");
     const t = window.setTimeout(() => {
       minimizeWindow(win.id);
@@ -464,7 +489,11 @@ export function Window({ win, hidden = false }: WindowProps) {
           ? {
               animation: `rui-window-genie ${String(theme.motion.genieDurationMs)}ms ${theme.motion.genieEasing} both`,
             }
-          : {};
+          : phase === "restoring"
+            ? {
+                animation: `rui-window-genie ${String(theme.motion.genieDurationMs)}ms ${theme.motion.genieEasing} reverse both`,
+              }
+            : {};
 
   if (win.state === "minimized" && phase !== "minimizing") return null;
 
