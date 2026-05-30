@@ -48,6 +48,12 @@ import { useViewportMode } from "./util/viewport-mode";
 
 interface WindowProps {
   win: OpenWindow;
+  /**
+   * True when the window lives on a workspace other than the active one. The
+   * window stays mounted (its state survives) but renders with `display: none`
+   * so it is out of layout and not interactable until its workspace is active.
+   */
+  hidden?: boolean;
 }
 
 type AnimationPhase = "idle" | "opening" | "closing" | "minimizing";
@@ -94,7 +100,7 @@ interface ResizeState {
  * gesture and only commits to React state on pointerup, so dragging four
  * windows with live content stays at 60 fps.
  */
-export function Window({ win }: WindowProps) {
+export function Window({ win, hidden = false }: WindowProps) {
   const theme = useTheme();
   const apps = useApps();
   const wm = useWindowManager();
@@ -457,7 +463,8 @@ export function Window({ win }: WindowProps) {
           : (theme.elevation?.windowUnfocused ?? DEFAULT_WINDOW_SHADOW_UNFOCUSED),
         color: theme.palette.textPrimary,
         overflow: "hidden",
-        display: "flex",
+        // Off-workspace windows stay mounted but drop out of layout entirely.
+        display: hidden ? "none" : "flex",
         flexDirection: "column",
         zIndex: 100 + win.z,
         ...animationStyle,
