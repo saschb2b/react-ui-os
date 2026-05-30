@@ -38,3 +38,15 @@ const apps = [{ id: "notes", name: "Notes", content: () => <h1>Hello, desktop.</
 ```
 
 Wallpaper. Dock. Draggable resizable windows with macOS-style traffic lights. Focus tracking. Minimize-to-dock genie animation. Cmd-K Spotlight. Cmd-, Settings. All from that one tag.
+
+## App Store
+
+You do not have to build every app. Prebuilt ones live in a registry; install one with the CLI and the files land in your codebase, yours to edit.
+
+```bash
+npx @react-ui-os/cli add notes
+```
+
+{/* Splash pages emit body links without the configured base, like the hero
+actions above, so the path must include /react-ui-os/ explicitly. */}
+[Browse the App Store](/react-ui-os/app-store/) or [publish your own](/react-ui-os/app-store/publish/).
