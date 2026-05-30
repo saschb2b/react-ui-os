@@ -22,7 +22,8 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src"
+    "test": "vitest run",
+    "lint": "eslint src tests"
   },
   "dependencies": {
     "@react-ui-os/core": "workspace:*",
@@ -37,6 +38,7 @@
     "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
   }
 }
