@@ -55,5 +55,12 @@ npx @react-ui-os/cli add notes --force     # overwrite existing files
 
 ## Build your own
 
-Apps are not limited to this list. [Publish an app](/app-store/publish/)
-walks through authoring an app and adding it to a registry.
+Apps are not limited to this list, and they do not have to live in this repo.
+You can host your own registry and install from it:
+
+```bash
+npx @react-ui-os/cli add weather --registry https://you.example/registry.json
+```
+
+[Publish an app](/app-store/publish/) walks through authoring an app, adding it
+to a registry, and hosting that registry yourself.

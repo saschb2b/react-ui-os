@@ -78,24 +78,44 @@ Append an entry to the `apps` array in `registry.json`:
 The CLI copies these files into the consumer's `os-apps/<id>/` folder, so the
 `./icon` and `./store` relative imports keep working after the copy.
 
-## 3. Validate and test
+## 3. Try it locally
 
-A test guards the manifest against drift: every listed file must exist, and
-every file in the app folder must be listed.
+The CLI installs from any registry, not just the built-in one. Point `--registry`
+at your local `registry.json`; it reads the app sources from each entry's `dir`,
+so there is no build step for local testing:
+
+```bash
+npx @react-ui-os/cli add weather --registry ./registry.json --dir /tmp/try
+```
+
+## Host your own registry
+
+You do not need to add your app to this repository. Build your registry into a
+single self-contained file (every app's source inlined) and host it anywhere
+that serves files over HTTP: GitHub Pages, a CDN, an object store.
+
+```bash
+npx @react-ui-os/cli build registry.json --out public/registry.json
+```
+
+Publish `public/registry.json`, then anyone installs from it:
+
+```bash
+npx @react-ui-os/cli add weather --registry https://you.example/registry.json
+npx @react-ui-os/cli list --registry https://you.example/registry.json
+```
+
+A remote registry must be the built (inlined) form, because the CLI cannot read
+your repository's files over HTTP. The `build` command produces it.
+
+## Propose for the official registry
+
+The built-in registry is curated and intentionally small. If an app is broadly
+useful and matches the design discipline in `DESIGN.md`, open a pull request
+that adds its source and the `registry.json` entry. A test guards the manifest
+against drift (every listed file must exist, and every file in the app folder
+must be listed); CI runs it and the build on every PR.
 
 ```bash
 pnpm --filter @react-ui-os/example-apps test   # the drift guard
-pnpm --filter @react-ui-os/cli build           # bundle the app into the CLI
-node packages/cli/dist/index.js add weather --dir /tmp/try   # try the install
 ```
-
-## 4. Open a pull request
-
-The registry is curated and intentionally small. If an app is broadly useful
-and matches the design discipline in `DESIGN.md`, open a pull request that adds
-its source and the `registry.json` entry. CI runs the drift guard and the build
-on every PR.
-
-The CLI is first-party, so the registry can grow in other directions later
-(searching, scaffolding a blank app, installing from a third-party registry
-URL). Open an issue if one of those would help you.
