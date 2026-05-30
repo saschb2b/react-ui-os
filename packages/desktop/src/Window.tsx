@@ -160,12 +160,12 @@ export function Window({ win, hidden = false }: WindowProps) {
   const dragRef = useRef<DragState | null>(null);
   const resizeRef = useRef<ResizeState | null>(null);
   const [phase, setPhase] = useState<AnimationPhase>("opening");
-  // Glide the window between its normal bounds and the maximized work-area
-  // fill, instead of snapping instantly, the way macOS zoom and the Windows
-  // maximize do. Only true for the brief moment after a maximize toggle, so
-  // the per-frame transform writes during a drag or resize never transition.
-  const [maximizeAnimating, setMaximizeAnimating] = useState(false);
-  const prevMaximizedRef = useRef(win.state === "maximized");
+  // True only while a pointer drag or resize is in flight. Those write the
+  // transform (and size) to the DOM every frame, so the CSS geometry
+  // transition has to be off then. The rest of the time it stays on, which
+  // glides programmatic geometry changes (maximize, restore from maximize, and
+  // snapping into a zone) the way macOS zoom and Windows Snap do.
+  const [gesturing, setGesturing] = useState(false);
   const prevStateRef = useRef(win.state);
 
   // After the open animation finishes, drop the phase so subsequent re-renders
@@ -178,22 +178,6 @@ export function Window({ win, hidden = false }: WindowProps) {
       window.clearTimeout(id);
     };
   }, [theme.motion.windowOpenDurationMs]);
-
-  // Turn the transition on only when the maximized flag actually flips, and off
-  // again once the glide has played. Skips the initial mount so a window that
-  // opens maximized still uses the open animation, not a geometry glide.
-  useLayoutEffect(() => {
-    const isMax = win.state === "maximized";
-    if (prevMaximizedRef.current === isMax) return;
-    prevMaximizedRef.current = isMax;
-    setMaximizeAnimating(true);
-    const id = window.setTimeout(() => {
-      setMaximizeAnimating(false);
-    }, theme.motion.windowOpenDurationMs);
-    return () => {
-      window.clearTimeout(id);
-    };
-  }, [win.state, theme.motion.windowOpenDurationMs]);
 
   // Un-minimize plays the genie in reverse: the window grows out of its dock
   // tile back to where it sat. Detected here (not at the restore call site)
@@ -332,7 +316,7 @@ export function Window({ win, hidden = false }: WindowProps) {
     (e: ReactPointerEvent<HTMLDivElement>) => {
       if (e.button !== 0) return;
       if (win.state === "maximized") return;
-      setMaximizeAnimating(false);
+      setGesturing(true);
       focusWindow(win.id);
       e.currentTarget.setPointerCapture(e.pointerId);
       dragRef.current = {
@@ -382,6 +366,10 @@ export function Window({ win, hidden = false }: WindowProps) {
     (e: ReactPointerEvent<HTMLDivElement>) => {
       const drag = dragRef.current;
       if (!drag || drag.pointerId !== e.pointerId) return;
+      // The gesture is over, so the transition comes back on: a snap glides
+      // into its zone, while a plain release commits to the spot the window
+      // already sits at (same value, so nothing animates).
+      setGesturing(false);
       const snap = getSnapPreview();
       if (snap && snap.windowId === win.id) {
         setBounds(win.id, snap.rect.x, snap.rect.y, snap.rect.w, snap.rect.h);
@@ -400,7 +388,7 @@ export function Window({ win, hidden = false }: WindowProps) {
       if (e.button !== 0) return;
       if (win.state === "maximized") return;
       e.stopPropagation();
-      setMaximizeAnimating(false);
+      setGesturing(true);
       focusWindow(win.id);
       e.currentTarget.setPointerCapture(e.pointerId);
       resizeRef.current = {
@@ -458,6 +446,7 @@ export function Window({ win, hidden = false }: WindowProps) {
     (e: ReactPointerEvent<HTMLDivElement>) => {
       const r = resizeRef.current;
       if (!r || r.pointerId !== e.pointerId) return;
+      setGesturing(false);
       setBounds(win.id, r.lastX, r.lastY, r.lastW, r.lastH);
       resizeRef.current = null;
     },
@@ -513,11 +502,13 @@ export function Window({ win, hidden = false }: WindowProps) {
         width: maximized ? work.width : win.w,
         height: maximized ? work.height : win.h,
         transform: baseTransform,
-        // Present only during a maximize / restore so the geometry glides;
-        // absent during drag and resize so per-frame writes stay instant.
-        transition: maximizeAnimating
-          ? `transform ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}, width ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}, height ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}`
-          : undefined,
+        // Glide programmatic geometry changes (maximize, restore, snap). Off
+        // while a drag or resize writes the transform per frame, and during the
+        // open / close / genie phases, which run their own keyframes.
+        transition:
+          gesturing || phase !== "idle"
+            ? undefined
+            : `transform ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}, width ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}, height ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}`,
         backgroundColor: theme.palette.surface,
         backdropFilter: theme.blur.surface,
         WebkitBackdropFilter: theme.blur.surface,
