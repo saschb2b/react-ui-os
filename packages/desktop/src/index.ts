@@ -4,7 +4,7 @@ export { DesktopProvider } from "./DesktopProvider";
 export type { DesktopProviderProps } from "./DesktopProvider";
 export { Wallpaper } from "./Wallpaper";
 export { MenuBar, MENU_BAR_HEIGHT } from "./MenuBar";
-export { Dock, DOCK_HEIGHT, getDockTileRect } from "./Dock";
+export { Dock, DOCK_HEIGHT, DOCK_WIDTH, getDockTileRect } from "./Dock";
 export { WindowLayer } from "./WindowLayer";
 export { Window } from "./Window";
 export { Spotlight } from "./Spotlight";
@@ -43,6 +43,9 @@ export {
 export { DesktopBackdrop } from "./desktop-backdrop";
 export {
   SnapPreview,
+  setSnapPreview,
+  getSnapPreview,
+  subscribeSnapPreview,
   computeSnapZone,
   rectForZone,
   type SnapZone,
