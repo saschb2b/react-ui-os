@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "extract-types": "node scripts/extract-types.mjs",
-    "dev": "node scripts/extract-types.mjs && astro dev",
-    "build": "node scripts/extract-types.mjs && astro build",
+    "dev": "node scripts/extract-types.mjs && node scripts/build-registry.mjs && astro dev",
+    "build": "node scripts/extract-types.mjs && node scripts/build-registry.mjs && astro build",
     "preview": "astro preview",
     "typecheck": "node scripts/extract-types.mjs && astro check",
     "lint": "eslint src"

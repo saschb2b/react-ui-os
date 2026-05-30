@@ -1,0 +1,247 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "react-ui-os",
+  "homepage": "https://saschb2b.github.io/react-ui-os",
+  "author": "react-ui-os",
+  "items": [
+    {
+      "name": "notes",
+      "type": "registry:block",
+      "title": "Notes",
+      "description": "A two-pane plain-text notes app with persistence. The first line of each note becomes its title.",
+      "categories": ["productivity"],
+      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "docs": "Register Notes with the desktop: import { notesApp } from \"@/components/os-apps/notes\" and add it to the apps array you pass to <Desktop apps={[...]} />.",
+      "meta": { "appId": "notes", "export": "notesApp", "accent": "#f59e0b" },
+      "files": [
+        {
+          "path": "packages/example-apps/src/notes/index.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/notes/index.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/notes/icon.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/notes/icon.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/notes/notes-store.ts",
+          "type": "registry:file",
+          "target": "@components/os-apps/notes/notes-store.ts"
+        }
+      ]
+    },
+    {
+      "name": "calculator",
+      "type": "registry:block",
+      "title": "Calculator",
+      "description": "A macOS-style calculator with a real arithmetic engine: keyboard input, percent, and sign flip.",
+      "categories": ["utilities"],
+      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "docs": "Register Calculator with the desktop: import { calculatorApp } from \"@/components/os-apps/calculator\" and add it to the apps array you pass to <Desktop apps={[...]} />.",
+      "meta": { "appId": "calculator", "export": "calculatorApp", "accent": "#22c55e" },
+      "files": [
+        {
+          "path": "packages/example-apps/src/calculator/index.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/calculator/index.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/calculator/Calculator.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/calculator/Calculator.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/calculator/calc-engine.ts",
+          "type": "registry:file",
+          "target": "@components/os-apps/calculator/calc-engine.ts"
+        },
+        {
+          "path": "packages/example-apps/src/calculator/icon.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/calculator/icon.tsx"
+        }
+      ]
+    },
+    {
+      "name": "clock",
+      "type": "registry:block",
+      "title": "Clock",
+      "description": "World clock, stopwatch, and timer in one window, each its own tab.",
+      "categories": ["utilities"],
+      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "docs": "Register Clock with the desktop: import { clockApp } from \"@/components/os-apps/clock\" and add it to the apps array you pass to <Desktop apps={[...]} />.",
+      "meta": { "appId": "clock", "export": "clockApp", "accent": "#f97316" },
+      "files": [
+        {
+          "path": "packages/example-apps/src/clock/index.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/clock/index.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/clock/WorldClock.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/clock/WorldClock.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/clock/Stopwatch.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/clock/Stopwatch.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/clock/Timer.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/clock/Timer.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/clock/format.ts",
+          "type": "registry:file",
+          "target": "@components/os-apps/clock/format.ts"
+        },
+        {
+          "path": "packages/example-apps/src/clock/icon.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/clock/icon.tsx"
+        }
+      ]
+    },
+    {
+      "name": "calendar",
+      "type": "registry:block",
+      "title": "Calendar",
+      "description": "A month-view calendar with persisted events. Click a day to add, edit, or remove an event.",
+      "categories": ["productivity"],
+      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "docs": "Register Calendar with the desktop: import { calendarApp } from \"@/components/os-apps/calendar\" and add it to the apps array you pass to <Desktop apps={[...]} />.",
+      "meta": { "appId": "calendar", "export": "calendarApp", "accent": "#ef4444" },
+      "files": [
+        {
+          "path": "packages/example-apps/src/calendar/index.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/calendar/index.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/calendar/CalendarContent.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/calendar/CalendarContent.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/calendar/calendar-store.ts",
+          "type": "registry:file",
+          "target": "@components/os-apps/calendar/calendar-store.ts"
+        },
+        {
+          "path": "packages/example-apps/src/calendar/icon.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/calendar/icon.tsx"
+        }
+      ]
+    },
+    {
+      "name": "reminders",
+      "type": "registry:block",
+      "title": "Reminders",
+      "description": "A checklist app with persistence. Add items, check them off, and clear the completed ones.",
+      "categories": ["productivity"],
+      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "docs": "Register Reminders with the desktop: import { remindersApp } from \"@/components/os-apps/reminders\" and add it to the apps array you pass to <Desktop apps={[...]} />.",
+      "meta": { "appId": "reminders", "export": "remindersApp", "accent": "#fb7185" },
+      "files": [
+        {
+          "path": "packages/example-apps/src/reminders/index.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/reminders/index.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/reminders/RemindersContent.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/reminders/RemindersContent.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/reminders/reminders-store.ts",
+          "type": "registry:file",
+          "target": "@components/os-apps/reminders/reminders-store.ts"
+        },
+        {
+          "path": "packages/example-apps/src/reminders/icon.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/reminders/icon.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sketch",
+      "type": "registry:block",
+      "title": "Sketch",
+      "description": "A canvas drawing pad with a brush, eraser, color swatches, and adjustable stroke width.",
+      "categories": ["creative"],
+      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "docs": "Register Sketch with the desktop: import { sketchApp } from \"@/components/os-apps/sketch\" and add it to the apps array you pass to <Desktop apps={[...]} />.",
+      "meta": { "appId": "sketch", "export": "sketchApp", "accent": "#a855f7" },
+      "files": [
+        {
+          "path": "packages/example-apps/src/sketch/index.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/sketch/index.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/sketch/SketchContent.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/sketch/SketchContent.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/sketch/Toolbar.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/sketch/Toolbar.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/sketch/tool-icons.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/sketch/tool-icons.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/sketch/useSketchCanvas.ts",
+          "type": "registry:file",
+          "target": "@components/os-apps/sketch/useSketchCanvas.ts"
+        },
+        {
+          "path": "packages/example-apps/src/sketch/icon.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/sketch/icon.tsx"
+        }
+      ]
+    },
+    {
+      "name": "terminal",
+      "type": "registry:block",
+      "title": "Terminal",
+      "description": "A small command shell with a working command set, history, and tab completion.",
+      "categories": ["developer"],
+      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "docs": "Register Terminal with the desktop: import { terminalApp } from \"@/components/os-apps/terminal\" and add it to the apps array you pass to <Desktop apps={[...]} />.",
+      "meta": { "appId": "terminal", "export": "terminalApp", "accent": "#06b6d4" },
+      "files": [
+        {
+          "path": "packages/example-apps/src/terminal/index.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/terminal/index.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/terminal/Terminal.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/terminal/Terminal.tsx"
+        },
+        {
+          "path": "packages/example-apps/src/terminal/shell.ts",
+          "type": "registry:file",
+          "target": "@components/os-apps/terminal/shell.ts"
+        },
+        {
+          "path": "packages/example-apps/src/terminal/icon.tsx",
+          "type": "registry:file",
+          "target": "@components/os-apps/terminal/icon.tsx"
+        }
+      ]
+    }
+  ]
+}
