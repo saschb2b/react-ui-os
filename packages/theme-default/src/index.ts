@@ -119,6 +119,17 @@ export const defaultTheme: OsTheme = {
         { value: "hidden", label: "Hidden" },
       ],
     },
+    "chrome.windowControls": {
+      kind: "select",
+      section: "Layout",
+      label: "Window controls",
+      description: "Style of the close, minimize, and maximize buttons.",
+      options: [
+        { value: "traffic-lights", label: "macOS" },
+        { value: "windows", label: "Windows" },
+        { value: "minimal", label: "Minimal" },
+      ],
+    },
     "wallpaper.vignette": {
       kind: "toggle",
       section: "Appearance",

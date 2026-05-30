@@ -121,6 +121,16 @@ export function createMintablesTheme(options: MintablesThemeOptions = {}): OsThe
           { value: "hidden", label: "Hidden" },
         ],
       },
+      "chrome.windowControls": {
+        kind: "select",
+        section: "Layout",
+        label: "Window controls",
+        options: [
+          { value: "traffic-lights", label: "macOS" },
+          { value: "windows", label: "Windows" },
+          { value: "minimal", label: "Minimal" },
+        ],
+      },
     },
   };
 }

@@ -105,6 +105,16 @@ export function createSaasTheme(options: SaasThemeOptions = {}): OsTheme {
           { value: "hidden", label: "Hidden" },
         ],
       },
+      "chrome.windowControls": {
+        kind: "select",
+        section: "Layout",
+        label: "Window controls",
+        options: [
+          { value: "minimal", label: "Minimal" },
+          { value: "traffic-lights", label: "macOS" },
+          { value: "windows", label: "Windows" },
+        ],
+      },
       "chrome.menuBar": {
         kind: "select",
         section: "Layout",
