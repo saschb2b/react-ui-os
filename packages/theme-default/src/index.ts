@@ -39,6 +39,11 @@ export const defaultTheme: OsTheme = {
     surface: "blur(20px) saturate(160%)",
     spotlight: "blur(28px) saturate(160%)",
   },
+  elevation: {
+    windowFocused:
+      "0 20px 50px -12px rgba(0,0,0,0.55), 0 8px 18px -6px rgba(0,0,0,0.35)",
+    windowUnfocused: "0 10px 24px -8px rgba(0,0,0,0.4)",
+  },
   wallpaper: {
     // Unbranded baseline ships no wallpaper image. The palette background
     // fills the desktop. A theme like theme-mintables can supply one.

@@ -57,6 +57,12 @@ type ResizeDir = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
 const MIN_W = 240;
 const MIN_H = 160;
 
+// Neutral default elevation, used when a theme does not declare `elevation`.
+// Black at low alpha, deeper when focused: shadow conveys lift, never tint.
+const DEFAULT_WINDOW_SHADOW_FOCUSED =
+  "0 20px 50px -12px rgba(0,0,0,0.55), 0 8px 18px -6px rgba(0,0,0,0.35)";
+const DEFAULT_WINDOW_SHADOW_UNFOCUSED = "0 10px 24px -8px rgba(0,0,0,0.4)";
+
 interface DragState {
   pointerId: number;
   startClientX: number;
@@ -435,8 +441,8 @@ export function Window({ win }: WindowProps) {
         border: `1px solid ${theme.palette.border}`,
         borderRadius: maximized ? 0 : theme.shape.windowRadius,
         boxShadow: focused
-          ? "0 20px 50px -12px rgba(0,0,0,0.55), 0 8px 18px -6px rgba(0,0,0,0.35)"
-          : "0 10px 24px -8px rgba(0,0,0,0.4)",
+          ? (theme.elevation?.windowFocused ?? DEFAULT_WINDOW_SHADOW_FOCUSED)
+          : (theme.elevation?.windowUnfocused ?? DEFAULT_WINDOW_SHADOW_UNFOCUSED),
         color: theme.palette.textPrimary,
         overflow: "hidden",
         display: "flex",

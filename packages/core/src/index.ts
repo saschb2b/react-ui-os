@@ -7,6 +7,7 @@ export type {
   OsTheme,
   OsThemeBlur,
   OsThemeChrome,
+  OsThemeElevation,
   OsThemeMotion,
   OsThemePalette,
   OsThemeShape,

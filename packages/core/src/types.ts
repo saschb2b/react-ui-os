@@ -86,6 +86,16 @@ export interface OsThemeBlur {
   spotlight: string;
 }
 
+export interface OsThemeElevation {
+  /**
+   * CSS `box-shadow` for the focused window (the deepest elevation). Shadows
+   * convey lift only: keep them neutral (black at low alpha), never tinted.
+   */
+  windowFocused: string;
+  /** CSS `box-shadow` for unfocused windows. Shallower than focused. */
+  windowUnfocused: string;
+}
+
 export interface OsThemeWallpaper {
   /** Wallpaper image url. When absent, the palette background fills the desktop. */
   src?: string;
@@ -110,6 +120,12 @@ export interface OsTheme {
   shape: OsThemeShape;
   motion: OsThemeMotion;
   blur: OsThemeBlur;
+  /**
+   * Window drop shadows. Optional: when a theme omits this, the components
+   * fall back to the neutral default elevation. A flat or retro theme can set
+   * both to `"none"`; a cinematic theme can deepen them.
+   */
+  elevation?: OsThemeElevation;
   wallpaper: OsThemeWallpaper;
   chrome: OsThemeChrome;
   /**

@@ -115,6 +115,12 @@
           "optional": false
         },
         {
+          "name": "elevation",
+          "type": "OsThemeElevation",
+          "optional": true,
+          "description": "Window drop shadows. Optional: when a theme omits this, the components\nfall back to the neutral default elevation. A flat or retro theme can set\nboth to `\"none\"`; a cinematic theme can deepen them."
+        },
+        {
           "name": "wallpaper",
           "type": "OsThemeWallpaper",
           "optional": false
