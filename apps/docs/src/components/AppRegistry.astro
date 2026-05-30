@@ -24,6 +24,7 @@ interface AppEntry {
   category?: string;
   accent?: string;
   dependencies?: string[];
+  dir?: string;
   files?: string[];
 }
 
@@ -37,6 +38,10 @@ const reg = registry as Registry;
 const items = [...reg.apps].sort((a, b) => a.name.localeCompare(b.name));
 
 const installCommand = (id: string) => `npx @react-ui-os/cli add ${id}`;
+
+// Link each card to its source folder so people can read an app before they
+// copy it in. The built-in registry lives in this repo.
+const repoTree = "https://github.com/saschb2b/react-ui-os/tree/main";
 
 const categories = Array.from(
   new Set(items.map((i) => i.category).filter((c): c is string => Boolean(c))),
@@ -107,6 +112,19 @@ const monogram = (item: AppEntry) => item.name.charAt(0).toUpperCase();
               <span>
                 {fileCount(item)} {fileCount(item) === 1 ? "file" : "files"}
               </span>
+              {item.dir && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <a
+                    class="rui-store__source"
+                    href={`${repoTree}/${item.dir}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View source
+                  </a>
+                </>
+              )}
             </div>
 
             <div class="rui-store__install">
@@ -305,8 +323,20 @@ const monogram = (item: AppEntry) => item.name.charAt(0).toUpperCase();
   }
 
   .rui-store__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     font-size: 0.75rem;
     color: var(--sl-color-gray-4);
+  }
+
+  .rui-store__source {
+    color: var(--sl-color-accent);
+    text-decoration: none;
+  }
+
+  .rui-store__source:hover {
+    text-decoration: underline;
   }
 
   .rui-store__install {
