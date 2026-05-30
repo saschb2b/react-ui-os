@@ -17,7 +17,7 @@ import { useWindowManager } from "@react-ui-os/core";
 
 | Property         | Type                                      | Description                                                                                 |
 | ---------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `state`          | `WindowManagerState`                      | Raw state: `{ windows, focusedId, nextZ }`. Rarely needed; the convenience fields cover it. |
+| `state`          | `WindowManagerState`                      | Raw state: `{ windows, focusedId, nextZ, workspaces, activeWorkspaceId }`. Rarely needed; the convenience fields cover it. |
 | `windows`        | `OpenWindow[]`                            | All currently-open windows in z-index order.                                                |
 | `focusedWindow`  | `OpenWindow \| null`                      | The currently-focused window, or `null`.                                                    |
 | `windowById`     | `(id: string) => OpenWindow \| undefined` | Look up a window by its stable id.                                                          |
@@ -30,6 +30,10 @@ import { useWindowManager } from "@react-ui-os/core";
 | `moveWindow`     | `(id, x, y) => void`                      | Update position only.                                                                       |
 | `resizeWindow`   | `(id, w, h) => void`                      | Update size only.                                                                           |
 | `setBounds`      | `(id, x, y, w, h) => void`                | Update position + size in one dispatch.                                                     |
+| `switchWorkspace` | `(workspaceId) => void`                  | Show another workspace; pulls focus there.                                                  |
+| `moveWindowToWorkspace` | `(id, workspaceId) => void`        | Move a window to another workspace.                                                         |
+| `addWorkspace`   | `(workspaceId?) => void`                  | Append a workspace; generates an id when omitted.                                           |
+| `removeWorkspace` | `(workspaceId) => void`                  | Remove a workspace; refuses the last and migrates its windows to the first remaining.       |
 
 ## `WindowPayload`
 
