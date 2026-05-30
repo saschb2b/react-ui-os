@@ -1,58 +1,41 @@
 ---
 /**
- * The App Store gallery. Renders one card per registry item, sourced from the
- * repo-root registry.json (the same file `shadcn build` consumes), so the
- * gallery and the installable JSON never drift. Search and category filtering
- * run client-side with a small vanilla script; the cards themselves are
+ * The App Store gallery. Renders one card per app, sourced from the repo-root
+ * registry.json (the same manifest the CLI bundles from), so the gallery and
+ * the installable apps never drift. Search and category filtering run
+ * client-side with a small vanilla script; the cards themselves are
  * server-rendered so Pagefind indexes them and the page works without JS.
  */
 import registry from "../../../../registry.json";
 
-interface RegistryFile {
-  path: string;
-  type: string;
-  target?: string;
-}
-
-interface RegistryItem {
+interface AppEntry {
+  id: string;
   name: string;
-  type: string;
-  title?: string;
   description?: string;
-  categories?: string[];
+  category?: string;
+  accent?: string;
   dependencies?: string[];
-  meta?: { accent?: string };
-  files?: RegistryFile[];
+  files?: string[];
 }
 
 interface Registry {
   name: string;
   homepage?: string;
-  items: RegistryItem[];
+  apps: AppEntry[];
 }
 
 const reg = registry as Registry;
-const items = [...reg.items].sort((a, b) =>
-  (a.title ?? a.name).localeCompare(b.title ?? b.name),
-);
+const items = [...reg.apps].sort((a, b) => a.name.localeCompare(b.name));
 
-// The docs site serves the built per-item JSON at <homepage>/r/<name>.json.
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const origin = Astro.site?.origin ?? "";
-const homepage = reg.homepage ?? `${origin}${base}`;
-const installUrl = (name: string) => `${homepage}/r/${name}.json`;
-const installCommand = (name: string) =>
-  `npx shadcn@latest add ${installUrl(name)}`;
+const installCommand = (id: string) => `npx @react-ui-os/cli add ${id}`;
 
 const categories = Array.from(
-  new Set(items.flatMap((i) => i.categories ?? [])),
+  new Set(items.map((i) => i.category).filter((c): c is string => Boolean(c))),
 ).sort();
 
-const fileCount = (item: RegistryItem) => item.files?.length ?? 0;
-const accentOf = (item: RegistryItem) =>
-  item.meta?.accent ?? "var(--sl-color-accent)";
-const monogram = (item: RegistryItem) =>
-  (item.title ?? item.name).charAt(0).toUpperCase();
+const fileCount = (item: AppEntry) => item.files?.length ?? 0;
+const accentOf = (item: AppEntry) => item.accent ?? "var(--sl-color-accent)";
+const monogram = (item: AppEntry) => item.name.charAt(0).toUpperCase();
 ---
 
 <div class="rui-store">
@@ -81,14 +64,13 @@ const monogram = (item: RegistryItem) =>
   <div class="rui-store__grid">
     {
       items.map((item) => {
-        const title = item.title ?? item.name;
         const haystack =
-          `${title} ${item.description ?? ""} ${(item.categories ?? []).join(" ")}`.toLowerCase();
+          `${item.name} ${item.description ?? ""} ${item.category ?? ""}`.toLowerCase();
         return (
           <article
             class="rui-store__card"
-            data-name={item.name}
-            data-categories={(item.categories ?? []).join(" ")}
+            data-name={item.id}
+            data-categories={item.category ?? ""}
             data-haystack={haystack}
           >
             <header class="rui-store__head">
@@ -100,9 +82,9 @@ const monogram = (item: RegistryItem) =>
                 {monogram(item)}
               </span>
               <div class="rui-store__titles">
-                <h3 class="rui-store__title">{title}</h3>
-                {item.categories?.[0] && (
-                  <span class="rui-store__cat">{item.categories[0]}</span>
+                <h3 class="rui-store__title">{item.name}</h3>
+                {item.category && (
+                  <span class="rui-store__cat">{item.category}</span>
                 )}
               </div>
             </header>
@@ -118,12 +100,12 @@ const monogram = (item: RegistryItem) =>
             </div>
 
             <div class="rui-store__install">
-              <code class="rui-store__cmd">{installCommand(item.name)}</code>
+              <code class="rui-store__cmd">{installCommand(item.id)}</code>
               <button
                 type="button"
                 class="rui-store__copy"
-                data-copy={installCommand(item.name)}
-                aria-label={`Copy install command for ${title}`}
+                data-copy={installCommand(item.id)}
+                aria-label={`Copy install command for ${item.name}`}
               >
                 Copy
               </button>

@@ -46,13 +46,13 @@ There is more in the box: workspaces, Mission Control, an app switcher (Cmd-Tab)
 
 ## App Store
 
-Apps are not bundled into the library. Prebuilt ones live in a registry, and you copy the ones you want into your project with the [shadcn](https://ui.shadcn.com/docs/cli) CLI:
+Apps are not bundled into the library. Prebuilt ones live in a registry, and you copy the ones you want into your project with the react-ui-os CLI:
 
 ```bash
-npx shadcn@latest add https://saschb2b.github.io/react-ui-os/r/notes.json
+npx @react-ui-os/cli add notes
 ```
 
-The files land in your codebase, so you own them and can edit them after install. Notes, Calculator, Clock, Calendar, Reminders, Sketch, and Terminal are in the registry today. Browse them in the [App Store](https://saschb2b.github.io/react-ui-os/app-store/), or [publish your own](https://saschb2b.github.io/react-ui-os/app-store/publish/) so others can install it.
+That copies the app's files into your codebase, so you own them and can edit them after install, then prints the dependencies to install and how to register it. Notes, Calculator, Clock, Calendar, Reminders, Sketch, and Terminal are in the registry today. Browse them in the [App Store](https://saschb2b.github.io/react-ui-os/app-store/), or [publish your own](https://saschb2b.github.io/react-ui-os/app-store/publish/) so others can install it.
 
 ## Why this exists
 
@@ -115,12 +115,13 @@ react-ui-os/
   packages/
     core/                        # @react-ui-os/core (window-manager, types, storage)
     desktop/                     # @react-ui-os/desktop (components)
+    cli/                         # @react-ui-os/cli (installs apps from the registry)
     example-apps/                # @react-ui-os/example-apps (the registry's seed apps)
     theme-default/               # @react-ui-os/theme-default
     theme-mintables/             # @react-ui-os/theme-mintables
     theme-saas/                  # @react-ui-os/theme-saas
   .github/workflows/             # CI + Pages deploy
-  registry.json                  # shadcn app registry (built and served by the docs site)
+  registry.json                  # the app registry the CLI and docs gallery read
   CLAUDE.md                      # architecture and contribution rules
   DESIGN.md                      # visual direction and design tokens
 ```

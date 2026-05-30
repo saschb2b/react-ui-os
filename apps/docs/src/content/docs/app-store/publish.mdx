@@ -1,26 +1,22 @@
 ---
 title: Publish an app
-description: Author a react-ui-os app, add it to a registry, and share it so anyone can install it with the shadcn CLI.
+description: Author a react-ui-os app and add it to the registry so anyone can install it with the CLI.
 sidebar:
   order: 2
 ---
 
-The [App Store](/app-store/) is a shadcn registry. The library ships the
-registry skeleton and seeds it with the example apps; it does not bundle a
-growing app suite. New apps live in registries, and the most direct way to
-share one with the community is to host your own.
-
-An app is distributed as a registry item: a small JSON file that lists the
-app's source files and its npm dependencies. `npx shadcn add <url>` reads it
-and copies the files into the consumer's project.
+The [App Store](/app-store/) is driven by one file: `registry.json` at the repo
+root. It lists every app, and the [`@react-ui-os/cli`](https://github.com/saschb2b/react-ui-os/tree/main/packages/cli)
+bundles their source from it. Adding an app is two steps: write the app, then
+add a manifest entry.
 
 ## 1. Author the app
 
-An app is one `App` object plus whatever component tree it needs. Keep each
-app in its own folder so its files copy together and the relative imports
-survive the move.
+An app is one `App` object plus whatever component tree it needs. Keep each app
+in its own folder so its files copy together and the relative imports survive
+the move.
 
-```tsx title="src/os-apps/weather/index.tsx"
+```tsx title="packages/example-apps/src/weather/index.tsx"
 "use client";
 
 import type { App } from "@react-ui-os/core";
@@ -48,106 +44,58 @@ export const weatherApp: App = {
 Read colors, radii, and motion from `useTheme()` rather than hardcoding them,
 guard any `window`/`document` access for SSR, and persist state through the
 [storage adapter](/api/usewindowmanager/) instead of `localStorage` directly.
-The example apps under `packages/example-apps/src` are working references for
-the two-pane layout, persistence, and keyboard handling.
+The apps under `packages/example-apps/src` are working references for the
+two-pane layout, persistence, and keyboard handling.
 
-## 2. Describe it as a registry item
+## 2. Add a manifest entry
 
-Add an entry to a `registry.json`. The schema is shadcn's; these are the
-fields an app uses:
-
-- `name`: the install id, unique within the registry.
-- `type`: `registry:block` for a multi-file app.
-- `title`, `description`, `categories`: shown in a gallery.
-- `dependencies`: npm packages the app imports. Always
-  `@react-ui-os/core` and `@react-ui-os/desktop`, plus anything else it pulls
-  in.
-- `files`: one entry per source file. `path` is where the file lives in the
-  registry repo; `target` is where it lands in the consumer's project.
-- `docs`: a post-install message. Use it to tell the consumer to register the
-  app with `<Desktop>`.
-- `meta`: free-form. The gallery reads `meta.accent` for the card.
+Append an entry to the `apps` array in `registry.json`:
 
 ```json title="registry.json"
 {
-  "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "acme-apps",
-  "homepage": "https://acme.com",
-  "items": [
-    {
-      "name": "weather",
-      "type": "registry:block",
-      "title": "Weather",
-      "description": "Today at a glance.",
-      "categories": ["utilities"],
-      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
-      "docs": "Register Weather: import { weatherApp } from \"@/components/os-apps/weather\" and add it to the apps array you pass to <Desktop apps={[...]} />.",
-      "meta": { "accent": "#38bdf8" },
-      "files": [
-        {
-          "path": "src/os-apps/weather/index.tsx",
-          "type": "registry:file",
-          "target": "@components/os-apps/weather/index.tsx"
-        }
-      ]
-    }
-  ]
+  "id": "weather",
+  "name": "Weather",
+  "description": "Today at a glance.",
+  "category": "utilities",
+  "accent": "#38bdf8",
+  "export": "weatherApp",
+  "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+  "dir": "packages/example-apps/src/weather",
+  "files": ["index.tsx"]
 }
 ```
 
-`@components` in a `target` resolves through the consumer's `components.json`
-alias, so the app lands in their components directory under `os-apps/`. Every
-file of one app shares that `os-apps/<id>/` prefix, which keeps the `./icon`
-and `./store` imports valid after the copy.
+| Field          | Meaning                                                          |
+| -------------- | ---------------------------------------------------------------- |
+| `id`           | Install id and the folder name the CLI writes to                 |
+| `export`       | The named export the consumer registers with `<Desktop>`         |
+| `category`     | One word, used by the gallery filter                             |
+| `accent`       | Hex color for the gallery card                                   |
+| `dependencies` | npm packages the app imports (always core and desktop)           |
+| `dir`          | Source folder, relative to the repo root                         |
+| `files`        | The files in `dir` to copy, by name                              |
 
-## 3. Build and test
+The CLI copies these files into the consumer's `os-apps/<id>/` folder, so the
+`./icon` and `./store` relative imports keep working after the copy.
 
-`shadcn build` inlines each file's content into one JSON per item under
-`public/r`:
+## 3. Validate and test
 
-```bash
-npx shadcn@latest build
-```
-
-Install from the generated file to confirm it copies cleanly, before you
-publish anything:
-
-```bash
-npx shadcn@latest add ./public/r/weather.json
-```
-
-## 4. Host your own registry
-
-A registry is static JSON over HTTP. Serve the `public/r` directory from any
-host (GitHub Pages, Vercel, an S3 bucket) and share the per-item URL:
+A test guards the manifest against drift: every listed file must exist, and
+every file in the app folder must be listed.
 
 ```bash
-npx shadcn@latest add https://acme.com/r/weather.json
+pnpm --filter @react-ui-os/example-apps test   # the drift guard
+pnpm --filter @react-ui-os/cli build           # bundle the app into the CLI
+node packages/cli/dist/index.js add weather --dir /tmp/try   # try the install
 ```
 
-Consumers who add your registry to their `components.json` can install by
-name:
+## 4. Open a pull request
 
-```json title="components.json"
-{
-  "registries": {
-    "@acme": "https://acme.com/r/{name}.json"
-  }
-}
-```
+The registry is curated and intentionally small. If an app is broadly useful
+and matches the design discipline in `DESIGN.md`, open a pull request that adds
+its source and the `registry.json` entry. CI runs the drift guard and the build
+on every PR.
 
-```bash
-npx shadcn@latest add @acme/weather
-```
-
-This is the path that scales: anyone can publish a registry of react-ui-os
-apps without touching this repository, and consumers pick from any of them.
-
-## Propose an app for the official registry
-
-The official registry is intentionally small and curated. If an app is broadly
-useful and matches the design discipline in `DESIGN.md`, open a pull request
-that adds its source and a `registry.json` entry pointing at it, then run
-`pnpm registry:build` to confirm it builds. See the shadcn
-[registry-item schema](https://ui.shadcn.com/docs/registry/registry-item-json)
-for the full field reference.
+The CLI is first-party, so the registry can grow in other directions later
+(searching, scaffolding a blank app, installing from a third-party registry
+URL). Open an issue if one of those would help you.

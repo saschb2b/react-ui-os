@@ -1,0 +1,25 @@
+{
+  "name": "@react-ui-os/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "react-ui-os": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build-data.mjs && tsup",
+    "typecheck": "node scripts/build-data.mjs && tsc --noEmit",
+    "test": "node scripts/build-data.mjs && vitest run",
+    "lint": "eslint src tests"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.0.0"
+  }
+}

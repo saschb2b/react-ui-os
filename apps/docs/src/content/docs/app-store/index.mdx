@@ -1,6 +1,6 @@
 ---
 title: App Store
-description: Browse the react-ui-os app registry and install apps into your own project with the shadcn CLI.
+description: Browse the react-ui-os app registry and install apps into your own project with the CLI.
 sidebar:
   order: 1
 ---
@@ -8,33 +8,32 @@ sidebar:
 import AppRegistry from "~/components/AppRegistry.astro";
 
 Apps are not bundled into the library. They live in a registry, and you copy
-the ones you want into your own project with the [shadcn](https://ui.shadcn.com/docs/cli)
-CLI. The files land in your codebase, so you own them and can edit them after
-install.
+the ones you want into your own project with the react-ui-os CLI. The files
+land in your codebase, so you own them and can edit them after install.
 
 Each app is a React component tree plus a small `App` descriptor. Installing
 one copies its source files and lists `@react-ui-os/core` and
 `@react-ui-os/desktop` as dependencies; nothing else is pulled in.
 
 :::note[Prerequisites]
-You need `@react-ui-os/core` and `@react-ui-os/desktop` installed, and a
-`components.json` in your project (run `npx shadcn@latest init` once if you
-do not have one). The install command then copies an app into your configured
-components directory under `os-apps/`.
+You need `@react-ui-os/core` and `@react-ui-os/desktop` installed. No config
+and no other tooling: the CLI copies the app into `src/os-apps/<id>/` (or
+`os-apps/<id>/` when the project has no `src` directory). Override the location
+with `--dir`.
 :::
 
 <AppRegistry />
 
 ## After installing
 
-`shadcn add` copies the files and prints the dependencies to install. The last
-step is to register the app with the desktop: import its `App` descriptor and
-pass it in the `apps` array.
+`add` copies the files, then prints the dependencies to install and how to
+register the app. The last step is to import its `App` descriptor and pass it
+in the `apps` array.
 
 ```tsx
 import { Desktop } from "@react-ui-os/desktop";
 import { defaultTheme } from "@react-ui-os/theme-default";
-import { notesApp } from "@/components/os-apps/notes";
+import { notesApp } from "./os-apps/notes";
 
 export function App() {
   return <Desktop apps={[notesApp]} theme={defaultTheme} />;
@@ -45,25 +44,16 @@ That single object lights up the dock, the menu bar, Spotlight, and the
 keyboard shortcuts. From there the code is yours: rename it, restyle it, or
 strip out the parts you do not need.
 
-## Shorter install commands
-
-Adding the registry to your `components.json` lets you install by name instead
-of pasting a full URL:
-
-```json
-{
-  "registries": {
-    "@react-ui-os": "https://saschb2b.github.io/react-ui-os/r/{name}.json"
-  }
-}
-```
+## Other commands
 
 ```bash
-npx shadcn@latest add @react-ui-os/notes
+npx @react-ui-os/cli list                  # show every app in the registry
+npx @react-ui-os/cli add calculator clock  # add more than one at once
+npx @react-ui-os/cli add notes --dir app/desktop-apps
+npx @react-ui-os/cli add notes --force     # overwrite existing files
 ```
 
 ## Build your own
 
 Apps are not limited to this list. [Publish an app](/app-store/publish/)
-walks through authoring an app, describing it as a registry item, and hosting
-your own registry so anyone can install it.
+walks through authoring an app and adding it to a registry.

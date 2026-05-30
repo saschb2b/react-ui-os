@@ -12,9 +12,9 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 
-# Generated registry JSON (built from registry.json by registry:build,
-# served by the docs site at /r/<name>.json). Derived, never committed.
-apps/docs/public/r
+# Apps inlined into the CLI bundle from registry.json by its build-data step.
+# Derived from source, never committed.
+packages/cli/src/apps.data.json
 
 # Logs
 *.log
