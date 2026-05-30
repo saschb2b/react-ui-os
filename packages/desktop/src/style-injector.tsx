@@ -11,6 +11,14 @@ import { useEffect } from "react";
  * The genie animation references CSS custom properties (`--genie-dx`,
  * `--genie-dy`) that the Window component sets before triggering the
  * minimize, so each window flies toward its own dock tile.
+ *
+ * Open and close use the individual `scale` property rather than baking a
+ * transform into the keyframe. The window already carries its position in an
+ * inline `transform`; `scale` composes on top of it and pivots on the default
+ * center transform-origin, so the window scales about its own center wherever
+ * it sits. That matches macOS (Lion onward), where a new window grows from a
+ * point centered on its final position. (Folding the scale into the keyframe's
+ * transform would discard the position and fly the window in from the origin.)
  */
 export function StyleInjector() {
   useEffect(() => {
@@ -20,12 +28,12 @@ export function StyleInjector() {
     style.id = id;
     style.textContent = `
       @keyframes rui-window-open {
-        from { opacity: 0; transform: translate3d(var(--rui-open-x, 0), calc(var(--rui-open-y, 0) + 6px), 0) scale(0.985); }
-        to   { opacity: 1; }
+        from { opacity: 0; scale: 0.92; }
+        to   { opacity: 1; scale: 1; }
       }
       @keyframes rui-window-close {
-        from { opacity: 1; }
-        to   { opacity: 0; transform: translate3d(var(--rui-open-x, 0), calc(var(--rui-open-y, 0) + 6px), 0) scale(0.985); }
+        from { opacity: 1; scale: 1; }
+        to   { opacity: 0; scale: 0.92; }
       }
       @keyframes rui-window-genie {
         from {
