@@ -208,15 +208,22 @@ export function Window({ win, hidden = false }: WindowProps) {
 
   const handleMinimize = useCallback(() => {
     const el = elRef.current;
-    const dockRect = appPayload ? getDockTileRect(appPayload) : null;
-    if (el && dockRect) {
+    if (el) {
       const winRect = el.getBoundingClientRect();
-      const dx =
-        dockRect.left + dockRect.width / 2 - (winRect.left + winRect.width / 2);
-      const dy =
-        dockRect.top + dockRect.height / 2 - (winRect.top + winRect.height / 2);
-      el.style.setProperty("--genie-dx", `${String(dx)}px`);
-      el.style.setProperty("--genie-dy", `${String(dy)}px`);
+      const dockRect = appPayload ? getDockTileRect(appPayload) : null;
+      // The genie shrinks the window about its own center, so the target
+      // translate is the one that lands that center on the dock tile's center.
+      // Without a tile (system windows, hidden dock) it shrinks in place.
+      const toCenterX = dockRect
+        ? dockRect.left + dockRect.width / 2
+        : winRect.left + winRect.width / 2;
+      const toCenterY = dockRect
+        ? dockRect.top + dockRect.height / 2
+        : winRect.top + winRect.height / 2;
+      el.style.setProperty("--genie-from-x", `${String(winRect.left)}px`);
+      el.style.setProperty("--genie-from-y", `${String(winRect.top)}px`);
+      el.style.setProperty("--genie-to-x", `${String(toCenterX - winRect.width / 2)}px`);
+      el.style.setProperty("--genie-to-y", `${String(toCenterY - winRect.height / 2)}px`);
     }
     setPhase("minimizing");
     const t = window.setTimeout(() => {
