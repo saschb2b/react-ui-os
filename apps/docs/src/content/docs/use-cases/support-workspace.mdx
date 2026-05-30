@@ -1,0 +1,132 @@
+---
+title: Support workspace
+description: An agent working many tickets at once. One window per ticket via per-instance system windows, side-by-side snapping to compare, a workspace per queue, notifications and a queue-depth tray widget for incoming work.
+sidebar:
+  order: 4
+---
+
+import LivePreview from "~/components/LivePreview.astro";
+
+The product is the console a support or success agent lives in all day. They are never on one ticket: a billing question is open next to the customer's account, a bug report sits beside the repro steps, and a new assignment lands while both are still on screen. This is the shape where the multi-window model stops being a nicety and becomes the point.
+
+## Why the metaphor fits
+
+- Real support is parallel. A single-pane inbox forces one ticket at a time and loses the second you were holding in your head. Windows keep every open thread visible.
+- Comparing is constant: ticket next to customer record, two related reports, the conversation next to the knowledge-base article. [Snapping](/components/snapping/) puts any two side by side in one keystroke.
+- Context switches are violent (a P1 interrupts a slow billing thread). [Workspaces](/components/workspaces/) let an agent park a half-built layout and jump to the fire, then come back to it intact.
+
+## One window per ticket
+
+A [system window](/components/window/) opened with `args` becomes one distinct window per argument set. Register the ticket window once; open it per ticket id and each gets its own draggable, snappable frame with the ticket number in the title bar.
+
+```tsx title="src/ticket-window.tsx"
+import { registerSystemWindow } from "@react-ui-os/desktop";
+import { TicketThread } from "./TicketThread";
+
+registerSystemWindow("ticket", {
+  // A function name resolves per instance, so the title bar reads the id.
+  name: ({ ticketId }) => `Ticket #${String(ticketId)}`,
+  tagline: "Conversation",
+  defaultBounds: { w: 520, h: 640 },
+  content: ({ args }) => <TicketThread id={String(args?.ticketId)} />,
+});
+
+// Two tickets open at once, one window each:
+openWindow({ kind: "system", systemId: "ticket", args: { ticketId: "4821" } });
+openWindow({ kind: "system", systemId: "ticket", args: { ticketId: "4822" } });
+```
+
+`windowIdOf` serializes the args into the window id, so the same `ticketId` focuses the existing window instead of spawning a duplicate, and two different ids coexist. See the [per-instance arguments recipe](/recipes/overview/#per-instance-system-window-arguments).
+
+## Compare side by side
+
+Once two ticket windows are open, the agent puts them edge to edge with the same snap vocabulary every OS uses: **Cmd/Ctrl + ←** sends the focused window to the left half, **Cmd/Ctrl + →** to the right. Dragging a title bar to a screen edge does the same, with a translucent preview of the target before release.
+
+```text
+Cmd/Ctrl + ←   focused ticket to the left half
+Cmd/Ctrl + →   customer record to the right half
+```
+
+Nothing to wire: snapping is part of every window `<Desktop>` renders. The full zone map (halves, quarters, maximize) is on the [Snapping](/components/snapping/) page.
+
+## A workspace per queue
+
+Give each queue or context its own [workspace](/components/workspaces/) so layouts do not collide. Billing tickets live on one, technical on another, and an agent flips between them with **Ctrl + Alt + ←/→** without tearing down either arrangement. The menu-bar pips show which one is active.
+
+```tsx
+import { useWindowManager } from "@react-ui-os/core";
+
+function QueueSwitcher() {
+  const { state, switchWorkspace } = useWindowManager();
+  return state.workspaces.map((id) => (
+    <button key={id} type="button" onClick={() => switchWorkspace(id)}>
+      {labelFor(id)}
+    </button>
+  ));
+}
+```
+
+Opening a ticket that already lives on another workspace pulls the agent to that workspace and focuses it, the same way clicking a dock tile jumps you to its space. That means "open ticket #4821" always lands on the one window, wherever it is.
+
+## Incoming work: notify and a tray badge
+
+New assignments should reach the agent without stealing focus from the ticket they are typing in. A headless companion subscribes to the assignment stream and fires a notification with an Open action that closes over `openWindow`:
+
+```tsx title="src/TicketInbox.tsx"
+import { useEffect } from "react";
+import { notify, useWindowManager } from "@react-ui-os/core";
+import { subscribeAssignments } from "./queue";
+
+export function TicketInbox() {
+  const { openWindow } = useWindowManager();
+  useEffect(() => {
+    return subscribeAssignments((ticket) => {
+      notify({
+        title: `Assigned: #${ticket.id}`,
+        body: ticket.subject,
+        level: "info",
+        actions: [
+          {
+            label: "Open",
+            primary: true,
+            onClick: () =>
+              openWindow({
+                kind: "system",
+                systemId: "ticket",
+                args: { ticketId: ticket.id },
+              }),
+          },
+        ],
+      });
+    });
+  }, [openWindow]);
+  return null;
+}
+```
+
+Pair it with a queue-depth widget in the menu-bar tray so the agent always sees how many are waiting:
+
+```tsx
+registerStatusItem({
+  id: "queue-depth",
+  icon: <InboxIcon size={14} />,
+  tooltip: `${waiting} waiting`,
+  badge: waiting || undefined, // hidden at zero
+  order: 30,
+});
+```
+
+Mount `<TicketInbox />` inside `<Desktop>` and re-register the status item when `waiting` changes. Unlike the [SaaS shell](/use-cases/saas-shell/), this shape keeps the menu bar, so the tray has a home. See [Notifications](/components/notifications/) and [Status items](/components/statusitems/).
+
+<LivePreview
+  src="?demo=dock"
+  label="Drag a window toward an edge to see the snap preview the agent uses to compare tickets"
+  height="460px"
+/>
+
+## See also
+
+- [Window snapping](/components/snapping/) for the full zone map and keyboard chords.
+- [Workspaces](/components/workspaces/) for per-queue contexts.
+- [Per-instance system window arguments](/recipes/overview/#per-instance-system-window-arguments) for the one-window-per-ticket mechanism.
+- [Internal ops console](/use-cases/internal-console/) for the registry and tray patterns this shape reuses.
