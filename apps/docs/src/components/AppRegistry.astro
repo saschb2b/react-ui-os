@@ -6,7 +6,16 @@
  * client-side with a small vanilla script; the cards themselves are
  * server-rendered so Pagefind indexes them and the page works without JS.
  */
+import type { ComponentType } from "react";
 import registry from "../../../../registry.json";
+import { exampleApps } from "@react-ui-os/example-apps";
+
+// The registry manifest is pure data, so the real app icons (the same glyphs
+// the dock paints) come from the app objects. Apps from other registries that
+// the package does not ship fall back to a monogram.
+const iconById = new Map<string, ComponentType<{ size?: number }>>(
+  exampleApps.flatMap((app) => (app.icon ? [[app.id, app.icon]] : [])),
+);
 
 interface AppEntry {
   id: string;
@@ -66,6 +75,7 @@ const monogram = (item: AppEntry) => item.name.charAt(0).toUpperCase();
       items.map((item) => {
         const haystack =
           `${item.name} ${item.description ?? ""} ${item.category ?? ""}`.toLowerCase();
+        const Icon = iconById.get(item.id);
         return (
           <article
             class="rui-store__card"
@@ -79,7 +89,7 @@ const monogram = (item: AppEntry) => item.name.charAt(0).toUpperCase();
                 style={`--accent:${accentOf(item)}`}
                 aria-hidden="true"
               >
-                {monogram(item)}
+                {Icon ? <Icon size={22} /> : monogram(item)}
               </span>
               <div class="rui-store__titles">
                 <h3 class="rui-store__title">{item.name}</h3>
