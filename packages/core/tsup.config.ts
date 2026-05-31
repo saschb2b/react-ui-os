@@ -1,4 +1,5 @@
 import { defineConfig } from "tsup";
+import { reactCompilerEsbuild } from "../../tooling/react-compiler-esbuild.mjs";
 
 export default defineConfig({
   entry: {
@@ -11,6 +12,7 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ["react", "react-dom"],
+  external: ["react", "react-dom", "react/compiler-runtime"],
+  esbuildPlugins: [reactCompilerEsbuild()],
   outDir: "dist",
 });

@@ -1,4 +1,5 @@
 import { defineConfig } from "tsup";
+import { reactCompilerEsbuild } from "../../tooling/react-compiler-esbuild.mjs";
 
 export default defineConfig({
   entry: { index: "src/index.ts" },
@@ -6,6 +7,13 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: ["react", "react-dom", "@react-ui-os/core", "@react-ui-os/desktop"],
+  external: [
+    "react",
+    "react-dom",
+    "react/compiler-runtime",
+    "@react-ui-os/core",
+    "@react-ui-os/desktop",
+  ],
+  esbuildPlugins: [reactCompilerEsbuild()],
   outDir: "dist",
 });
