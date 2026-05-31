@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useReducer,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useReducer, type ReactNode } from "react";
 import { initialWindowManagerState, windowManagerReducer } from "./reducer";
 import type {
   OpenWindow,
@@ -27,10 +20,7 @@ const WindowManagerContext = createContext<WindowManagerContextValue | null>(nul
 
 export function WindowManagerProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(windowManagerReducer, initialWindowManagerState);
-  const value = useMemo<WindowManagerContextValue>(
-    () => ({ state, dispatch }),
-    [state],
-  );
+  const value: WindowManagerContextValue = { state, dispatch };
   return (
     <WindowManagerContext.Provider value={value}>
       {children}
@@ -52,101 +42,61 @@ export function useWindowManager(): UseWindowManagerResult {
   }
   const { state, dispatch } = ctx;
 
-  const openWindow = useCallback(
-    (payload: WindowPayload, initialBounds?: WindowBounds) => {
-      dispatch({ type: "OPEN", payload, initialBounds });
-    },
-    [dispatch],
-  );
-  const closeWindow = useCallback(
-    (id: string) => {
-      dispatch({ type: "CLOSE", id });
-    },
-    [dispatch],
-  );
-  const focusWindow = useCallback(
-    (id: string) => {
-      dispatch({ type: "FOCUS", id });
-    },
-    [dispatch],
-  );
-  const minimizeWindow = useCallback(
-    (id: string) => {
-      dispatch({ type: "MINIMIZE", id });
-    },
-    [dispatch],
-  );
-  const restoreWindow = useCallback(
-    (id: string) => {
-      dispatch({ type: "RESTORE", id });
-    },
-    [dispatch],
-  );
-  const toggleMaximize = useCallback(
-    (id: string) => {
-      dispatch({ type: "MAXIMIZE_TOGGLE", id });
-    },
-    [dispatch],
-  );
-  const moveWindow = useCallback(
-    (id: string, x: number, y: number) => {
-      dispatch({ type: "MOVE", id, x, y });
-    },
-    [dispatch],
-  );
-  const resizeWindow = useCallback(
-    (id: string, w: number, h: number) => {
-      dispatch({ type: "RESIZE", id, w, h });
-    },
-    [dispatch],
-  );
-  const setBounds = useCallback(
-    (id: string, x: number, y: number, w: number, h: number) => {
-      dispatch({ type: "SET_BOUNDS", id, x, y, w, h });
-    },
-    [dispatch],
-  );
-  const switchWorkspace = useCallback(
-    (workspaceId: string) => {
-      dispatch({ type: "SWITCH_WORKSPACE", workspaceId });
-    },
-    [dispatch],
-  );
-  const moveWindowToWorkspace = useCallback(
-    (id: string, workspaceId: string) => {
-      dispatch({ type: "MOVE_WINDOW_TO_WORKSPACE", id, workspaceId });
-    },
-    [dispatch],
-  );
-  const addWorkspace = useCallback(
-    (workspaceId?: string) => {
-      const id =
-        workspaceId ??
-        String(
-          state.workspaces.length === 0
-            ? 1
-            : Math.max(...state.workspaces.map((w) => Number.parseInt(w, 10) || 0)) + 1,
-        );
-      dispatch({ type: "ADD_WORKSPACE", workspaceId: id });
-    },
-    [dispatch, state.workspaces],
-  );
-  const removeWorkspace = useCallback(
-    (workspaceId: string) => {
-      dispatch({ type: "REMOVE_WORKSPACE", workspaceId });
-    },
-    [dispatch],
-  );
+  // These action wrappers and derived values were hand-memoized for stable
+  // identity. The React Compiler now memoizes them, so they are plain
+  // functions and expressions here.
+  const openWindow = (payload: WindowPayload, initialBounds?: WindowBounds) => {
+    dispatch({ type: "OPEN", payload, initialBounds });
+  };
+  const closeWindow = (id: string) => {
+    dispatch({ type: "CLOSE", id });
+  };
+  const focusWindow = (id: string) => {
+    dispatch({ type: "FOCUS", id });
+  };
+  const minimizeWindow = (id: string) => {
+    dispatch({ type: "MINIMIZE", id });
+  };
+  const restoreWindow = (id: string) => {
+    dispatch({ type: "RESTORE", id });
+  };
+  const toggleMaximize = (id: string) => {
+    dispatch({ type: "MAXIMIZE_TOGGLE", id });
+  };
+  const moveWindow = (id: string, x: number, y: number) => {
+    dispatch({ type: "MOVE", id, x, y });
+  };
+  const resizeWindow = (id: string, w: number, h: number) => {
+    dispatch({ type: "RESIZE", id, w, h });
+  };
+  const setBounds = (id: string, x: number, y: number, w: number, h: number) => {
+    dispatch({ type: "SET_BOUNDS", id, x, y, w, h });
+  };
+  const switchWorkspace = (workspaceId: string) => {
+    dispatch({ type: "SWITCH_WORKSPACE", workspaceId });
+  };
+  const moveWindowToWorkspace = (id: string, workspaceId: string) => {
+    dispatch({ type: "MOVE_WINDOW_TO_WORKSPACE", id, workspaceId });
+  };
+  const addWorkspace = (workspaceId?: string) => {
+    const id =
+      workspaceId ??
+      String(
+        state.workspaces.length === 0
+          ? 1
+          : Math.max(...state.workspaces.map((w) => Number.parseInt(w, 10) || 0)) + 1,
+      );
+    dispatch({ type: "ADD_WORKSPACE", workspaceId: id });
+  };
+  const removeWorkspace = (workspaceId: string) => {
+    dispatch({ type: "REMOVE_WORKSPACE", workspaceId });
+  };
 
-  const focusedWindow = useMemo<OpenWindow | null>(() => {
-    if (!state.focusedId) return null;
-    return state.windows.find((w) => w.id === state.focusedId) ?? null;
-  }, [state.focusedId, state.windows]);
+  const focusedWindow: OpenWindow | null = state.focusedId
+    ? (state.windows.find((w) => w.id === state.focusedId) ?? null)
+    : null;
 
-  const windowById = useCallback(
-    (id: string) => state.windows.find((w) => w.id === id),
-    [state.windows],
-  );
+  const windowById = (id: string) => state.windows.find((w) => w.id === id);
 
   return {
     state,
