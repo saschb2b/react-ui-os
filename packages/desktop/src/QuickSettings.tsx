@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-  useSyncExternalStore,
-  type CSSProperties,
-} from "react";
+import { useEffect, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { useTheme } from "./desktop-context";
 import { QUICK_SETTINGS_TOGGLE_EVENT } from "./events";
 import { Slider } from "./primitives";
@@ -63,15 +58,9 @@ export function QuickSettings() {
 
   if (items.length === 0) return null;
 
-  const actions = items.filter(
-    (i): i is QuickSettingAction => i.kind === "action",
-  );
-  const sliders = items.filter(
-    (i): i is QuickSettingSlider => i.kind === "slider",
-  );
-  const toggles = items.filter(
-    (i): i is QuickSettingToggle => i.kind === "toggle",
-  );
+  const actions = items.filter((i): i is QuickSettingAction => i.kind === "action");
+  const sliders = items.filter((i): i is QuickSettingSlider => i.kind === "slider");
+  const toggles = items.filter((i): i is QuickSettingToggle => i.kind === "toggle");
   const startActions = actions.filter((a) => a.align !== "end");
   const endActions = actions.filter((a) => a.align === "end");
 
@@ -98,8 +87,7 @@ export function QuickSettings() {
     // A popover is a window-like surface; share the window corner family.
     borderRadius: theme.shape.windowRadius,
     color: theme.palette.textPrimary,
-    boxShadow:
-      theme.elevation?.windowFocused ?? "0 16px 40px -12px rgba(0,0,0,0.5)",
+    boxShadow: theme.elevation?.windowFocused ?? "0 16px 40px -12px rgba(0,0,0,0.5)",
     zIndex: 1310,
     padding: 14,
     display: "flex",
@@ -328,7 +316,15 @@ function ToggleTile({ item }: { item: QuickSettingToggle }) {
             color: fg,
           }}
         >
-          <svg width={12} height={12} viewBox="0 0 12 12" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.4}>
+          <svg
+            width={12}
+            height={12}
+            viewBox="0 0 12 12"
+            aria-hidden
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.4}
+          >
             <path d="M4.5 2.5 L8 6 L4.5 9.5" />
           </svg>
         </button>

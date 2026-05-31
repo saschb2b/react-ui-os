@@ -7,12 +7,7 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
-  external: [
-    "react",
-    "react-dom",
-    "react/compiler-runtime",
-    "@react-ui-os/core",
-  ],
+  external: ["react", "react-dom", "react/compiler-runtime", "@react-ui-os/core"],
   esbuildPlugins: [reactCompilerEsbuild()],
   outDir: "dist",
 });

@@ -30,7 +30,10 @@ export function reactCompilerEsbuild() {
           configFile: false,
           sourceMaps: "inline",
           presets: [
-            [presetTypeScript, { isTSX, allExtensions: true, allowDeclareFields: true }],
+            [
+              presetTypeScript,
+              { isTSX, allExtensions: true, allowDeclareFields: true },
+            ],
           ],
           plugins: [[reactCompiler, { target: "19" }]],
         });

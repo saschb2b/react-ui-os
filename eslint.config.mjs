@@ -70,9 +70,10 @@ export default [
       // instead of failing the build on existing patterns. rules-of-hooks, the
       // one rule that flags genuinely broken code, stays an error.
       ...Object.fromEntries(
-        Object.keys(reactHooks.configs["recommended-latest"].rules).map(
-          (name) => [name, "warn"],
-        ),
+        Object.keys(reactHooks.configs["recommended-latest"].rules).map((name) => [
+          name,
+          "warn",
+        ]),
       ),
       "react-hooks/rules-of-hooks": "error",
       "@typescript-eslint/no-unused-vars": [
