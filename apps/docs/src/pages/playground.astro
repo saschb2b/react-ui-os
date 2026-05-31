@@ -29,6 +29,12 @@ import PlaygroundDesktop from "~/components/playground/PlaygroundDesktop";
     </style>
   </head>
   <body>
-    <PlaygroundDesktop client:load />
+    {/*
+      client:only (no SSR): the desktop sizes its chrome to the viewport, which
+      the server cannot know. Server-rendering it would paint the regular
+      layout first and then visibly resize to compact on hydration inside a
+      small embed. Rendering purely on the client mounts it at the right size.
+    */}
+    <PlaygroundDesktop client:only="react" />
   </body>
 </html>
