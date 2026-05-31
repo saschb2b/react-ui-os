@@ -85,6 +85,8 @@ export function createRedmondTheme(options: RedmondThemeOptions = {}): OsTheme {
       // A full-width taskbar flush to the bottom edge, not the floating pill.
       dockStyle: "bar",
       menuBar: "none",
+      // The Windows Start menu, raised from the taskbar launcher.
+      launcher: "menu",
     },
     customizable: {
       "palette.accent": {

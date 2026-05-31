@@ -7,6 +7,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { useTheme } from "../desktop-context";
+import { getDockReservation } from "../util/layout";
 import { useLauncher, type LauncherResult, type LauncherState } from "./use-launcher";
 
 /**
@@ -28,6 +29,8 @@ export function Launcher() {
   switch (theme.chrome.launcher) {
     case "grid":
       return <GridView launcher={launcher} />;
+    case "menu":
+      return <MenuView launcher={launcher} />;
     default:
       return <SpotlightView launcher={launcher} />;
   }
@@ -406,22 +409,26 @@ function LauncherTile({
   selected,
   onHover,
   onActivate,
+  size = 72,
+  optionId = gridOptionId,
 }: {
   result: LauncherResult;
   index: number;
   selected: boolean;
   onHover: () => void;
   onActivate: () => void;
+  size?: number;
+  optionId?: (index: number) => string;
 }) {
   const theme = useTheme();
   const accent = result.accent ?? theme.palette.accent;
   const Art = result.kind === "app" ? result.app.iconArt : undefined;
   const Icon = result.kind === "app" ? result.app.icon : undefined;
   const externalIcon = result.kind === "external" ? result.icon : undefined;
-  const tile = 72;
+  const tile = size;
   return (
     <div
-      id={gridOptionId(index)}
+      id={optionId(index)}
       role="option"
       aria-selected={selected}
       onMouseEnter={onHover}
@@ -479,6 +486,199 @@ function LauncherTile({
         {result.name}
       </span>
     </div>
+  );
+}
+
+/* ─── Start menu (Windows) ──────────────────────────────────────── */
+
+const MENU_LISTBOX_ID = "rui-launcher-menu";
+const MENU_COLUMNS = 5;
+function menuOptionId(index: number): string {
+  return `rui-launcher-menu-option-${String(index)}`;
+}
+
+/**
+ * Windows Start menu: a panel anchored just past the dock launcher, with a
+ * search field above a grid of app tiles. Filters as you type; arrow keys move
+ * a visual selection across the grid. Anchored and animated from the dock edge
+ * (bottom-left for a bottom taskbar, beside a left dock).
+ */
+function MenuView({ launcher }: { launcher: LauncherState }) {
+  const theme = useTheme();
+  const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
+  const { moveSelection, activate, activateSelected, close } = launcher;
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, []);
+
+  const onKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    switch (e.key) {
+      case "ArrowRight":
+        e.preventDefault();
+        moveSelection(1);
+        break;
+      case "ArrowLeft":
+        e.preventDefault();
+        moveSelection(-1);
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        moveSelection(MENU_COLUMNS);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        moveSelection(-MENU_COLUMNS);
+        break;
+      case "Enter":
+        e.preventDefault();
+        activateSelected();
+        break;
+      case "Escape":
+        e.preventDefault();
+        close();
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Anchor the panel just past the dock: above a bottom taskbar, or beside a
+  // left dock. Windows raises Start from its launcher rather than centering a
+  // modal the way Spotlight does.
+  const reservation = getDockReservation(theme);
+  const gap = 8;
+  const onLeft = theme.chrome.dockPosition === "left";
+  const anchor = onLeft
+    ? { left: reservation.left + gap, bottom: gap }
+    : { left: gap, bottom: reservation.bottom + gap };
+
+  return (
+    <>
+      <div
+        role="presentation"
+        onClick={close}
+        style={{ position: "fixed", inset: 0, zIndex: 1399 }}
+      />
+      <div
+        role="dialog"
+        aria-label="Start"
+        onKeyDown={onKey}
+        style={{
+          position: "fixed",
+          ...anchor,
+          width: "min(560px, calc(100vw - 16px))",
+          maxHeight: "min(640px, 76vh)",
+          zIndex: 1400,
+          display: "flex",
+          flexDirection: "column",
+          background: theme.palette.surface,
+          backdropFilter: theme.blur.spotlight,
+          WebkitBackdropFilter: theme.blur.spotlight,
+          border: `1px solid ${theme.palette.border}`,
+          borderRadius: theme.shape.windowRadius,
+          color: theme.palette.textPrimary,
+          boxShadow:
+            theme.elevation?.windowFocused ?? "0 24px 60px -16px rgba(0,0,0,0.6)",
+          padding: 16,
+          gap: 14,
+          transformOrigin: "bottom left",
+          animation: `rui-window-open ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
+        }}
+      >
+        <input
+          ref={inputRef}
+          role="combobox"
+          aria-label="Search for apps"
+          aria-autocomplete="list"
+          aria-controls={MENU_LISTBOX_ID}
+          aria-expanded={results.length > 0}
+          aria-activedescendant={
+            results.length > 0 ? menuOptionId(selectedIndex) : undefined
+          }
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+          }}
+          placeholder="Search for apps"
+          style={{
+            width: "100%",
+            height: 38,
+            padding: "0 14px",
+            border: `1px solid ${theme.palette.border}`,
+            borderRadius: theme.shape.small,
+            outline: "none",
+            background: `${theme.palette.textPrimary}0f`,
+            color: theme.palette.textPrimary,
+            fontFamily: "inherit",
+            fontSize: 14,
+            flexShrink: 0,
+          }}
+        />
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            color: theme.palette.textSecondary,
+            flexShrink: 0,
+          }}
+        >
+          {query.trim().length > 0 ? "Results" : "Pinned"}
+        </div>
+        <div
+          id={MENU_LISTBOX_ID}
+          role="listbox"
+          aria-label="Apps"
+          style={{
+            minHeight: 0,
+            overflowY: "auto",
+            display: "grid",
+            gridTemplateColumns: `repeat(${String(MENU_COLUMNS)}, 1fr)`,
+            gap: 6,
+            justifyItems: "center",
+          }}
+        >
+          {results.length === 0 ? (
+            <div
+              style={{
+                gridColumn: "1 / -1",
+                textAlign: "center",
+                color: theme.palette.textSecondary,
+                fontSize: 13,
+                padding: "20px 0",
+              }}
+            >
+              {query.trim().length > 0
+                ? `No matches for "${query.trim()}".`
+                : "No apps."}
+            </div>
+          ) : (
+            results.map((result, i) => (
+              <LauncherTile
+                key={result.key}
+                result={result}
+                index={i}
+                size={44}
+                optionId={menuOptionId}
+                selected={i === selectedIndex}
+                onHover={() => {
+                  setSelectedIndex(i);
+                }}
+                onActivate={() => {
+                  activate(result);
+                }}
+              />
+            ))
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 
