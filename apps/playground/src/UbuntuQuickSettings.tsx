@@ -27,17 +27,22 @@ function SignalIcon() {
     </svg>
   );
 }
-function BoltIcon() {
+function GaugeIcon() {
+  // A speedometer, the GNOME power-mode mark.
   return (
-    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden fill="currentColor">
-      <path d="M9 1.5 3.5 9H7l-1 5.5L12.5 7H8.5z" />
+    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round">
+      <path d="M2.6 11.5a5.5 5.5 0 0 1 10.8 0" />
+      <path d="M8 11.5 11 7" />
+      <circle cx="8" cy="11.5" r="0.9" fill="currentColor" stroke="none" />
     </svg>
   );
 }
-function MoonIcon() {
+function ContrastIcon() {
+  // A circle with one half filled, the GNOME dark-style mark.
   return (
-    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden fill="currentColor">
-      <path d="M13.5 9.5A5.5 5.5 0 1 1 6.5 2.5a4.3 4.3 0 0 0 7 7z" />
+    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden>
+      <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" strokeWidth={1.2} />
+      <path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor" />
     </svg>
   );
 }
@@ -193,7 +198,7 @@ export function UbuntuQuickSettings() {
         id: "qs-power-mode",
         label: "Power Mode",
         sublabel: powerSaver ? "Power Saver" : "Balanced",
-        icon: <BoltIcon />,
+        icon: <GaugeIcon />,
         active: powerSaver,
         onToggle: setPowerSaver,
         order: 2,
@@ -207,7 +212,7 @@ export function UbuntuQuickSettings() {
         kind: "toggle",
         id: "qs-dark",
         label: "Dark Style",
-        icon: <MoonIcon />,
+        icon: <ContrastIcon />,
         active: dark,
         onToggle: setDark,
         order: 3,
