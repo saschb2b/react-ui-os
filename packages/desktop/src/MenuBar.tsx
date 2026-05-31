@@ -46,6 +46,7 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
   if (theme.chrome.menuBar !== "top") return null;
 
   const clockCentered = theme.chrome.menuBarClock === "center";
+  const showBrand = theme.chrome.menuBarBrand !== false;
 
   // The brand acts as the macOS Apple menu: a system menu anchored at top-left.
   const openBrandMenu = (e: React.MouseEvent) => {
@@ -105,41 +106,44 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <button
-          type="button"
-          onClick={openBrandMenu}
-          aria-haspopup="menu"
-          aria-label={`${brand} menu`}
-          style={{
-            appearance: "none",
-            background: "transparent",
-            border: 0,
-            margin: 0,
-            padding: "3px 7px",
-            borderRadius: theme.shape.small,
-            color: theme.palette.textPrimary,
-            fontFamily: "inherit",
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: 0.2,
-            cursor: "pointer",
-            transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = `${theme.palette.textPrimary}1a`;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-          }}
-        >
-          {brand}
-        </button>
+        {showBrand && (
+          <button
+            type="button"
+            onClick={openBrandMenu}
+            aria-haspopup="menu"
+            aria-label={`${brand} menu`}
+            style={{
+              appearance: "none",
+              background: "transparent",
+              border: 0,
+              margin: 0,
+              padding: "3px 7px",
+              borderRadius: theme.shape.small,
+              color: theme.palette.textPrimary,
+              fontFamily: "inherit",
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: 0.2,
+              cursor: "pointer",
+              transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = `${theme.palette.textPrimary}1a`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+            }}
+          >
+            {brand}
+          </button>
+        )}
         {/* GNOME keeps the workspace switcher at the top-left, next to
             Activities. In the centered-clock (GNOME) layout it lives here;
             otherwise it sits in the right cluster, the macOS placement. */}
         {clockCentered && <WorkspaceIndicator />}
-        {focusedName && (
-          // macOS emphasizes the active app with a bold, full-contrast name.
+        {/* The focused-app name is the macOS app-menu element; GNOME has no
+            equivalent, so it shows only in the right-clock (macOS) layout. */}
+        {!clockCentered && focusedName && (
           <span style={{ fontWeight: 600, color: theme.palette.textPrimary }}>
             {focusedName}
           </span>

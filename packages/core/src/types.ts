@@ -148,6 +148,14 @@ export interface OsThemeChrome {
    */
   menuBarClock?: "right" | "center";
   /**
+   * Whether the top menu bar carries the brand button on the left (the macOS
+   * Apple-menu analog that opens About / Settings). Defaults to true. A
+   * GNOME-style theme sets false: the top-left then holds only the workspace
+   * switcher, and system actions stay reachable through Quick Settings,
+   * Spotlight, and the keyboard. Ignored unless `menuBar` is `"top"`.
+   */
+  menuBarBrand?: boolean;
+  /**
    * When true, the menu-bar status cluster becomes a single button that opens
    * the Quick Settings popover (the GNOME system menu, the macOS Control
    * Center, the Windows quick settings flyout). Populate the popover with

@@ -94,6 +94,8 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       dockAlign: "start",
       menuBar: "top",
       menuBarClock: "center",
+      // GNOME has no Apple-style brand menu; the top-left is just workspaces.
+      menuBarBrand: false,
       quickSettings: true,
     },
     customizable: {
