@@ -130,6 +130,13 @@ export interface OsThemeChrome {
    */
   dockStyle?: "floating" | "bar";
   menuBar: "top" | "in-window" | "none";
+  /**
+   * Where the clock sits in the top menu bar. `"right"` (default) is the macOS
+   * placement, in the status cluster. `"center"` is the GNOME placement: the
+   * clock and date sit centered in the bar, with the status indicators kept on
+   * the right. Ignored unless `menuBar` is `"top"`.
+   */
+  menuBarClock?: "right" | "center";
 }
 
 export interface OsTheme {

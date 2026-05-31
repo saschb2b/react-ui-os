@@ -42,6 +42,8 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
 
   if (theme.chrome.menuBar !== "top") return null;
 
+  const clockCentered = theme.chrome.menuBarClock === "center";
+
   // The brand acts as the macOS Apple menu: a system menu anchored at top-left.
   const openBrandMenu = (e: React.MouseEvent) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -136,13 +138,36 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
           </span>
         )}
       </div>
+      {clockCentered && (
+        // GNOME centers the clock/date in the top bar; the status indicators
+        // stay on the right. Absolute so it tracks the bar center regardless of
+        // how wide the left and right clusters grow.
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: 0,
+            bottom: 0,
+            transform: "translateX(-50%)",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <SystemClock
+            color={theme.palette.textPrimary}
+            accent={theme.palette.accent}
+          />
+        </div>
+      )}
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <WorkspaceIndicator />
         <StatusItems />
-        <SystemClock
-          color={theme.palette.textSecondary}
-          accent={theme.palette.accent}
-        />
+        {!clockCentered && (
+          <SystemClock
+            color={theme.palette.textSecondary}
+            accent={theme.palette.accent}
+          />
+        )}
       </div>
     </header>
   );
