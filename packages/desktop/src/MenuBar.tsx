@@ -747,11 +747,12 @@ function SystemClock({ color, accent }: { color: string; accent: string }) {
     hour: "numeric",
     minute: "2-digit",
   });
-  const day = now.toLocaleDateString([], {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
+  // The macOS menu bar reads "Tue Apr 1 9:41 AM": weekday, month, day, no
+  // comma. A single toLocaleDateString with all three inserts a locale comma
+  // ("Tue, Apr 1"), so build it from the two parts instead.
+  const weekday = now.toLocaleDateString([], { weekday: "short" });
+  const monthDay = now.toLocaleDateString([], { month: "short", day: "numeric" });
+  const day = `${weekday} ${monthDay}`;
 
   return (
     <Tooltip
