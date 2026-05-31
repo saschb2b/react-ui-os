@@ -4,7 +4,10 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { notify, useNotifications, useWindowManager } from "@react-ui-os/core";
 import { useApp, useApps, useTheme } from "./desktop-context";
 import { openContextMenu } from "./context-menu";
-import { NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
+import {
+  NOTIFICATION_CENTER_TOGGLE_EVENT,
+  QUICK_SETTINGS_TOGGLE_EVENT,
+} from "./events";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
@@ -162,6 +165,7 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <WorkspaceIndicator />
         <StatusItems />
+        {theme.chrome.quickSettings && <QuickSettingsTrigger />}
         {!clockCentered && (
           <SystemClock
             color={theme.palette.textSecondary}
@@ -276,6 +280,82 @@ function StatusItemView({ item }: { item: StatusItem }) {
     <Tooltip text={item.tooltip} shortcut={item.shortcut} placement="bottom">
       {wrapped}
     </Tooltip>
+  );
+}
+
+/**
+ * GNOME groups its network / sound / battery indicators into one button that
+ * opens the system menu. This is that button: a compact cluster of status
+ * glyphs that toggles the Quick Settings popover. Rendered only when the theme
+ * sets `chrome.quickSettings`.
+ */
+function QuickSettingsTrigger() {
+  const theme = useTheme();
+  const hover = `${theme.palette.textPrimary}1a`;
+  return (
+    <Tooltip text="Quick Settings" placement="bottom">
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-label="Quick Settings"
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent(QUICK_SETTINGS_TOGGLE_EVENT));
+        }}
+        style={{
+          appearance: "none",
+          background: "transparent",
+          border: 0,
+          padding: "3px 7px",
+          cursor: "pointer",
+          borderRadius: theme.shape.small,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 7,
+          color: theme.palette.textPrimary,
+          transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = hover;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+        }}
+      >
+        <NetworkGlyph />
+        <SpeakerGlyph />
+        <BatteryGlyph />
+      </button>
+    </Tooltip>
+  );
+}
+
+function NetworkGlyph() {
+  // Ascending signal bars, the universal connectivity mark.
+  return (
+    <svg width={14} height={14} viewBox="0 0 14 14" fill="currentColor" aria-hidden>
+      <rect x="1" y="9" width="2.4" height="4" rx="0.6" />
+      <rect x="4.8" y="6.5" width="2.4" height="6.5" rx="0.6" />
+      <rect x="8.6" y="3.5" width="2.4" height="9.5" rx="0.6" />
+    </svg>
+  );
+}
+
+function SpeakerGlyph() {
+  return (
+    <svg width={14} height={14} viewBox="0 0 14 14" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.1} strokeLinejoin="round">
+      <path d="M2 5 H4 L7.5 2.5 V11.5 L4 9 H2 Z" fill="currentColor" stroke="none" />
+      <path d="M9.5 5 Q11 7 9.5 9" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function BatteryGlyph() {
+  return (
+    <svg width={16} height={14} viewBox="0 0 16 14" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.1}>
+      <rect x="1" y="4" width="11" height="6" rx="1.4" />
+      <rect x="3" y="6" width="6" height="2" rx="0.5" fill="currentColor" stroke="none" />
+      <rect x="13" y="5.6" width="1.6" height="2.8" rx="0.6" fill="currentColor" stroke="none" />
+    </svg>
   );
 }
 

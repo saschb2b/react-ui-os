@@ -14,3 +14,11 @@ export const SPOTLIGHT_OPEN_EVENT = "react-ui-os:spotlight-open";
  */
 export const NOTIFICATION_CENTER_TOGGLE_EVENT =
   "react-ui-os:notification-center-toggle";
+
+/**
+ * Toggle the Quick Settings popover (the GNOME system menu / macOS Control
+ * Center / Windows quick settings flyout). The QuickSettings component listens
+ * for this so the menu-bar status cluster, a keyboard shortcut, or any custom
+ * widget can open it without prop drilling.
+ */
+export const QUICK_SETTINGS_TOGGLE_EVENT = "react-ui-os:quick-settings-toggle";

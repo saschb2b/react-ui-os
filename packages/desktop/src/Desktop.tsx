@@ -12,6 +12,7 @@ import { Spotlight } from "./Spotlight";
 import { DesktopIcons } from "./DesktopIcons";
 import { NotificationToasts } from "./NotificationToasts";
 import { NotificationCenter } from "./NotificationCenter";
+import { QuickSettings } from "./QuickSettings";
 import { ContextMenu } from "./context-menu";
 import { DesktopBackdrop } from "./desktop-backdrop";
 import { SnapPreview } from "./snap";
@@ -61,6 +62,7 @@ export function Desktop({ apps, theme, brand, storage, children }: DesktopProps)
         <Spotlight />
         <NotificationToasts />
         <NotificationCenter />
+        <QuickSettings />
         <ContextMenu />
         <AppSwitcher />
         <MissionControl />

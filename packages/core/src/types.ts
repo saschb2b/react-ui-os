@@ -137,6 +137,14 @@ export interface OsThemeChrome {
    * the right. Ignored unless `menuBar` is `"top"`.
    */
   menuBarClock?: "right" | "center";
+  /**
+   * When true, the menu-bar status cluster becomes a single button that opens
+   * the Quick Settings popover (the GNOME system menu, the macOS Control
+   * Center, the Windows quick settings flyout). Populate the popover with
+   * `registerQuickSetting(...)`. Optional, defaults to false. Ignored unless
+   * `menuBar` is `"top"`.
+   */
+  quickSettings?: boolean;
 }
 
 export interface OsTheme {

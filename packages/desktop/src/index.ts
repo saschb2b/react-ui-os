@@ -11,6 +11,17 @@ export { Spotlight } from "./Spotlight";
 export { KeyboardShortcuts } from "./keyboard-shortcuts";
 export { NotificationToasts } from "./NotificationToasts";
 export { NotificationCenter } from "./NotificationCenter";
+export { QuickSettings } from "./QuickSettings";
+export {
+  registerQuickSetting,
+  unregisterQuickSetting,
+  listQuickSettings,
+  subscribeQuickSettings,
+  type QuickSettingItem,
+  type QuickSettingToggle,
+  type QuickSettingSlider,
+  type QuickSettingAction,
+} from "./quick-settings";
 export { AppSwitcher } from "./AppSwitcher";
 export { MissionControl } from "./MissionControl";
 export {
@@ -52,7 +63,11 @@ export {
   type SnapRect,
   type SnapState,
 } from "./snap";
-export { SPOTLIGHT_OPEN_EVENT, NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
+export {
+  SPOTLIGHT_OPEN_EVENT,
+  NOTIFICATION_CENTER_TOGGLE_EVENT,
+  QUICK_SETTINGS_TOGGLE_EVENT,
+} from "./events";
 export {
   registerSpotlightSource,
   listSpotlightSources,
