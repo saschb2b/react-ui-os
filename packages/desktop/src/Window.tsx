@@ -1083,7 +1083,7 @@ function GnomeControl({
 }
 
 /**
- * Minimal chrome: a single close affordance, top-right. The neutral / SaaS
+ * Minimal chrome: a single close affordance, top-right. The neutral / minimal
  * register that wants window dismissal without a full traffic-light or caption
  * cluster (DESIGN.md spectrum point 2).
  */

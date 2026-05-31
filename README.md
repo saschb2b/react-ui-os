@@ -38,10 +38,10 @@ That single tag produces the wallpaper, dock, draggable resizable windows, focus
   </tr>
   <tr>
     <td width="50%"><img src=".github/assets/notifications.png" alt="Notification toast stack in the top-right corner"><br><b>Notifications</b><br>Call <code>notify(...)</code> from anywhere. Toasts, dock badges, and a Notification Center, all wired.</td>
-    <td width="50%"><img src=".github/assets/themes-saas.png" alt="SaaS theme with a left dock and light chrome"><br><b>Themes change the stance</b><br>Move the dock to the side, hide the menu bar, swap traffic lights for Windows controls.</td>
+    <td width="50%"><img src=".github/assets/themes-ubuntu.png" alt="Ubuntu theme: a dark GNOME desktop with a top bar, a centered clock, and a left dock"><br><b>Themes change the stance</b><br>Move the dock to the side, center the clock, swap traffic lights for GNOME or Windows controls.</td>
   </tr>
   <tr>
-    <td colspan="2"><img src=".github/assets/themes-redmond.png" alt="Redmond theme: caption-button windows and a bottom taskbar with a Start launcher and a clock on a Windows 11 wallpaper"><br><b>The Redmond theme</b><br>The same components, a Windows desktop: caption buttons, a flush taskbar with a Start launcher and a clock, no fisheye. Not a clone, the Windows visual patterns expressed through tokens.</td>
+    <td colspan="2"><img src=".github/assets/themes-windows.png" alt="Windows theme: caption-button windows and a bottom taskbar with a Start launcher and a clock on a Windows 11 wallpaper"><br><b>The Windows theme</b><br>The same components, a Windows desktop: caption buttons, a flush taskbar with a Start launcher and a clock, no fisheye. A close clone of the Windows visual patterns, built from tokens.</td>
   </tr>
 </table>
 
@@ -63,16 +63,15 @@ Most React UI libraries ship fifty components and let you wire them. That produc
 
 ## Packages
 
-| Package                        | Purpose                                                                                                                                                                               |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@react-ui-os/core`            | Pure logic. Window manager, app and theme types, storage adapter. No JSX.                                                                                                             |
-| `@react-ui-os/desktop`         | The components. `<Desktop>`, `<DesktopProvider>`, `<Wallpaper>`, `<MenuBar>`, `<Dock>`, `<WindowLayer>`, `<Window>`, `<Spotlight>`, `<Settings>`, `<FileExplorer>`, `<DesktopIcons>`. |
-| `@react-ui-os/theme-default`   | Unbranded baseline theme.                                                                                                                                                             |
-| `@react-ui-os/theme-mintables` | Cinematic frosted-glass theme with parallax wallpaper, deep blur, teal accent.                                                                                                        |
-| `@react-ui-os/theme-saas`      | Neutral light theme. Left dock, hidden menu bar, exercises the non-Mac chrome variants.                                                                                               |
-| `@react-ui-os/theme-redmond`   | Windows-style light theme. Caption-button controls, a bottom taskbar that does not magnify, lighter shadows.                                                                          |
+| Package                      | Purpose                                                                                                                                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@react-ui-os/core`          | Pure logic. Window manager, app and theme types, storage adapter. No JSX.                                                                                                             |
+| `@react-ui-os/desktop`       | The components. `<Desktop>`, `<DesktopProvider>`, `<Wallpaper>`, `<MenuBar>`, `<Dock>`, `<WindowLayer>`, `<Window>`, `<Spotlight>`, `<Settings>`, `<FileExplorer>`, `<DesktopIcons>`. |
+| `@react-ui-os/theme-default` | macOS clone. Traffic lights, a floating dock with a fisheye, a translucent menu bar, the Tahoe wallpaper.                                                                             |
+| `@react-ui-os/theme-windows` | Windows clone. Caption-button controls, a bottom taskbar that does not magnify, a Start launcher, lighter shadows.                                                                    |
+| `@react-ui-os/theme-ubuntu`  | Ubuntu (GNOME) clone. Yaru dark palette, a top bar with a centered clock, a left dock, round symbolic window controls, a Quick Settings popover.                                      |
 
-All six packages ship dual ESM/CJS bundles + TypeScript declarations via `tsup`. Source-exported during in-repo development via a `source` Vite condition; consumers resolve through the bundled `dist/` output.
+All five packages ship dual ESM/CJS bundles + TypeScript declarations via `tsup`. Source-exported during in-repo development via a `source` Vite condition; consumers resolve through the bundled `dist/` output.
 
 ## Concepts
 
@@ -121,10 +120,9 @@ react-ui-os/
     desktop/                     # @react-ui-os/desktop (components)
     cli/                         # @react-ui-os/cli (installs apps from the registry)
     example-apps/                # @react-ui-os/example-apps (the registry's seed apps)
-    theme-default/               # @react-ui-os/theme-default
-    theme-mintables/             # @react-ui-os/theme-mintables
-    theme-saas/                  # @react-ui-os/theme-saas
-    theme-redmond/               # @react-ui-os/theme-redmond
+    theme-default/               # @react-ui-os/theme-default (macOS)
+    theme-windows/               # @react-ui-os/theme-windows (Windows)
+    theme-ubuntu/                # @react-ui-os/theme-ubuntu (Ubuntu)
   .github/workflows/             # CI + Pages deploy
   registry.json                  # the app registry the CLI and docs gallery read
   CLAUDE.md                      # architecture and contribution rules

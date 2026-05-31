@@ -44,7 +44,7 @@ The dock honors `theme.chrome.dockPosition`:
 | `"floating"` | The macOS dock: a centered rounded pill hovering above the edge with a gap, accent-gradient squircle tiles, a dot indicator under running apps. The default.                                                                                                                              |
 | `"bar"`      | The Windows taskbar / GNOME panel: a flat bar flush to the edge, spanning the full width (bottom) or height (left), square corners, flat brand-colored icon buttons, and an accent underline under running apps (wider for the focused app). 48px thick, matching the Windows 11 taskbar. |
 
-The work area reserves the dock's thickness either way, so maximized windows stop above a taskbar just as they stop above a floating dock. The [Redmond theme](/themes/overview/) ships `"bar"`; every other theme uses `"floating"`.
+The work area reserves the dock's thickness either way, so maximized windows stop above a taskbar just as they stop above a floating dock. The [Windows theme](/themes/overview/) ships `"bar"`; every other theme uses `"floating"`.
 
 ## Alignment
 
@@ -56,7 +56,7 @@ The work area reserves the dock's thickness either way, so maximized windows sto
 | `"start"`  | At the top (left dock) or left (bottom dock), launcher pinned at the far end. The GNOME / Ubuntu and Windows 10 placement. |
 | `"end"`    | At the far end.                                                                                                            |
 
-A non-centered run is inset so it clears the launcher and tray at the edges. Windows 11 exposes the same lever as "Taskbar alignment"; the Ubuntu theme ships `"start"`, and both the Ubuntu and Redmond themes expose it as a Settings select.
+A non-centered run is inset so it clears the launcher and tray at the edges. Windows 11 exposes the same lever as "Taskbar alignment"; the Ubuntu theme ships `"start"`, and both the Ubuntu and Windows themes expose it as a Settings select.
 
 ## Magnification
 
@@ -64,7 +64,7 @@ Hovering tracks the cursor and magnifies the icon beneath it, with its neighbors
 
 Each tile's size eases toward a target derived from the cursor's distance to that tile's resting center (anchored to the dock center, so there is no layout-measurement feedback). The easing has no overshoot, the overdamped-spring character of the macOS dock, so nothing snaps. The values follow the common macOS approximation (a 110 px radius and a 2.25x peak), kept gentler here at 1.5x of a 56 px base tile.
 
-The peak is the `theme.motion.dockMagnification` token. Set it to `1` to turn the fisheye off entirely, the register a Windows taskbar or GNOME dash uses; the [Redmond theme](/themes/overview/) ships it that way. The hover label still appears, only the growth stops.
+The peak is the `theme.motion.dockMagnification` token. Set it to `1` to turn the fisheye off entirely, the register a Windows taskbar or GNOME dash uses; the [Windows theme](/themes/overview/) ships it that way. The hover label still appears, only the growth stops.
 
 ## Tile appearance
 

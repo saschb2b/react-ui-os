@@ -88,11 +88,9 @@ packages/
       primitives/                # Slider, Toggle
       util/
       index.ts
-  theme-default/                 # @react-ui-os/theme-default
-  theme-mintables/               # @react-ui-os/theme-mintables
-  theme-saas/                    # @react-ui-os/theme-saas (left dock, no menu bar)
-  theme-redmond/                 # @react-ui-os/theme-redmond (Windows: caption buttons, taskbar)
-  theme-ubuntu/                  # @react-ui-os/theme-ubuntu (GNOME: top bar + left dock)
+  theme-default/                 # @react-ui-os/theme-default (macOS clone)
+  theme-windows/                 # @react-ui-os/theme-windows (Windows clone: caption buttons, taskbar)
+  theme-ubuntu/                  # @react-ui-os/theme-ubuntu (Ubuntu/GNOME clone: top bar + left dock)
 tooling/
   react-compiler-esbuild.mjs     # runs babel-plugin-react-compiler inside the tsup builds
 .github/workflows/
@@ -321,10 +319,11 @@ Call `registerSpotlightSource(id, query => results)` at module load or inside a 
 - **Phase 1.** Workspace scaffold, window manager + types + storage, default theme, baseline components (Desktop, Wallpaper, MenuBar, Dock, WindowLayer, Window with traffic lights, drag, focus, minimize genie).
 - **Phase 2a.** Resize handles, ESC-from-maximize, keyboard shortcuts (Cmd-W/M/1..9/K), Spotlight.
 - **Phase 2b.** Settings as a system window + the `customizable` schema + effective-theme overlay.
-- **Phase 3.** `@react-ui-os/theme-mintables` cinematic theme. Chrome variants (dock-on-left, hidden menu bar). Wallpaper parallax.
+- **Phase 3.** The first branded theme and chrome variants (dock-on-left, hidden menu bar). Wallpaper parallax.
 - **Phase 4.** FileExplorer primitive with full macOS-Finder interaction model. State-earned desktop folders.
 - **Phase 5.** Bundling via tsup. Docs site rebuilt on Astro Starlight. `SystemWindowArgs` for multi-instance system windows. `registerSpotlightSource` for arbitrary result kinds. CI + Pages deploy.
 - **Phase 6.** Vite 8 and TypeScript 6. React Compiler integrated across the playground, the tsup library builds (`tooling/react-compiler-esbuild.mjs`, so `dist` is pre-compiled), and the `eslint-plugin-react-hooks` 7 diagnostics. Redundant manual memoization removed where the compiler covers it.
+- **Phase 7.** OS-clone themes: macOS (`theme-default` with the Tahoe wallpaper), Windows (`theme-windows`), and Ubuntu (`theme-ubuntu`), each modeled on its platform's chrome. The on-canvas theme switcher in both playgrounds. The earlier cinematic and SaaS themes were dropped to focus on faithful platform clones.
 
 ## No AI slop
 

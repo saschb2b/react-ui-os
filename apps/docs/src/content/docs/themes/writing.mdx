@@ -94,17 +94,17 @@ The full reference is at [Customizable schema](/themes/customizable/).
 
 ## Picking sensible defaults
 
-Some rules of thumb from `theme-default` and `theme-mintables`:
+Some rules of thumb from `theme-default` and `theme-ubuntu`:
 
 - **Surface colors with alpha.** `rgba(20, 22, 32, 0.62)` lets `blur.surface` actually frost something. Solid colors defeat the effect.
-- **Open animations at 180-220 ms.** Faster reads as snappy; slower reads as sluggish. Mintables runs 220 ms because the cinematic register can afford it.
+- **Open animations at 180-220 ms.** Faster reads as snappy; slower reads as sluggish. Ubuntu runs 200 ms, matching the GNOME Shell window-open timing.
 - **Genie minimize at 280-320 ms.** Long enough to read as physical, short enough not to drag.
 - **One blur value for surface, one for Spotlight.** Spotlight typically wants a deeper blur because it floats over everything.
 - **`palette.border` at `rgba(255,255,255,0.08-0.10)`.** Hairlines should feel intentional but not bright.
 
 ## Publishing
 
-Themes are tiny, single-file packages. The Mintables theme is ~120 lines. A minimal `package.json`:
+Themes are tiny, single-file packages. The Ubuntu theme is ~175 lines. A minimal `package.json`:
 
 ```json
 {

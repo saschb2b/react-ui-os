@@ -53,7 +53,7 @@ describe("getDockReservation", () => {
     });
   });
 
-  it("reserves the left gutter for a left dock (SaaS theme)", () => {
+  it("reserves the left gutter for a left dock", () => {
     const r = getDockReservation(themeWith({ dockPosition: "left" }));
     const m = getChromeMetrics("regular");
     expect(r).toEqual({

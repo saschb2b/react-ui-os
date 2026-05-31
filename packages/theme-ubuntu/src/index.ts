@@ -15,7 +15,7 @@ export interface UbuntuThemeOptions {
 
 /**
  * GNOME / Ubuntu register, the third structural pole alongside the macOS
- * default and the Windows Redmond theme. It combines two levers no single
+ * default and the Windows theme. It combines two levers no single
  * earlier theme used together: a top menu bar AND a left dock, the GNOME
  * Shell arrangement. The clock sits centered in the bar, the status cluster
  * opens a Quick Settings popover on the right, the dock is a flat bar flush to

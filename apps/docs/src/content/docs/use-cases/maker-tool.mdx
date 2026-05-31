@@ -1,6 +1,6 @@
 ---
 title: Maker tool
-description: A single creative or generator app that accumulates files. Its outputs live in a FileExplorer folder that earns its desktop icon, saved presets are recalled from Spotlight, and the Mintables theme gives the one app a home.
+description: A single creative or generator app that accumulates files. Its outputs live in a FileExplorer folder that earns its desktop icon, saved presets are recalled from Spotlight, and the macOS theme gives the one app a home.
 sidebar:
   order: 5
 ---
@@ -118,14 +118,14 @@ Mount `<PresetSpotlightSource />` inside `<Desktop>`. Typing a preset's name in 
 
 ## Give the one app a home
 
-`theme-mintables` is the cinematic frosted-glass theme this shape was tuned for. Build it with your wallpaper and mount the single app:
+The macOS theme is the cinematic look this shape suits. Build `theme-default` with your wallpaper and mount the single app:
 
 ```tsx title="src/App.tsx"
 import { Desktop } from "@react-ui-os/desktop";
-import { createMintablesTheme } from "@react-ui-os/theme-mintables";
+import { createDefaultTheme } from "@react-ui-os/theme-default";
 import { generatorApp } from "./generator";
 
-const theme = createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
+const theme = createDefaultTheme({ wallpaperSrc: "/macos-wallpaper.jpg" });
 
 export default function App() {
   return (

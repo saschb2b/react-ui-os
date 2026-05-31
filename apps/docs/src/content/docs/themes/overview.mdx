@@ -1,22 +1,22 @@
 ---
 title: Overview
-description: The skeleton is one thing. The look is a theme. react-ui-os ships five reference themes (neutral baseline, cinematic Mintables, SaaS light, Windows-style Redmond, GNOME-style Ubuntu) and you can write your own.
+description: The skeleton is one thing. The look is a theme. react-ui-os ships three reference themes that clone macOS, Windows, and Ubuntu, and you can write your own.
 sidebar:
   order: 1
 ---
 
 import TypeTable from "~/components/TypeTable.astro";
-import redmondShot from "../../../assets/themes-redmond.png";
+import windowsShot from "../../../assets/themes-windows.png";
 import ubuntuShot from "../../../assets/themes-ubuntu.png";
 
 The library splits "the system" from "the look." The **window manager**, the **dock**, the **menu bar**, the **windowing rules**, the **keyboard shortcuts**: all of that is the skeleton. **Themes** are token bags that dress it.
 
 ## Two ways themes flex
 
-| Layer          | What changes                                                                                                      |
-| -------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Build-time** | The consumer picks one theme at app boot. `<Desktop theme={mintables} />` vs. `<Desktop theme={defaultTheme} />`. |
-| **Runtime**    | The end user tweaks a bounded subset via the Settings panel. The theme declares which tokens are open.            |
+| Layer          | What changes                                                                                                         |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Build-time** | The consumer picks one theme at app boot. `<Desktop theme={windowsTheme} />` vs. `<Desktop theme={defaultTheme} />`. |
+| **Runtime**    | The end user tweaks a bounded subset via the Settings panel. The theme declares which tokens are open.               |
 
 Runtime themes are not full theme swaps. They are **overlays**: user prefs sit on top of the declared theme's defaults, and only the paths the theme listed under `customizable` are applied. Stale prefs (a token the theme later removed) are silently ignored.
 
@@ -44,29 +44,27 @@ Six required token categories, an optional `elevation` token, and an optional **
 
 This is the part that does not exist in component libraries. It is what lets a SaaS dashboard hide the wallpaper and put the dock on the left, and lets a maker tool keep the full macOS register. Same components, different stance.
 
-`windowControls` has four registers: `"traffic-lights"` (macOS, on the left), `"windows"` (a minimize / maximize / close caption cluster on the right, close turning red on hover), `"gnome"` (the Adwaita / Yaru trio of round symbolic buttons on the right, neutral hover), and `"minimal"` (a single close glyph). The Redmond theme below picks `"windows"`; the Ubuntu theme picks `"gnome"`; the default theme picks `"traffic-lights"`.
+`windowControls` has four registers: `"traffic-lights"` (macOS, on the left), `"windows"` (a minimize / maximize / close caption cluster on the right, close turning red on hover), `"gnome"` (the Adwaita / Yaru trio of round symbolic buttons on the right, neutral hover), and `"minimal"` (a single close glyph). The Windows theme below picks `"windows"`; the Ubuntu theme picks `"gnome"`; the macOS default theme picks `"traffic-lights"`.
 
-`dockStyle` chooses the dock's form: `"floating"` (the macOS dock, a centered rounded pill that hovers above the edge) or `"bar"` (the Windows taskbar / GNOME panel shape, a flat bar flush to the edge, full width on the bottom or full height on the left, with an accent underline under running apps). It defaults to `"floating"`; Redmond and Ubuntu set `"bar"`. `dockAlign` then packs a bar dock's icons `"center"` (macOS, Windows 11), `"start"` (GNOME, Windows 10), or `"end"`; Ubuntu sets `"start"` so the icons sit at the top with the launcher at the bottom.
+`dockStyle` chooses the dock's form: `"floating"` (the macOS dock, a centered rounded pill that hovers above the edge) or `"bar"` (the Windows taskbar / GNOME panel shape, a flat bar flush to the edge, full width on the bottom or full height on the left, with an accent underline under running apps). It defaults to `"floating"`; Windows and Ubuntu set `"bar"`. `dockAlign` then packs a bar dock's icons `"center"` (macOS, Windows 11), `"start"` (GNOME, Windows 10), or `"end"`; Ubuntu sets `"start"` so the icons sit at the top with the launcher at the bottom.
 
 A few more `chrome` tokens dress the top bar. `menuBarClock` places the clock `"right"` (the macOS default, in the status cluster) or `"center"` (the GNOME placement, with the status indicators kept on the right and the workspace switcher on the left). `menuBarBrand` (default `true`) controls whether the bar carries the brand button; the macOS app-menu pattern reads as a relic in the GNOME register, so the Ubuntu theme sets it `false` and leaves the top-left to the workspace switcher. `quickSettings`, when true, turns the menu-bar status cluster into a single button that opens the [Quick Settings](/components/quicksettings/) popover. The Ubuntu theme sets all three.
 
-`launcher` picks how the [app launcher](/components/spotlight/) presents: `"spotlight"` (the macOS centered palette, default), `"grid"` (the GNOME Activities app grid), or `"menu"` (the Windows Start menu). All three share the same results and the Cmd-K shortcut; Ubuntu sets `"grid"` and Redmond sets `"menu"`.
+`launcher` picks how the [app launcher](/components/spotlight/) presents: `"spotlight"` (the macOS centered palette, default), `"grid"` (the GNOME Activities app grid), or `"menu"` (the Windows Start menu). All three share the same results and the Cmd-K shortcut; Ubuntu sets `"grid"` and Windows sets `"menu"`.
 
 ## Themes that ship
 
-| Package                        | Stance                                                                                                                                                                                                                   |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `@react-ui-os/theme-default`   | Unbranded baseline. Dark, neutral palette, no wallpaper, full macOS chrome. Use when you want to feel the skeleton.                                                                                                      |
-| `@react-ui-os/theme-mintables` | Cinematic frosted glass. Deep blur, teal accent, parallax + vignette wallpaper, traffic lights.                                                                                                                          |
-| `@react-ui-os/theme-saas`      | Neutral light workspace. Dock on the left, menu bar hidden, modest blur. Exercises `chrome.dockPosition: "left"` and `chrome.menuBar: "none"`.                                                                           |
-| `@react-ui-os/theme-redmond`   | Windows-style light register. Caption-button window controls, a bottom taskbar that does not magnify, no menu bar, lighter shadows. Exercises `chrome.windowControls: "windows"` and `motion.dockMagnification: 1`.      |
-| `@react-ui-os/theme-ubuntu`    | GNOME-style dark register. Yaru dark palette, Ubuntu orange, a left bar dock, round symbolic window controls, a centered clock, and a Quick Settings popover. The only theme that pairs a top menu bar with a left dock. |
+| Package                      | Stance                                                                                                                                                                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@react-ui-os/theme-default` | macOS clone. Traffic lights, a floating dock with a fisheye, a translucent top menu bar, the Tahoe wallpaper. With no wallpaper it doubles as the bare skeleton. Call `createDefaultTheme({ wallpaperSrc })`.          |
+| `@react-ui-os/theme-windows` | Windows clone. Caption-button window controls, a bottom taskbar that does not magnify, a Start launcher, no menu bar, lighter shadows. Exercises `chrome.windowControls: "windows"` and `motion.dockMagnification: 1`. |
+| `@react-ui-os/theme-ubuntu`  | Ubuntu (GNOME) clone. Yaru dark palette, Ubuntu orange, a left bar dock, round symbolic window controls, a centered clock, and a Quick Settings popover. The only theme that pairs a top menu bar with a left dock.    |
 
-The same components, in the Redmond stance: caption-button windows, a bottom taskbar with a Start launcher and a clock, on a Windows 11 wallpaper.
+The same components, in the Windows stance: caption-button windows, a bottom taskbar with a Start launcher and a clock, on a Windows 11 wallpaper.
 
 <img
-  src={redmondShot.src}
-  alt="The Redmond theme: a light Windows-style desktop with caption-button windows and a bottom taskbar showing a Start launcher, centered app icons, and a clock, over a dark Windows 11 wallpaper"
+  src={windowsShot.src}
+  alt="The Windows theme: a light Windows-style desktop with caption-button windows and a bottom taskbar showing a Start launcher, centered app icons, and a clock, over a dark Windows 11 wallpaper"
   style={{
     maxWidth: "100%",
     height: "auto",
@@ -91,14 +89,12 @@ And in the Ubuntu stance: a top bar with a centered clock, a left bar dock, roun
 ## Picking a theme
 
 ```tsx
-import { defaultTheme } from "@react-ui-os/theme-default";
-import { createMintablesTheme } from "@react-ui-os/theme-mintables";
-import { createSaasTheme } from "@react-ui-os/theme-saas";
-import { createRedmondTheme } from "@react-ui-os/theme-redmond";
+import { defaultTheme, createDefaultTheme } from "@react-ui-os/theme-default";
+import { createWindowsTheme } from "@react-ui-os/theme-windows";
 import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
 
 // Build-time choice. Swap the right side for whichever stance fits.
-const theme = createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
+const theme = createDefaultTheme({ wallpaperSrc: "/macos-wallpaper.jpg" });
 
 <Desktop apps={apps} theme={theme} />;
 ```

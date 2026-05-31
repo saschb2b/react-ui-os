@@ -16,7 +16,7 @@ The library presents itself as an operating system, not a webpage. Every visual 
 
 The library is built so the same components can carry very different products. Three reference points worth keeping in mind when making design choices:
 
-1. **Maker / personal-tool theme.** Photographic wallpaper, dark glass surfaces, accent gradients, full macOS-style traffic lights. This is the `theme-mintables` register. Cinematic first paint, demo-friendly.
+1. **Maker / personal-tool theme.** Photographic wallpaper, dark glass surfaces, accent gradients, full macOS-style traffic lights. This is the macOS register (`theme-default` with a wallpaper). Cinematic first paint, demo-friendly.
 2. **SaaS / productivity theme.** Light or neutral background, no wallpaper, dock on the left as an app rail, minimal window chrome (no traffic lights, only a close glyph). The library should never assume the dock is at the bottom or that there is a wallpaper.
 3. **Retro / playful theme.** Sharp pixel borders, Windows 95 chrome, sound effects. Possible because `chrome.windowControls = "windows"` is a real option and themes can override `shape.windowRadius` to 0.
 
@@ -68,7 +68,7 @@ An `App` carries three optional visual hooks: `accent`, `icon`, `iconArt`. Theme
 
 - **Accent** drives the dock tile gradient (top: accent lightened, bottom: accent darkened) and the focused window's top-edge highlight. The library passes the app's accent to the components; themes can choose how saturated, how visible, how loud.
 - **Icon** is a small Lucide-style component. Themes render it centered on the dock tile when `iconArt` is absent.
-- **IconArt** is a subject illustration drawn at dock-tile size, painted on top of the accent gradient. This is how an app gets visual identity in the dock (Mintables generators ship custom SVG: a cylinder for Tubes, an elbow for Adapters, etc.). Themes that hide the dock can ignore `iconArt` entirely.
+- **IconArt** is a subject illustration drawn at dock-tile size, painted on top of the accent gradient. This is how an app gets visual identity in the dock (a generator app can ship custom SVG: a cylinder for a tube tool, an elbow for an adapter tool, etc.). Themes that hide the dock can ignore `iconArt` entirely.
 
 ## Default theme principles
 
@@ -98,7 +98,7 @@ Never compete with the OS motion. If a theme adds extra animation to a component
 - **Don't bake product brand into the library.** Brand gradients, brand wallpapers, brand fonts all live in themes. Library defaults are intentionally generic.
 - **Don't break the OS metaphor with web surfaces.** A "modal dialog" with a backdrop and centered card is acceptable for Settings; an inline-on-page hero banner is not. If a consumer needs a hero, they put it inside a window.
 - **Don't bypass the window manager.** Any draggable, focusable, minimize-able surface should be a real window registered with the manager. Floating panels that look like windows but lack the focus model are an anti-pattern.
-- **Don't make tokens conditional on theme id.** If a component needs to behave differently per theme, the difference belongs in a token, not in `theme.id === "mintables"` checks. Add the token to `OsTheme` first.
+- **Don't make tokens conditional on theme id.** If a component needs to behave differently per theme, the difference belongs in a token, not in `theme.id === "windows"` checks. Add the token to `OsTheme` first.
 - **Don't add a CSS file consumers must import.** The library injects its own keyframes via a `StyleInjector` at the Desktop root. Anything beyond that should be inline-styled from tokens.
 
 ## Component recipes

@@ -49,7 +49,7 @@ const apps: App[] = [{ id: "notes", name: "Notes", content: () => <h1>Notes</h1>
 | Prop       | Type             | Default         | Description                                                                                                                                                                           |
 | ---------- | ---------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps`     | `App[]`          | **required**    | The app registry. Order matters: Cmd-1..9 maps to indices, dock tiles render in this order.                                                                                           |
-| `theme`    | `OsTheme`        | **required**    | The active theme. Pass `defaultTheme` or call `createMintablesTheme(...)`.                                                                                                            |
+| `theme`    | `OsTheme`        | **required**    | The active theme. Pass `defaultTheme` or call `createWindowsTheme(...)`.                                                                                                              |
 | `brand`    | `string`         | `"react-ui-os"` | Label shown on the left of the menu bar.                                                                                                                                              |
 | `storage`  | `StorageAdapter` | `localStorage`  | Backend for user preferences and state-earned folders. Defaults to a `localStorage`-backed adapter; swap for a server adapter to sync across devices.                                 |
 | `children` | `ReactNode`      | `undefined`     | Headless companions rendered inside the provider alongside the default surfaces. Use for URL sync, deep-link activators, analytics, or any component that needs `useWindowManager()`. |
@@ -64,12 +64,12 @@ const apps = [{ id: "hello", name: "Hello", content: () => <h1>Hello</h1> }];
 <Desktop apps={apps} theme={defaultTheme} />;
 ```
 
-### With a custom brand and the Mintables theme
+### With a custom brand and the Windows theme
 
 ```tsx
-import { createMintablesTheme } from "@react-ui-os/theme-mintables";
+import { createWindowsTheme } from "@react-ui-os/theme-windows";
 
-const theme = createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
+const theme = createWindowsTheme({ wallpaperSrc: "/windows-wallpaper.jpg" });
 
 <Desktop apps={apps} theme={theme} brand="acme.studio" />;
 ```
