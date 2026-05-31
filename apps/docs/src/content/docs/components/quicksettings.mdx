@@ -1,0 +1,127 @@
+---
+title: Quick Settings
+description: "The popover that drops from the menu-bar status cluster: the GNOME system menu, the macOS Control Center, the Windows quick settings flyout. A panel of action buttons, sliders, and toggle tiles, populated by a registry."
+sidebar:
+  order: 16
+---
+
+All three reference desktops put a small panel behind the menu-bar status cluster: the GNOME system menu, the macOS Control Center, the Windows quick settings flyout. They share a shape, a row of action buttons, one or two sliders, and a grid of toggle tiles, so the library owns the visuals and you contribute the data. The registry mirrors [status items](/components/statusitems/): register an entry from any code, get back an unsubscribe.
+
+The popover renders nothing until something is registered, and it stays inert unless the theme opts in.
+
+## Turn it on
+
+Set `chrome.quickSettings` on the theme. The menu-bar status cluster then becomes a single button (network / sound / battery glyphs) that opens the popover, the way GNOME groups its indicators. The Ubuntu theme sets it; the others do not.
+
+```ts
+chrome: {
+  menuBar: "top",
+  quickSettings: true,
+  // ...
+}
+```
+
+You can also open it from anywhere by dispatching the toggle event:
+
+```ts
+import { QUICK_SETTINGS_TOGGLE_EVENT } from "@react-ui-os/desktop";
+
+window.dispatchEvent(new CustomEvent(QUICK_SETTINGS_TOGGLE_EVENT));
+```
+
+## Import
+
+```tsx
+import {
+  registerQuickSetting,
+  unregisterQuickSetting,
+  type QuickSettingItem,
+} from "@react-ui-os/desktop";
+```
+
+## Register entries
+
+Entries are a discriminated union on `kind`. They render grouped: actions in the header row, sliders next, toggle tiles in a two-column grid, each group sorted by `order`.
+
+```tsx
+// A toggle tile. Fills with the accent when active.
+registerQuickSetting({
+  kind: "toggle",
+  id: "dnd",
+  label: "Do Not Disturb",
+  icon: <BellOffIcon />,
+  active: dnd,
+  onToggle: setDnd,
+  order: 4,
+});
+
+// A slider (value in the 0..1 range).
+registerQuickSetting({
+  kind: "slider",
+  id: "volume",
+  ariaLabel: "Volume",
+  icon: <SpeakerIcon />,
+  value: volume,
+  onChange: setVolume,
+});
+
+// A header action button. align "start" sits left, "end" sits right.
+registerQuickSetting({
+  kind: "action",
+  id: "power",
+  icon: <PowerIcon />,
+  tooltip: "Power Off",
+  align: "end",
+});
+```
+
+## QuickSettingItem
+
+Common to every kind:
+
+| Field   | Type     | Description                                            |
+| ------- | -------- | ------------------------------------------------------ |
+| `id`    | `string` | Stable id used as the React key and the dedup token.   |
+| `order` | `number` | Render order within its group. Lower first. Default `100`. |
+
+`kind: "toggle"` adds `label`, optional `sublabel` (a second line, "Balanced"), optional `icon`, `active`, `onToggle(next)`, and an optional `onExpand` that draws a trailing chevron (the GNOME "open the sub-menu" arrow).
+
+`kind: "slider"` adds `ariaLabel`, optional `icon`, `value` (0..1), and `onChange(next)`. It reuses the [`Slider`](/components/primitives/) primitive, so keyboard and screen-reader behavior come for free.
+
+`kind: "action"` adds `icon`, optional `tooltip`, optional `onClick`, and `align` (`"start"` | `"end"`).
+
+## Controlled state
+
+Entries carry their current `active` / `value`; re-registering the same id replaces the record. Give each control its own effect so changing one re-registers only that entry, never blanking the panel:
+
+```tsx
+export function VolumeQuickSetting() {
+  const [volume, setVolume] = useState(0.5);
+  useEffect(
+    () =>
+      registerQuickSetting({
+        kind: "slider",
+        id: "volume",
+        ariaLabel: "Volume",
+        icon: <SpeakerIcon />,
+        value: volume,
+        onChange: setVolume,
+      }),
+    [volume],
+  );
+  return null;
+}
+```
+
+Mount the component once anywhere inside `<DesktopProvider>`.
+
+## Accessibility
+
+- The popover is `role="dialog" aria-label="Quick settings"`, dismissed by Escape or by clicking away.
+- Toggle tiles are `<button aria-pressed>`; sliders carry their `ariaLabel`; action buttons use the `tooltip` as the `aria-label`.
+
+## See also
+
+- [Status items](/components/statusitems/): the same plug-in shape, for the persistent menu-bar widgets.
+- [Notifications](/components/notifications/): for messages that appear and fade.
+- [Themes overview](/themes/overview/): the `chrome.quickSettings` token.

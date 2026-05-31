@@ -50,9 +50,12 @@ The mood layer. `src` is optional; without it, `palette.background` fills the de
 
 The structural variants. This is where the OS spectrum gets honest.
 
-- `windowControls`: `"traffic-lights"` (macOS), `"windows"` (close on right, min/max left of it), `"minimal"` (one close glyph, nothing else).
+- `windowControls`: `"traffic-lights"` (macOS), `"windows"` (close on right, min/max left of it), `"gnome"` (round symbolic min/max/close on the right, the Adwaita/Yaru look), `"minimal"` (one close glyph, nothing else).
 - `dockPosition`: `"bottom"`, `"left"`, `"hidden"`.
+- `dockStyle`: `"floating"` (macOS pill), `"bar"` (flush taskbar / GNOME panel).
 - `menuBar`: `"top"` (system-wide menu), `"in-window"` (inside each title bar), `"none"`.
+- `menuBarClock`: `"right"` (macOS, in the status cluster), `"center"` (GNOME).
+- `quickSettings`: when set, the menu-bar status cluster opens the Quick Settings popover (GNOME system menu / macOS Control Center).
 
 The components must respect every combination. A theme that picks `dockPosition: "hidden"` and `menuBar: "none"` should still produce a working desktop (the user opens apps through Spotlight or via `useWindowManager().openWindow` from their own UI).
 

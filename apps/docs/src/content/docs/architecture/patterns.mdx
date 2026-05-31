@@ -9,16 +9,17 @@ The library is bigger than it looks because most "new features" follow one of a 
 
 ## Contribution shapes: what consumers register
 
-The library exposes four points at which a consumer hands the system something to render or surface.
+The library exposes five points at which a consumer hands the system something to render or surface.
 
-| Shape             | Registry                          | Where it shows up                                                        |
-| ----------------- | --------------------------------- | ------------------------------------------------------------------------ |
-| `App`             | `<Desktop apps={...} />`          | Dock tile, menu bar focus name, Spotlight, `Cmd/Ctrl + 1..9`             |
-| `SystemWindowDef` | `registerSystemWindow(id, def)`   | Spotlight, desktop icon (when `appearsAsDesktopIcon` passes), windowable |
-| `SpotlightSource` | `registerSpotlightSource(id, fn)` | Cmd-K palette only: for anything that activates instead of opening       |
-| `StatusItem`      | `registerStatusItem({ id, ... })` | Menu-bar right cluster between workspaces and the clock                  |
+| Shape              | Registry                            | Where it shows up                                                        |
+| ------------------ | ----------------------------------- | ------------------------------------------------------------------------ |
+| `App`              | `<Desktop apps={...} />`            | Dock tile, menu bar focus name, Spotlight, `Cmd/Ctrl + 1..9`             |
+| `SystemWindowDef`  | `registerSystemWindow(id, def)`     | Spotlight, desktop icon (when `appearsAsDesktopIcon` passes), windowable |
+| `SpotlightSource`  | `registerSpotlightSource(id, fn)`   | Cmd-K palette only: for anything that activates instead of opening       |
+| `StatusItem`       | `registerStatusItem({ id, ... })`   | Menu-bar right cluster between workspaces and the clock                  |
+| `QuickSettingItem` | `registerQuickSetting({ id, ... })` | The Quick Settings popover (when `chrome.quickSettings` is set)          |
 
-All four are **declarative**. You hand the library a description; it owns the rendering, the keyboard nav, the focus, the dismissal. Re-registering the same id replaces the previous record so a host component can update without churn.
+All five are **declarative**. You hand the library a description; it owns the rendering, the keyboard nav, the focus, the dismissal. Re-registering the same id replaces the previous record so a host component can update without churn.
 
 ## The imperative-store pattern
 
@@ -34,6 +35,7 @@ Several systems need to be triggerable from any code (a fetch handler, an effect
 | Context menu  | `openContextMenu({ x, y, ... })` | `<ContextMenu>`                                 |
 | Snap preview  | `setSnapPreview({ ... })`        | `<SnapPreview>`                                 |
 | HUD           | `showHud({ title, ... })`        | `<HudOverlay>`                                  |
+| Quick settings | `registerQuickSetting({ ... })` | `<QuickSettings>`                               |
 
 This is how a deep fetch handler can `notify({ title: "Saved" })` without anyone threading a dispatcher down. Stores live in `@react-ui-os/core` so they have no React dependency; the components that paint them live in `@react-ui-os/desktop`.
 

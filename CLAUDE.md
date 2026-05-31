@@ -71,13 +71,15 @@ packages/
       MissionControl.tsx         # F3 grid of every visible window
       NotificationToasts.tsx     # top-right stack
       NotificationCenter.tsx     # right-edge slide-in sheet
+      QuickSettings.tsx          # GNOME system menu / Control Center popover
       desktop-backdrop.tsx       # right-click-the-wallpaper system menu
       keyboard-shortcuts.tsx
       desktop-context.tsx
       system-windows.ts
       spotlight-sources.ts       # registerSpotlightSource registry
       status-items.ts            # registerStatusItem registry
-      events.ts                  # SPOTLIGHT_OPEN_EVENT, NOTIFICATION_CENTER_TOGGLE_EVENT
+      quick-settings.ts          # registerQuickSetting registry
+      events.ts                  # SPOTLIGHT_OPEN_EVENT, NOTIFICATION_CENTER_TOGGLE_EVENT, QUICK_SETTINGS_TOGGLE_EVENT
       style-injector.tsx
       context-menu/              # ContextMenu + Anchor + module store
       snap/                      # snap zone math + SnapPreview
@@ -208,7 +210,7 @@ interface StatusItem {
 
 ## The imperative-store pattern
 
-Four library systems share the same shape: a **module-level vanilla store** + a **component mounted by `<Desktop>` that subscribes via `useSyncExternalStore`** + an **imperative function callable from any code**. This is how features that span "anywhere in the app" stay decoupled from any provider hierarchy. Pattern files:
+These library systems share the same shape: a **module-level vanilla store** + a **component mounted by `<Desktop>` that subscribes via `useSyncExternalStore`** + an **imperative function callable from any code**. This is how features that span "anywhere in the app" stay decoupled from any provider hierarchy. Pattern files:
 
 | System           | Imperative call                  | Renderer mounted by `<Desktop>`                 | Store                           |
 | ---------------- | -------------------------------- | ----------------------------------------------- | ------------------------------- |
@@ -217,6 +219,7 @@ Four library systems share the same shape: a **module-level vanilla store** + a 
 | Window snap      | `setSnapPreview(...)`            | `<SnapPreview>`                                 | `desktop/snap/snap-store.ts`    |
 | HUD              | `showHud({ title, ... })`        | `<HudOverlay>`                                  | `desktop/hud/hud-store.ts`      |
 | Status tray      | `registerStatusItem(...)`        | `<StatusItems>` inside `<MenuBar>`              | `desktop/status-items.ts`       |
+| Quick settings   | `registerQuickSetting(...)`      | `<QuickSettings>`                               | `desktop/quick-settings.ts`     |
 | Spotlight source | `registerSpotlightSource(...)`   | inside `<Spotlight>`                            | `desktop/spotlight-sources.ts`  |
 
 Reasons:
