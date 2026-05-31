@@ -112,7 +112,13 @@ export interface OsThemeWallpaper {
 }
 
 export interface OsThemeChrome {
-  windowControls: "traffic-lights" | "windows" | "minimal";
+  /**
+   * Window title-bar control style. `"traffic-lights"` is the macOS trio on
+   * the left; `"windows"` is the Windows 11 caption cluster flush in the
+   * top-right corner; `"gnome"` is the Adwaita/Yaru trio of round symbolic
+   * buttons on the right; `"minimal"` is a single close affordance.
+   */
+  windowControls: "traffic-lights" | "windows" | "gnome" | "minimal";
   dockPosition: "bottom" | "left" | "hidden";
   /**
    * Dock form. `"floating"` is the macOS dock: a centered rounded pill that

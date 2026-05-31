@@ -860,6 +860,14 @@ function TitleBar({
               onMinimize={onMinimize}
               onMaximize={onMaximize}
             />
+          ) : controls === "gnome" ? (
+            <GnomeControls
+              focused={focused}
+              maximized={maximized}
+              onClose={onClose}
+              onMinimize={onMinimize}
+              onMaximize={onMaximize}
+            />
           ) : (
             <MinimalControls focused={focused} onClose={onClose} />
           )}
@@ -1010,6 +1018,92 @@ function CaptionButton({
 }
 
 /**
+ * GNOME / Adwaita caption cluster: minimize, maximize/restore, close as three
+ * round symbolic buttons on the right. Each is a circle with a faint tint of
+ * the text color that lifts on hover, the neutral Adwaita treatment (Yaru does
+ * not redden the close button), with a symbolic glyph centered inside.
+ * Sources: libadwaita window-controls (24px circular buttons, neutral hover);
+ * GNOME default button-layout ":minimize,maximize,close".
+ */
+function GnomeControls({
+  focused,
+  maximized,
+  onClose,
+  onMinimize,
+  onMaximize,
+}: {
+  focused: boolean;
+  maximized: boolean;
+  onClose: () => void;
+  onMinimize: () => void;
+  onMaximize: () => void;
+}) {
+  return (
+    <div
+      onPointerDown={(e) => {
+        e.stopPropagation();
+      }}
+      style={{ display: "flex", alignItems: "center", gap: 6 }}
+    >
+      <GnomeControl glyph="minimize" focused={focused} onClick={onMinimize} ariaLabel="Minimize" />
+      <GnomeControl
+        glyph={maximized ? "restore" : "maximize"}
+        focused={focused}
+        onClick={onMaximize}
+        ariaLabel={maximized ? "Restore" : "Maximize"}
+      />
+      <GnomeControl glyph="close" focused={focused} onClick={onClose} ariaLabel="Close" />
+    </div>
+  );
+}
+
+function GnomeControl({
+  glyph,
+  focused,
+  onClick,
+  ariaLabel,
+}: {
+  glyph: CaptionGlyphKind;
+  focused: boolean;
+  onClick: () => void;
+  ariaLabel: string;
+}) {
+  const theme = useTheme();
+  const idle = `${theme.palette.textPrimary}1a`;
+  const hover = `${theme.palette.textPrimary}2e`;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      style={{
+        appearance: "none",
+        border: 0,
+        width: 24,
+        height: 24,
+        borderRadius: "50%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 0,
+        cursor: "pointer",
+        background: idle,
+        color: focused ? theme.palette.textPrimary : theme.palette.textSecondary,
+        transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = hover;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = idle;
+      }}
+    >
+      <CaptionGlyph glyph={glyph} size={glyph === "minimize" ? 11 : 10} />
+    </button>
+  );
+}
+
+/**
  * Minimal chrome: a single close affordance, top-right. The neutral / SaaS
  * register that wants window dismissal without a full traffic-light or caption
  * cluster (DESIGN.md spectrum point 2).
@@ -1060,7 +1154,7 @@ function MinimalControls({
 
 type CaptionGlyphKind = "minimize" | "maximize" | "restore" | "close";
 
-function CaptionGlyph({ glyph }: { glyph: CaptionGlyphKind }) {
+function CaptionGlyph({ glyph, size = 10 }: { glyph: CaptionGlyphKind; size?: number }) {
   const stroke = {
     fill: "none",
     stroke: "currentColor",
@@ -1069,13 +1163,13 @@ function CaptionGlyph({ glyph }: { glyph: CaptionGlyphKind }) {
   switch (glyph) {
     case "minimize":
       return (
-        <svg width={10} height={10} viewBox="0 0 10 10" aria-hidden {...stroke}>
+        <svg width={size} height={size} viewBox="0 0 10 10" aria-hidden {...stroke}>
           <line x1="0" y1="5" x2="10" y2="5" />
         </svg>
       );
     case "maximize":
       return (
-        <svg width={10} height={10} viewBox="0 0 10 10" aria-hidden {...stroke}>
+        <svg width={size} height={size} viewBox="0 0 10 10" aria-hidden {...stroke}>
           <rect x="0.5" y="0.5" width="9" height="9" />
         </svg>
       );
@@ -1083,14 +1177,14 @@ function CaptionGlyph({ glyph }: { glyph: CaptionGlyphKind }) {
       // Two overlapping squares: the front one full, the back one showing only
       // its top and right edges, as Windows draws the restore glyph.
       return (
-        <svg width={11} height={11} viewBox="0 0 11 11" aria-hidden {...stroke}>
+        <svg width={size} height={size} viewBox="0 0 11 11" aria-hidden {...stroke}>
           <rect x="0.5" y="3.5" width="7" height="7" />
           <path d="M3.5 3.5 V0.5 H10.5 V7.5 H7.5" />
         </svg>
       );
     case "close":
       return (
-        <svg width={10} height={10} viewBox="0 0 10 10" aria-hidden {...stroke}>
+        <svg width={size} height={size} viewBox="0 0 10 10" aria-hidden {...stroke}>
           <line x1="0.5" y1="0.5" x2="9.5" y2="9.5" />
           <line x1="9.5" y1="0.5" x2="0.5" y2="9.5" />
         </svg>
