@@ -143,7 +143,7 @@ export default function App() {
       return createRedmondTheme({ wallpaperSrc: "/redmond-wallpaper.jpg" });
     }
     if (themeChoice === "ubuntu") {
-      return createUbuntuTheme();
+      return createUbuntuTheme({ wallpaperSrc: "/ubuntu-wallpaper.png" });
     }
     return defaultTheme;
   }, [themeChoice]);
