@@ -26,6 +26,8 @@ export function Launcher() {
   const launcher = useLauncher();
   if (!launcher.open) return null;
   switch (theme.chrome.launcher) {
+    case "grid":
+      return <GridView launcher={launcher} />;
     default:
       return <SpotlightView launcher={launcher} />;
   }
@@ -229,6 +231,253 @@ function SpotlightView({ launcher }: { launcher: LauncherState }) {
           <HintChip keys="Esc" label="Close" />
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ─── App grid (GNOME) ──────────────────────────────────────────── */
+
+const GRID_LISTBOX_ID = "rui-launcher-grid";
+const GRID_COLUMNS = 6;
+function gridOptionId(index: number): string {
+  return `rui-launcher-grid-option-${String(index)}`;
+}
+
+/**
+ * GNOME Activities overview: a full-bleed search field over a centered grid of
+ * large app icons. Typing filters; the grid carries the same results the
+ * spotlight list does (apps, system windows, sources). Focus stays in the
+ * search field while the arrow keys move a visual selection across the grid,
+ * the GNOME behavior.
+ */
+function GridView({ launcher }: { launcher: LauncherState }) {
+  const theme = useTheme();
+  const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
+  const { moveSelection, activate, activateSelected, close } = launcher;
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, []);
+
+  const onKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    switch (e.key) {
+      case "ArrowRight":
+        e.preventDefault();
+        moveSelection(1);
+        break;
+      case "ArrowLeft":
+        e.preventDefault();
+        moveSelection(-1);
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        moveSelection(GRID_COLUMNS);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        moveSelection(-GRID_COLUMNS);
+        break;
+      case "Enter":
+        e.preventDefault();
+        activateSelected();
+        break;
+      case "Escape":
+        e.preventDefault();
+        close();
+        break;
+      default:
+        break;
+    }
+  };
+
+  return (
+    <div
+      role="presentation"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) close();
+      }}
+      onKeyDown={onKey}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 1400,
+        backdropFilter: theme.blur.spotlight,
+        WebkitBackdropFilter: theme.blur.spotlight,
+        backgroundColor: "rgba(0,0,0,0.55)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        paddingTop: "11vh",
+        gap: 40,
+        animation: `rui-window-open ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
+      }}
+    >
+      <input
+        ref={inputRef}
+        role="combobox"
+        aria-label="Search applications"
+        aria-autocomplete="list"
+        aria-controls={GRID_LISTBOX_ID}
+        aria-expanded={results.length > 0}
+        aria-activedescendant={
+          results.length > 0 ? gridOptionId(selectedIndex) : undefined
+        }
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+        }}
+        placeholder="Type to search"
+        style={{
+          width: "min(420px, calc(100vw - 64px))",
+          height: 44,
+          padding: "0 18px",
+          textAlign: "center",
+          border: `1px solid ${theme.palette.border}`,
+          borderRadius: 999,
+          outline: "none",
+          background: theme.palette.surface,
+          backdropFilter: theme.blur.spotlight,
+          WebkitBackdropFilter: theme.blur.spotlight,
+          color: theme.palette.textPrimary,
+          fontFamily: "inherit",
+          fontSize: 15,
+          flexShrink: 0,
+        }}
+      />
+      <div
+        id={GRID_LISTBOX_ID}
+        role="listbox"
+        aria-label="Applications"
+        style={{
+          width: "min(840px, calc(100vw - 64px))",
+          maxHeight: "62vh",
+          overflowY: "auto",
+          display: "grid",
+          gridTemplateColumns: `repeat(${String(GRID_COLUMNS)}, 1fr)`,
+          gap: 24,
+          padding: 8,
+          justifyItems: "center",
+        }}
+      >
+        {results.length === 0 ? (
+          <div
+            style={{
+              gridColumn: "1 / -1",
+              textAlign: "center",
+              color: theme.palette.textSecondary,
+              fontSize: 14,
+              padding: "24px 0",
+            }}
+          >
+            {query.trim().length > 0
+              ? `No matches for "${query.trim()}".`
+              : "No applications."}
+          </div>
+        ) : (
+          results.map((result, i) => (
+            <LauncherTile
+              key={result.key}
+              result={result}
+              index={i}
+              selected={i === selectedIndex}
+              onHover={() => {
+                setSelectedIndex(i);
+              }}
+              onActivate={() => {
+                activate(result);
+              }}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LauncherTile({
+  result,
+  index,
+  selected,
+  onHover,
+  onActivate,
+}: {
+  result: LauncherResult;
+  index: number;
+  selected: boolean;
+  onHover: () => void;
+  onActivate: () => void;
+}) {
+  const theme = useTheme();
+  const accent = result.accent ?? theme.palette.accent;
+  const Art = result.kind === "app" ? result.app.iconArt : undefined;
+  const Icon = result.kind === "app" ? result.app.icon : undefined;
+  const externalIcon = result.kind === "external" ? result.icon : undefined;
+  const tile = 72;
+  return (
+    <div
+      id={gridOptionId(index)}
+      role="option"
+      aria-selected={selected}
+      onMouseEnter={onHover}
+      onClick={onActivate}
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 8,
+        padding: "12px 6px",
+        borderRadius: theme.shape.windowRadius,
+        cursor: "pointer",
+        background: selected ? `${theme.palette.textPrimary}1f` : "transparent",
+        transition: "background 100ms ease",
+      }}
+    >
+      <div
+        style={{
+          width: tile,
+          height: tile,
+          borderRadius: theme.shape.dockTileRadius,
+          background: `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 6px rgba(0,0,0,0.35)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#fff",
+          flexShrink: 0,
+        }}
+      >
+        {Art ? (
+          <Art size={Math.round(tile * 0.7)} />
+        ) : Icon ? (
+          <Icon size={Math.round(tile * 0.46)} />
+        ) : externalIcon ? (
+          externalIcon
+        ) : (
+          <span style={{ fontWeight: 700, fontSize: Math.round(tile * 0.4) }}>
+            {result.name.charAt(0).toUpperCase()}
+          </span>
+        )}
+      </div>
+      <span
+        style={{
+          maxWidth: "100%",
+          fontSize: 12,
+          textAlign: "center",
+          color: theme.palette.textPrimary,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {result.name}
+      </span>
     </div>
   );
 }

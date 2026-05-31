@@ -90,6 +90,8 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       windowControls: "gnome",
       dockPosition: "left",
       dockStyle: "bar",
+      // The GNOME Activities app-grid overview, not the macOS palette.
+      launcher: "grid",
       // Ubuntu packs the app icons from the top, launcher pinned at the bottom.
       dockAlign: "start",
       menuBar: "top",
