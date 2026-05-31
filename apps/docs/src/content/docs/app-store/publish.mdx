@@ -24,11 +24,7 @@ import { useTheme } from "@react-ui-os/desktop";
 
 function WeatherContent() {
   const theme = useTheme();
-  return (
-    <div style={{ color: theme.palette.textPrimary, padding: 8 }}>
-      Sunny, 21°
-    </div>
-  );
+  return <div style={{ color: theme.palette.textPrimary, padding: 8 }}>Sunny, 21°</div>;
 }
 
 export const weatherApp: App = {
@@ -65,15 +61,15 @@ Append an entry to the `apps` array in `registry.json`:
 }
 ```
 
-| Field          | Meaning                                                          |
-| -------------- | ---------------------------------------------------------------- |
-| `id`           | Install id and the folder name the CLI writes to                 |
-| `export`       | The named export the consumer registers with `<Desktop>`         |
-| `category`     | One word, used by the gallery filter                             |
-| `accent`       | Hex color for the gallery card                                   |
-| `dependencies` | npm packages the app imports (always core and desktop)           |
-| `dir`          | Source folder, relative to the repo root                         |
-| `files`        | The files in `dir` to copy, by name                              |
+| Field          | Meaning                                                  |
+| -------------- | -------------------------------------------------------- |
+| `id`           | Install id and the folder name the CLI writes to         |
+| `export`       | The named export the consumer registers with `<Desktop>` |
+| `category`     | One word, used by the gallery filter                     |
+| `accent`       | Hex color for the gallery card                           |
+| `dependencies` | npm packages the app imports (always core and desktop)   |
+| `dir`          | Source folder, relative to the repo root                 |
+| `files`        | The files in `dir` to copy, by name                      |
 
 The CLI copies these files into the consumer's `os-apps/<id>/` folder, so the
 `./icon` and `./store` relative imports keep working after the copy.

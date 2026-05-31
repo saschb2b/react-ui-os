@@ -35,33 +35,33 @@ describe("marqueeIntersects", () => {
   const rect = { left: 100, top: 100, width: 100, height: 100 }; // 100..200 square
 
   it("hits a tile fully inside the rectangle", () => {
-    expect(marqueeIntersects(rect, { left: 120, top: 120, right: 180, bottom: 180 })).toBe(
-      true,
-    );
+    expect(
+      marqueeIntersects(rect, { left: 120, top: 120, right: 180, bottom: 180 }),
+    ).toBe(true);
   });
 
   it("hits a tile that only partially overlaps", () => {
-    expect(marqueeIntersects(rect, { left: 180, top: 180, right: 260, bottom: 260 })).toBe(
-      true,
-    );
+    expect(
+      marqueeIntersects(rect, { left: 180, top: 180, right: 260, bottom: 260 }),
+    ).toBe(true);
   });
 
   it("counts edge contact as a hit", () => {
     // Tile's left edge touches the rectangle's right edge at x=200.
-    expect(marqueeIntersects(rect, { left: 200, top: 120, right: 260, bottom: 180 })).toBe(
-      true,
-    );
+    expect(
+      marqueeIntersects(rect, { left: 200, top: 120, right: 260, bottom: 180 }),
+    ).toBe(true);
   });
 
   it("misses a tile to the right", () => {
-    expect(marqueeIntersects(rect, { left: 220, top: 120, right: 280, bottom: 180 })).toBe(
-      false,
-    );
+    expect(
+      marqueeIntersects(rect, { left: 220, top: 120, right: 280, bottom: 180 }),
+    ).toBe(false);
   });
 
   it("misses a tile above", () => {
-    expect(marqueeIntersects(rect, { left: 120, top: 20, right: 180, bottom: 80 })).toBe(
-      false,
-    );
+    expect(
+      marqueeIntersects(rect, { left: 120, top: 20, right: 180, bottom: 80 }),
+    ).toBe(false);
   });
 });

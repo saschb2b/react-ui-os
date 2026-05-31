@@ -15,7 +15,9 @@
  */
 
 /** A node in the fake filesystem: either a directory (map) or a file (string). */
-export type FsNode = { type: "dir"; children: Record<string, FsNode> } | { type: "file"; content: string };
+export type FsNode =
+  | { type: "dir"; children: Record<string, FsNode> }
+  | { type: "file"; content: string };
 
 export interface ShellEnv {
   /** Resolved home / working directory shown by `pwd`. */
@@ -76,11 +78,13 @@ export function createFileSystem(): FsNode {
         children: {
           "readme.txt": {
             type: "file",
-            content: "Welcome to the react-ui-os terminal.\nTry: help, ls, cat Documents/notes.md, open calculator.",
+            content:
+              "Welcome to the react-ui-os terminal.\nTry: help, ls, cat Documents/notes.md, open calculator.",
           },
           "notes.md": {
             type: "file",
-            content: "# Notes\n- Windows are first-class, URLs are downstream.\n- Apps are data, themes are token bags.",
+            content:
+              "# Notes\n- Windows are first-class, URLs are downstream.\n- Apps are data, themes are token bags.",
           },
         },
       },
@@ -103,8 +107,12 @@ const FILE_SYSTEM = createFileSystem();
  */
 export function resolvePath(root: FsNode, path: string): FsNode | null {
   const trimmed = path.trim();
-  if (trimmed === "" || trimmed === "." || trimmed === "/" || trimmed === "~") return root;
-  const segments = trimmed.replace(/^[~/]+/, "").split("/").filter((s) => s.length > 0 && s !== ".");
+  if (trimmed === "" || trimmed === "." || trimmed === "/" || trimmed === "~")
+    return root;
+  const segments = trimmed
+    .replace(/^[~/]+/, "")
+    .split("/")
+    .filter((s) => s.length > 0 && s !== ".");
   let node: FsNode = root;
   for (const segment of segments) {
     if (node.type !== "dir") return null;
@@ -128,7 +136,9 @@ const COMMANDS: Record<string, CommandDef> = {
     summary: "List available commands.",
     usage: "help",
     run: () => {
-      const defs = Object.values(COMMANDS).sort((a, b) => a.usage.localeCompare(b.usage));
+      const defs = Object.values(COMMANDS).sort((a, b) =>
+        a.usage.localeCompare(b.usage),
+      );
       const width = Math.max(...defs.map((d) => d.usage.length));
       const lines = defs.map((d) => `  ${d.usage.padEnd(width)}  ${d.summary}`);
       return { output: ["Available commands:", ...lines], signal: { type: "none" } };
@@ -162,14 +172,20 @@ const COMMANDS: Record<string, CommandDef> = {
       const path = args[0] ?? "";
       const node = resolvePath(FILE_SYSTEM, path);
       if (!node) {
-        return { output: [`ls: ${path || "."}: No such file or directory`], signal: { type: "none" } };
+        return {
+          output: [`ls: ${path || "."}: No such file or directory`],
+          signal: { type: "none" },
+        };
       }
       if (node.type === "file") {
         // `ls <file>` echoes the path back, matching coreutils.
         return { output: [path], signal: { type: "none" } };
       }
       const entries = listDir(node);
-      return { output: entries.length > 0 ? [entries.join("  ")] : [], signal: { type: "none" } };
+      return {
+        output: entries.length > 0 ? [entries.join("  ")] : [],
+        signal: { type: "none" },
+      };
     },
   },
   cat: {
@@ -177,10 +193,14 @@ const COMMANDS: Record<string, CommandDef> = {
     usage: "cat <file>",
     run: (args) => {
       const path = args[0];
-      if (!path) return { output: ["cat: missing file operand"], signal: { type: "none" } };
+      if (!path)
+        return { output: ["cat: missing file operand"], signal: { type: "none" } };
       const node = resolvePath(FILE_SYSTEM, path);
       if (!node) {
-        return { output: [`cat: ${path}: No such file or directory`], signal: { type: "none" } };
+        return {
+          output: [`cat: ${path}: No such file or directory`],
+          signal: { type: "none" },
+        };
       }
       if (node.type === "dir") {
         return { output: [`cat: ${path}: Is a directory`], signal: { type: "none" } };
@@ -229,7 +249,10 @@ const COMMANDS: Record<string, CommandDef> = {
       };
       if (!appId) return { output: listing(), signal: { type: "none" } };
       if (!ctx.openableAppIds.includes(appId)) {
-        return { output: [`open: ${appId}: no such app`, ...listing()], signal: { type: "none" } };
+        return {
+          output: [`open: ${appId}: no such app`, ...listing()],
+          signal: { type: "none" },
+        };
       }
       const label = ctx.appLabels[appId] ?? appId;
       return { output: [`Opening ${label}…`], signal: { type: "open", appId } };

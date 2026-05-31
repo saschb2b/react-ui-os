@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type RefObject } from "react";
-import {
-  marqueeFromPoints,
-  marqueeIntersects,
-  type MarqueeRect,
-} from "./util/marquee";
+import { marqueeFromPoints, marqueeIntersects, type MarqueeRect } from "./util/marquee";
 
 // Pointer travel before a left-drag on the bare desktop becomes a marquee, so
 // a plain click that just clears the selection never flashes a rectangle.
@@ -35,12 +31,10 @@ function isBareDesktop(target: HTMLElement | null): boolean {
 function iconsInMarquee(rect: MarqueeRect, container: HTMLElement | null): string[] {
   if (!container) return [];
   const ids: string[] = [];
-  container
-    .querySelectorAll<HTMLElement>("[data-desktop-icon-id]")
-    .forEach((el) => {
-      const id = el.getAttribute("data-desktop-icon-id");
-      if (id && marqueeIntersects(rect, el.getBoundingClientRect())) ids.push(id);
-    });
+  container.querySelectorAll<HTMLElement>("[data-desktop-icon-id]").forEach((el) => {
+    const id = el.getAttribute("data-desktop-icon-id");
+    if (id && marqueeIntersects(rect, el.getBoundingClientRect())) ids.push(id);
+  });
   return ids;
 }
 

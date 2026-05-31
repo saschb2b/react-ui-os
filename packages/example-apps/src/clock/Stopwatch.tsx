@@ -190,11 +190,7 @@ export function Stopwatch() {
           .reverse()
           .map(({ t, i }) => {
             const highlight =
-              i === fastestIdx
-                ? START_GREEN
-                : i === slowestIdx
-                  ? STOP_RED
-                  : null;
+              i === fastestIdx ? START_GREEN : i === slowestIdx ? STOP_RED : null;
             return (
               <div key={i} style={lapRowStyle(highlight)}>
                 <span>Lap {i + 1}</span>

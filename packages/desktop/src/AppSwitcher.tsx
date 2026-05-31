@@ -19,8 +19,7 @@ import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 export function AppSwitcher() {
   const theme = useTheme();
   const apps = useApps();
-  const { state, windows, focusWindow, openWindow, restoreWindow } =
-    useWindowManager();
+  const { state, windows, focusWindow, openWindow, restoreWindow } = useWindowManager();
 
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);

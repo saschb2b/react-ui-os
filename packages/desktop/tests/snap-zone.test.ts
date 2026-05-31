@@ -19,35 +19,25 @@ describe("computeSnapZone", () => {
 
   it("maps the left and right edges to halves", () => {
     expect(computeSnapZone(WORK.x + 10, 324, WORK)).toBe("left-half");
-    expect(computeSnapZone(WORK.x + WORK.width - 10, 324, WORK)).toBe(
-      "right-half",
-    );
+    expect(computeSnapZone(WORK.x + WORK.width - 10, 324, WORK)).toBe("right-half");
   });
 
   it("maps the four corners to quarters", () => {
-    expect(computeSnapZone(WORK.x + 10, WORK.y + 10, WORK)).toBe(
-      "top-left-quarter",
+    expect(computeSnapZone(WORK.x + 10, WORK.y + 10, WORK)).toBe("top-left-quarter");
+    expect(computeSnapZone(WORK.x + WORK.width - 10, WORK.y + 10, WORK)).toBe(
+      "top-right-quarter",
+    );
+    expect(computeSnapZone(WORK.x + 10, WORK.y + WORK.height - 10, WORK)).toBe(
+      "bottom-left-quarter",
     );
     expect(
-      computeSnapZone(WORK.x + WORK.width - 10, WORK.y + 10, WORK),
-    ).toBe("top-right-quarter");
-    expect(
-      computeSnapZone(WORK.x + 10, WORK.y + WORK.height - 10, WORK),
-    ).toBe("bottom-left-quarter");
-    expect(
-      computeSnapZone(
-        WORK.x + WORK.width - 10,
-        WORK.y + WORK.height - 10,
-        WORK,
-      ),
+      computeSnapZone(WORK.x + WORK.width - 10, WORK.y + WORK.height - 10, WORK),
     ).toBe("bottom-right-quarter");
   });
 
   it("corner takes precedence over edge when the pointer hugs a corner", () => {
     // Top edge AND within the corner band: the quarter wins, not top-max.
-    expect(computeSnapZone(WORK.x + 30, WORK.y + 5, WORK)).toBe(
-      "top-left-quarter",
-    );
+    expect(computeSnapZone(WORK.x + 30, WORK.y + 5, WORK)).toBe("top-left-quarter");
   });
 
   it("leaves the bottom-center edge unsnapped (no maximize-from-bottom)", () => {

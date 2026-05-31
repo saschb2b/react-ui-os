@@ -39,9 +39,7 @@ describe("clampWindowToWorkArea", () => {
   });
 
   it("honors a custom edge buffer", () => {
-    expect(
-      clampWindowToWorkArea(100, 1000, 300, 200, work, 50).y,
-    ).toBe(550);
+    expect(clampWindowToWorkArea(100, 1000, 300, 200, work, 50).y).toBe(550);
   });
 
   it("clamps against an offset work-area origin (menu bar + left dock)", () => {
@@ -50,12 +48,8 @@ describe("clampWindowToWorkArea", () => {
     // sliding under either.
     const inset = { x: 100, y: 24, width: 700, height: 576 };
     expect(clampWindowToWorkArea(100, -50, 300, 200, inset).y).toBe(24);
-    expect(clampWindowToWorkArea(-1000, 100, 300, 200, inset).x).toBe(
-      100 - 300 + 64,
-    );
-    expect(clampWindowToWorkArea(100, 5000, 300, 200, inset).y).toBe(
-      24 + 576 - 24,
-    );
+    expect(clampWindowToWorkArea(-1000, 100, 300, 200, inset).x).toBe(100 - 300 + 64);
+    expect(clampWindowToWorkArea(100, 5000, 300, 200, inset).y).toBe(24 + 576 - 24);
   });
 });
 
@@ -183,7 +177,12 @@ describe("pickInitialBounds", () => {
       // A 720-wide window centered at x=40 only has 40px of slack each side, so
       // the first step overflows the right edge and snaps back to the left.
       const wide: App[] = [
-        { id: "wide", name: "Wide", defaultBounds: { w: 720, h: 480 }, content: () => null },
+        {
+          id: "wide",
+          name: "Wide",
+          defaultBounds: { w: 720, h: 480 },
+          content: () => null,
+        },
       ];
       expect(
         pickInitialBounds({ kind: "app", appId: "wide" }, theme, wide, undefined, 1),

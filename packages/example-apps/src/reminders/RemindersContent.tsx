@@ -40,9 +40,7 @@ function CompletionCircle({ checked }: { checked: boolean }) {
       aria-hidden
     >
       <circle cx={10} cy={10} r={8} fill={checked ? "currentColor" : "none"} />
-      {checked && (
-        <path d="m6.5 10 2.2 2.2 4.8-4.8" stroke="#fff" strokeWidth={1.8} />
-      )}
+      {checked && <path d="m6.5 10 2.2 2.2 4.8-4.8" stroke="#fff" strokeWidth={1.8} />}
     </svg>
   );
 }
@@ -181,9 +179,7 @@ function ReminderRow({
     minWidth: 0,
     fontSize: 13,
     lineHeight: 1.3,
-    color: reminder.completed
-      ? theme.palette.textSecondary
-      : theme.palette.textPrimary,
+    color: reminder.completed ? theme.palette.textSecondary : theme.palette.textPrimary,
     textDecoration: reminder.completed ? "line-through" : "none",
     overflow: "hidden",
     textOverflow: "ellipsis",
@@ -315,9 +311,7 @@ export function RemindersContent({ appId }: { appId: string }) {
   const app = useApp(appId);
   const accent = app?.accent ?? theme.palette.accent;
 
-  const [reminders, setReminders] = useState<Reminder[]>(() =>
-    listReminders(storage),
-  );
+  const [reminders, setReminders] = useState<Reminder[]>(() => listReminders(storage));
   const [showCompleted, setShowCompleted] = useState(true);
   const [newTitle, setNewTitle] = useState("");
   const addInputId = useId();

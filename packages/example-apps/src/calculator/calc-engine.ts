@@ -121,7 +121,11 @@ export function equals(state: CalcState): CalcState {
   // Pressing "=" again with no pending operator repeats the last op/operand.
   if (state.pendingOperator === null) {
     if (state.repeat === null) return state;
-    const result = apply(currentValue(state), state.repeat.operand, state.repeat.operator);
+    const result = apply(
+      currentValue(state),
+      state.repeat.operand,
+      state.repeat.operator,
+    );
     return {
       ...state,
       display: formatNumber(result),
@@ -174,8 +178,14 @@ export function deleteLast(state: CalcState): CalcState {
   return { ...state, display: next, entered: next !== "0" };
 }
 
-const PLAIN = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0, useGrouping: false });
-const GROUPED = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0, useGrouping: true });
+const PLAIN = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 0,
+  useGrouping: false,
+});
+const GROUPED = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 0,
+  useGrouping: true,
+});
 
 /**
  * Convert a number into the canonical internal display string. Keeps a "raw"

@@ -112,9 +112,7 @@ function NotesContent() {
       // before the storage change event round-trips back.
       setNotes((prev) =>
         prev
-          .map((n) =>
-            n.id === selectedId ? { ...n, body, updatedAt: Date.now() } : n,
-          )
+          .map((n) => (n.id === selectedId ? { ...n, body, updatedAt: Date.now() } : n))
           .sort((a, b) => b.updatedAt - a.updatedAt),
       );
       updateNote(storage, selectedId, body);
@@ -134,10 +132,7 @@ function NotesContent() {
         event.preventDefault();
         const prev = notes[Math.max(index - 1, 0)];
         if (prev) setSelectedId(prev.id);
-      } else if (
-        (event.key === "Backspace" || event.key === "Delete") &&
-        selectedId
-      ) {
+      } else if ((event.key === "Backspace" || event.key === "Delete") && selectedId) {
         event.preventDefault();
         handleDelete(selectedId);
       }

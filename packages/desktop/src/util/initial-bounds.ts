@@ -17,8 +17,7 @@ import { getChromeMetrics, getWorkArea, type WorkArea } from "./layout";
  * right instead of piling up dead-center.
  */
 export function nextCascadeIndex(state: WindowManagerState): number {
-  return state.windows.filter((w) => w.workspaceId === state.activeWorkspaceId)
-    .length;
+  return state.windows.filter((w) => w.workspaceId === state.activeWorkspaceId).length;
 }
 
 /**

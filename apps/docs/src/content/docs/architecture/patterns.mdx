@@ -29,13 +29,13 @@ Several systems need to be triggerable from any code (a fetch handler, an effect
 2. A **component mounted by `<Desktop>`** subscribes via `useSyncExternalStore`.
 3. An **imperative function** (`notify`, `showHud`, `openContextMenu`, etc.) writes to the store.
 
-| System        | Imperative call                  | Mounted by `<Desktop>`                          |
-| ------------- | -------------------------------- | ----------------------------------------------- |
-| Notifications | `notify({ title, ... })`         | `<NotificationToasts>` + `<NotificationCenter>` |
-| Context menu  | `openContextMenu({ x, y, ... })` | `<ContextMenu>`                                 |
-| Snap preview  | `setSnapPreview({ ... })`        | `<SnapPreview>`                                 |
-| HUD           | `showHud({ title, ... })`        | `<HudOverlay>`                                  |
-| Quick settings | `registerQuickSetting({ ... })` | `<QuickSettings>`                               |
+| System         | Imperative call                  | Mounted by `<Desktop>`                          |
+| -------------- | -------------------------------- | ----------------------------------------------- |
+| Notifications  | `notify({ title, ... })`         | `<NotificationToasts>` + `<NotificationCenter>` |
+| Context menu   | `openContextMenu({ x, y, ... })` | `<ContextMenu>`                                 |
+| Snap preview   | `setSnapPreview({ ... })`        | `<SnapPreview>`                                 |
+| HUD            | `showHud({ title, ... })`        | `<HudOverlay>`                                  |
+| Quick settings | `registerQuickSetting({ ... })`  | `<QuickSettings>`                               |
 
 This is how a deep fetch handler can `notify({ title: "Saved" })` without anyone threading a dispatcher down. Stores live in `@react-ui-os/core` so they have no React dependency; the components that paint them live in `@react-ui-os/desktop`.
 

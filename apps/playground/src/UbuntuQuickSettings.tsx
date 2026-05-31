@@ -12,7 +12,16 @@ const I = 16;
 
 function SpeakerIcon() {
   return (
-    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinejoin="round">
+    <svg
+      width={I}
+      height={I}
+      viewBox="0 0 16 16"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.2}
+      strokeLinejoin="round"
+    >
       <path d="M3 6h3l4-3v10l-4-3H3z" fill="currentColor" stroke="none" />
       <path d="M11.5 6c1 1.3 1 2.7 0 4" strokeLinecap="round" />
     </svg>
@@ -30,7 +39,16 @@ function SignalIcon() {
 function GaugeIcon() {
   // A speedometer, the GNOME power-mode mark.
   return (
-    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round">
+    <svg
+      width={I}
+      height={I}
+      viewBox="0 0 16 16"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.2}
+      strokeLinecap="round"
+    >
       <path d="M2.6 11.5a5.5 5.5 0 0 1 10.8 0" />
       <path d="M8 11.5 11 7" />
       <circle cx="8" cy="11.5" r="0.9" fill="currentColor" stroke="none" />
@@ -48,7 +66,16 @@ function ContrastIcon() {
 }
 function BellOffIcon() {
   return (
-    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinejoin="round">
+    <svg
+      width={I}
+      height={I}
+      viewBox="0 0 16 16"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.2}
+      strokeLinejoin="round"
+    >
       <path d="M4.5 7a3.5 3.5 0 0 1 7 0c0 3 1.5 4 1.5 4h-10S4.5 10 4.5 7z" />
       <path d="M6.5 13.5a1.6 1.6 0 0 0 3 0" strokeLinecap="round" />
       <path d="M2.5 2.5l11 11" strokeLinecap="round" />
@@ -57,7 +84,16 @@ function BellOffIcon() {
 }
 function CameraIcon() {
   return (
-    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinejoin="round">
+    <svg
+      width={I}
+      height={I}
+      viewBox="0 0 16 16"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.2}
+      strokeLinejoin="round"
+    >
       <rect x="1.5" y="4.5" width="13" height="9" rx="1.6" />
       <circle cx="8" cy="9" r="2.4" />
       <path d="M5.5 4.5 6.6 2.8h2.8l1.1 1.7" />
@@ -66,7 +102,16 @@ function CameraIcon() {
 }
 function SlidersIcon() {
   return (
-    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round">
+    <svg
+      width={I}
+      height={I}
+      viewBox="0 0 16 16"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.3}
+      strokeLinecap="round"
+    >
       <line x1="2" y1="5" x2="14" y2="5" />
       <circle cx="6" cy="5" r="1.7" fill="currentColor" stroke="none" />
       <line x1="2" y1="11" x2="14" y2="11" />
@@ -76,7 +121,16 @@ function SlidersIcon() {
 }
 function LockIcon() {
   return (
-    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinejoin="round">
+    <svg
+      width={I}
+      height={I}
+      viewBox="0 0 16 16"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.2}
+      strokeLinejoin="round"
+    >
       <rect x="3.5" y="7" width="9" height="6.5" rx="1.4" />
       <path d="M5.5 7V5.2a2.5 2.5 0 0 1 5 0V7" />
     </svg>
@@ -84,7 +138,16 @@ function LockIcon() {
 }
 function PowerIcon() {
   return (
-    <svg width={I} height={I} viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round">
+    <svg
+      width={I}
+      height={I}
+      viewBox="0 0 16 16"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.3}
+      strokeLinecap="round"
+    >
       <path d="M8 2v6" />
       <path d="M4.8 4.2a5 5 0 1 0 6.4 0" />
     </svg>

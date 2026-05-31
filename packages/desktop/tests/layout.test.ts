@@ -14,12 +14,8 @@ function themeWith(chrome: Partial<OsTheme["chrome"]>): OsTheme {
 describe("getChromeMetrics", () => {
   it("derives the bottom-dock and left-dock footprints from tile + padding", () => {
     const regular = getChromeMetrics("regular");
-    expect(regular.dockHeight).toBe(
-      regular.dockTileSize + regular.dockPadding * 2,
-    );
-    expect(regular.dockWidth).toBe(
-      regular.dockTileSize + regular.dockPadding * 2,
-    );
+    expect(regular.dockHeight).toBe(regular.dockTileSize + regular.dockPadding * 2);
+    expect(regular.dockWidth).toBe(regular.dockTileSize + regular.dockPadding * 2);
   });
 
   it("uses tighter chrome in compact mode", () => {

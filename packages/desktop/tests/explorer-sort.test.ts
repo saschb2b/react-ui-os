@@ -74,14 +74,12 @@ describe("filterAndSortItems", () => {
   });
 
   it("filters by name or kind, case-insensitively", () => {
-    expect(names(filterAndSortItems(items, { query: "image", sort: "name", dir: "asc" }))).toEqual([
-      "item 1",
-    ]);
-    expect(names(filterAndSortItems(items, { query: "ITEM", sort: "name", dir: "asc" }))).toEqual([
-      "item 1",
-      "Item 2",
-      "Item 10",
-    ]);
+    expect(
+      names(filterAndSortItems(items, { query: "image", sort: "name", dir: "asc" })),
+    ).toEqual(["item 1"]);
+    expect(
+      names(filterAndSortItems(items, { query: "ITEM", sort: "name", dir: "asc" })),
+    ).toEqual(["item 1", "Item 2", "Item 10"]);
   });
 
   it("does not mutate the input array", () => {
@@ -93,7 +91,9 @@ describe("filterAndSortItems", () => {
 
   it("ignores leading and trailing whitespace in the query", () => {
     expect(
-      names(filterAndSortItems(items, { query: "  image  ", sort: "name", dir: "asc" })),
+      names(
+        filterAndSortItems(items, { query: "  image  ", sort: "name", dir: "asc" }),
+      ),
     ).toEqual(["item 1"]);
   });
 });

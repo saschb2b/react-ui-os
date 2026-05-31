@@ -12,9 +12,7 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..", "..");
 
-const manifest = JSON.parse(
-  readFileSync(join(repoRoot, "registry.json"), "utf8"),
-);
+const manifest = JSON.parse(readFileSync(join(repoRoot, "registry.json"), "utf8"));
 
 const apps = manifest.apps.map((app) => ({
   id: app.id,

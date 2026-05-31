@@ -106,7 +106,8 @@ export function TerminalContent({ focused }: AppContentProps) {
       if (event.key === "ArrowUp") {
         event.preventDefault();
         if (history.length === 0) return;
-        const next = historyCursor === -1 ? history.length - 1 : Math.max(0, historyCursor - 1);
+        const next =
+          historyCursor === -1 ? history.length - 1 : Math.max(0, historyCursor - 1);
         setHistoryCursor(next);
         setInput(history[next] ?? "");
         return;
@@ -226,7 +227,9 @@ export function TerminalContent({ focused }: AppContentProps) {
             key={line.id}
             style={{
               color:
-                line.kind === "command" ? theme.palette.textPrimary : theme.palette.textSecondary,
+                line.kind === "command"
+                  ? theme.palette.textPrimary
+                  : theme.palette.textSecondary,
             }}
           >
             {line.text}

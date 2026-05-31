@@ -84,7 +84,13 @@ export function DesktopBackdrop({ extraItems, buildItems }: DesktopBackdropProps
             const payload = { kind: "system" as const, systemId: "settings" };
             openWindow(
               payload,
-              pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+              pickInitialBounds(
+                payload,
+                theme,
+                apps,
+                undefined,
+                nextCascadeIndex(state),
+              ),
             );
           },
         },

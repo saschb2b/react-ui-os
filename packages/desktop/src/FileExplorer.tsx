@@ -12,11 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { useTheme } from "./desktop-context";
-import {
-  filterAndSortItems,
-  type SortDir,
-  type SortField,
-} from "./util/explorer-sort";
+import { filterAndSortItems, type SortDir, type SortField } from "./util/explorer-sort";
 
 /* ─── Types ──────────────────────────────────────────────────── */
 

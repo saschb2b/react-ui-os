@@ -117,9 +117,7 @@ export function getDockReservation(theme: OsTheme): {
   return {
     top: 0,
     right: 0,
-    bottom: isBar
-      ? metrics.taskbarSize
-      : metrics.dockHeight + metrics.dockEdgeOffset,
+    bottom: isBar ? metrics.taskbarSize : metrics.dockHeight + metrics.dockEdgeOffset,
     left: 0,
   };
 }

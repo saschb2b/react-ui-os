@@ -9,17 +9,21 @@ import LivePreview from "~/components/LivePreview.astro";
 
 The launcher is the keyboard front door: type a few letters, get the right window. Every OS presents this differently, so the library splits it into a shared brain and a swappable face. The data (apps, system windows, and `registerSpotlightSource` rows), the Cmd-K shortcut, selection, and activation are the same in every register; `theme.chrome.launcher` picks the layout.
 
-<LivePreview src="?demo=spotlight" label="The launcher in its Spotlight register" height="420px" />
+<LivePreview
+  src="?demo=spotlight"
+  label="The launcher in its Spotlight register"
+  height="420px"
+/>
 
 ## Presentations
 
 `theme.chrome.launcher` chooses the face. All three carry the same results and filter the same way.
 
-| Value                 | Reads as          | Layout                                                                                 |
-| --------------------- | ----------------- | -------------------------------------------------------------------------------------- |
-| `"spotlight"` (default) | macOS Spotlight | A centered command palette: search field over a vertical result list.                  |
-| `"grid"`              | GNOME Activities  | A full-bleed overview: a centered search field over a grid of large app icons.         |
-| `"menu"`              | Windows Start     | A panel raised from the dock launcher: a search field over a grid of app tiles.        |
+| Value                   | Reads as         | Layout                                                                          |
+| ----------------------- | ---------------- | ------------------------------------------------------------------------------- |
+| `"spotlight"` (default) | macOS Spotlight  | A centered command palette: search field over a vertical result list.           |
+| `"grid"`                | GNOME Activities | A full-bleed overview: a centered search field over a grid of large app icons.  |
+| `"menu"`                | Windows Start    | A panel raised from the dock launcher: a search field over a grid of app tiles. |
 
 The default theme uses `"spotlight"`, Ubuntu uses `"grid"`, and Redmond uses `"menu"`. The arrow keys navigate every register (the grid and menu add left/right); Enter activates; Escape dismisses and restores focus.
 
@@ -33,10 +37,10 @@ import { Launcher, useLauncher, SPOTLIGHT_OPEN_EVENT } from "@react-ui-os/deskto
 
 ## Opening the launcher
 
-| Trigger                                                       | Behavior                                                        |
-| ------------------------------------------------------------- | --------------------------------------------------------------- |
-| `Cmd-K` (macOS) / `Ctrl-K` (elsewhere)                        | Toggles it. Bails when typing in an input or textarea.          |
-| `window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT))` | Opens from any component without prop drilling.                 |
+| Trigger                                                       | Behavior                                                                                    |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `Cmd-K` (macOS) / `Ctrl-K` (elsewhere)                        | Toggles it. Bails when typing in an input or textarea.                                      |
+| `window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT))` | Opens from any component without prop drilling.                                             |
 | The dock launcher button                                      | Dispatches the event above. The bar dock shows it; the menu and grid pop where the OS does. |
 
 ## Result kinds

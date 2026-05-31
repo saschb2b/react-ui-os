@@ -91,11 +91,7 @@ export function noteSnippet(note: Note): string {
       continue;
     }
     if (trimmed) {
-      return lines
-        .slice(i)
-        .join(" ")
-        .replace(/\s+/g, " ")
-        .trim();
+      return lines.slice(i).join(" ").replace(/\s+/g, " ").trim();
     }
   }
   return "";

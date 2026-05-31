@@ -206,9 +206,14 @@ export function Toolbar({
         role="group"
         aria-label="Brush size"
       >
-        {iconButton("Brush", <BrushIcon />, () => {
-          onToolChange("brush");
-        }, { active: tool === "brush" })}
+        {iconButton(
+          "Brush",
+          <BrushIcon />,
+          () => {
+            onToolChange("brush");
+          },
+          { active: tool === "brush" },
+        )}
         <div style={{ flex: 1, minWidth: 88 }}>
           <Slider
             value={size}

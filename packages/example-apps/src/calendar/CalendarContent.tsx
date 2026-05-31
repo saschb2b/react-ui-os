@@ -451,9 +451,7 @@ export function CalendarContent({ appId }: { appId: string }) {
             minWidth: 0,
             border: "none",
             borderRight:
-              col < DAYS_PER_WEEK - 1
-                ? `1px solid ${theme.palette.border}`
-                : "none",
+              col < DAYS_PER_WEEK - 1 ? `1px solid ${theme.palette.border}` : "none",
             borderBottom:
               row < WEEKS - 1 ? `1px solid ${theme.palette.border}` : "none",
             background: isSelected ? `${accent}1f` : "transparent",

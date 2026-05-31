@@ -139,7 +139,8 @@ export function createRedmondTheme(options: RedmondThemeOptions = {}): OsTheme {
         kind: "select",
         section: "Layout",
         label: "Taskbar alignment",
-        description: "Center the icons (Windows 11) or pack them to the left (Windows 10).",
+        description:
+          "Center the icons (Windows 11) or pack them to the left (Windows 10).",
         options: [
           { value: "center", label: "Center" },
           { value: "start", label: "Left" },
@@ -158,7 +159,8 @@ export function createRedmondTheme(options: RedmondThemeOptions = {}): OsTheme {
         kind: "range",
         section: "Motion",
         label: "Dock magnification",
-        description: "Peak size of the hovered dock icon. Set to 1 to turn the fisheye off.",
+        description:
+          "Peak size of the hovered dock icon. Set to 1 to turn the fisheye off.",
         min: 1,
         max: 2,
         step: 0.05,

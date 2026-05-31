@@ -86,7 +86,8 @@ export function CalculatorContent({ focused }: AppContentProps) {
   // The currently active operator is highlighted only while the running value
   // is committed (before the next operand is typed), matching macOS, where the
   // operator key inverts until you start the second number.
-  const highlightedOperator = activeOperator !== null && state.overwrite ? activeOperator : null;
+  const highlightedOperator =
+    activeOperator !== null && state.overwrite ? activeOperator : null;
 
   useEffect(() => {
     const el = displayRef.current;
@@ -97,7 +98,8 @@ export function CalculatorContent({ focused }: AppContentProps) {
     el.style.transform = "scale(1)";
     const available = parent.clientWidth;
     const needed = el.scrollWidth;
-    const next = needed > available && needed > 0 ? Math.max(0.5, available / needed) : 1;
+    const next =
+      needed > available && needed > 0 ? Math.max(0.5, available / needed) : 1;
     setDisplayScale(next);
   }, [formatted]);
 
@@ -207,24 +209,48 @@ export function CalculatorContent({ focused }: AppContentProps) {
           ariaLabel={state.entered ? "clear entry" : "all clear"}
           onClick={() => dispatch({ type: "clear" })}
         />
-        <FunctionKey label="+/−" ariaLabel="negate" onClick={() => dispatch({ type: "negate" })} />
-        <FunctionKey label="%" ariaLabel="percent" onClick={() => dispatch({ type: "percent" })} />
-        <OperatorKey operator="divide" active={highlightedOperator === "divide"} dispatch={dispatch} />
+        <FunctionKey
+          label="+/−"
+          ariaLabel="negate"
+          onClick={() => dispatch({ type: "negate" })}
+        />
+        <FunctionKey
+          label="%"
+          ariaLabel="percent"
+          onClick={() => dispatch({ type: "percent" })}
+        />
+        <OperatorKey
+          operator="divide"
+          active={highlightedOperator === "divide"}
+          dispatch={dispatch}
+        />
 
         <DigitKey digit="7" dispatch={dispatch} />
         <DigitKey digit="8" dispatch={dispatch} />
         <DigitKey digit="9" dispatch={dispatch} />
-        <OperatorKey operator="multiply" active={highlightedOperator === "multiply"} dispatch={dispatch} />
+        <OperatorKey
+          operator="multiply"
+          active={highlightedOperator === "multiply"}
+          dispatch={dispatch}
+        />
 
         <DigitKey digit="4" dispatch={dispatch} />
         <DigitKey digit="5" dispatch={dispatch} />
         <DigitKey digit="6" dispatch={dispatch} />
-        <OperatorKey operator="subtract" active={highlightedOperator === "subtract"} dispatch={dispatch} />
+        <OperatorKey
+          operator="subtract"
+          active={highlightedOperator === "subtract"}
+          dispatch={dispatch}
+        />
 
         <DigitKey digit="1" dispatch={dispatch} />
         <DigitKey digit="2" dispatch={dispatch} />
         <DigitKey digit="3" dispatch={dispatch} />
-        <OperatorKey operator="add" active={highlightedOperator === "add"} dispatch={dispatch} />
+        <OperatorKey
+          operator="add"
+          active={highlightedOperator === "add"}
+          dispatch={dispatch}
+        />
 
         <DigitKey digit="0" wide dispatch={dispatch} />
         <DigitKey digit="." ariaLabel="decimal point" dispatch={dispatch} />
@@ -315,7 +341,9 @@ function DigitKey({
       onClick={onClick}
       style={{
         ...keyStyle(theme, "digit", false),
-        ...(wide ? { gridColumn: "span 2", justifyContent: "flex-start", paddingLeft: 22 } : null),
+        ...(wide
+          ? { gridColumn: "span 2", justifyContent: "flex-start", paddingLeft: 22 }
+          : null),
       }}
     >
       {digit}
@@ -358,7 +386,12 @@ function FunctionKey({
 }) {
   const theme = useTheme();
   return (
-    <button type="button" aria-label={ariaLabel} onClick={onClick} style={keyStyle(theme, "function", false)}>
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      onClick={onClick}
+      style={keyStyle(theme, "function", false)}
+    >
       {label}
     </button>
   );

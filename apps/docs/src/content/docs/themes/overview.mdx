@@ -28,14 +28,14 @@ Six required token categories, an optional `elevation` token, and an optional **
 
 ## What each category covers
 
-| Category    | Drives                                                                                                     |
-| ----------- | ---------------------------------------------------------------------------------------------------------- |
-| `palette`   | Surface colors, text colors, baseline accent, hairline borders. App accents override the baseline per-app. |
-| `shape`     | Radii: `windowRadius` (large), `dockTileRadius` (squircle), `small` (pills, chips, tooltips).              |
+| Category    | Drives                                                                                                                                                                             |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `palette`   | Surface colors, text colors, baseline accent, hairline borders. App accents override the baseline per-app.                                                                         |
+| `shape`     | Radii: `windowRadius` (large), `dockTileRadius` (squircle), `small` (pills, chips, tooltips).                                                                                      |
 | `motion`    | Durations in milliseconds and easings as CSS strings. Window open, dock hover, minimize genie, plus the optional `dockMagnification` peak (set it to 1 to switch the fisheye off). |
-| `blur`      | `backdrop-filter` strings for the menu bar / dock surface and for Spotlight separately.                    |
+| `blur`      | `backdrop-filter` strings for the menu bar / dock surface and for Spotlight separately.                                                                                            |
 | `elevation` | Optional. Focused and unfocused window drop shadows (`windowFocused`, `windowUnfocused`). Falls back to a neutral default; a flat theme can set both to `"none"`.                  |
-| `wallpaper` | `src` (image URL), `parallax` (cursor-driven shift), `vignette` (dark radial overlay).                     |
+| `wallpaper` | `src` (image URL), `parallax` (cursor-driven shift), `vignette` (dark radial overlay).                                                                                             |
 | `chrome`    | Structural variants: window control style, dock position, dock style (floating pill vs flush taskbar), menu-bar placement, clock placement, and the Quick Settings popover toggle. |
 
 ## `chrome`: the structural lever
@@ -54,12 +54,12 @@ A few more `chrome` tokens dress the top bar. `menuBarClock` places the clock `"
 
 ## Themes that ship
 
-| Package                        | Stance                                                                                                                                         |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@react-ui-os/theme-default`   | Unbranded baseline. Dark, neutral palette, no wallpaper, full macOS chrome. Use when you want to feel the skeleton.                            |
-| `@react-ui-os/theme-mintables` | Cinematic frosted glass. Deep blur, teal accent, parallax + vignette wallpaper, traffic lights.                                                |
-| `@react-ui-os/theme-saas`      | Neutral light workspace. Dock on the left, menu bar hidden, modest blur. Exercises `chrome.dockPosition: "left"` and `chrome.menuBar: "none"`. |
-| `@react-ui-os/theme-redmond`   | Windows-style light register. Caption-button window controls, a bottom taskbar that does not magnify, no menu bar, lighter shadows. Exercises `chrome.windowControls: "windows"` and `motion.dockMagnification: 1`. |
+| Package                        | Stance                                                                                                                                                                                                                   |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@react-ui-os/theme-default`   | Unbranded baseline. Dark, neutral palette, no wallpaper, full macOS chrome. Use when you want to feel the skeleton.                                                                                                      |
+| `@react-ui-os/theme-mintables` | Cinematic frosted glass. Deep blur, teal accent, parallax + vignette wallpaper, traffic lights.                                                                                                                          |
+| `@react-ui-os/theme-saas`      | Neutral light workspace. Dock on the left, menu bar hidden, modest blur. Exercises `chrome.dockPosition: "left"` and `chrome.menuBar: "none"`.                                                                           |
+| `@react-ui-os/theme-redmond`   | Windows-style light register. Caption-button window controls, a bottom taskbar that does not magnify, no menu bar, lighter shadows. Exercises `chrome.windowControls: "windows"` and `motion.dockMagnification: 1`.      |
 | `@react-ui-os/theme-ubuntu`    | GNOME-style dark register. Yaru dark palette, Ubuntu orange, a left bar dock, round symbolic window controls, a centered clock, and a Quick Settings popover. The only theme that pairs a top menu bar with a left dock. |
 
 The same components, in the Redmond stance: caption-button windows, a bottom taskbar with a Start launcher and a clock, on a Windows 11 wallpaper.
@@ -67,7 +67,12 @@ The same components, in the Redmond stance: caption-button windows, a bottom tas
 <img
   src={redmondShot.src}
   alt="The Redmond theme: a light Windows-style desktop with caption-button windows and a bottom taskbar showing a Start launcher, centered app icons, and a clock, over a dark Windows 11 wallpaper"
-  style={{ maxWidth: "100%", height: "auto", borderRadius: "8px", border: "1px solid var(--sl-color-gray-5)" }}
+  style={{
+    maxWidth: "100%",
+    height: "auto",
+    borderRadius: "8px",
+    border: "1px solid var(--sl-color-gray-5)",
+  }}
 />
 
 And in the Ubuntu stance: a top bar with a centered clock, a left bar dock, round symbolic window controls, and the Quick Settings popover open at the right.
@@ -75,7 +80,12 @@ And in the Ubuntu stance: a top bar with a centered clock, a left bar dock, roun
 <img
   src={ubuntuShot.src}
   alt="The Ubuntu theme: a dark GNOME-style desktop with a top bar, a centered clock, a left dock flush to the edge, a window with round symbolic controls, and the Quick Settings popover showing a volume slider and Wired, Power Mode, Dark Style, and Do Not Disturb tiles"
-  style={{ maxWidth: "100%", height: "auto", borderRadius: "8px", border: "1px solid var(--sl-color-gray-5)" }}
+  style={{
+    maxWidth: "100%",
+    height: "auto",
+    borderRadius: "8px",
+    border: "1px solid var(--sl-color-gray-5)",
+  }}
 />
 
 ## Picking a theme

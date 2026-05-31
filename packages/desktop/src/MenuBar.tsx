@@ -73,7 +73,13 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
             const payload = { kind: "system" as const, systemId: "settings" };
             openWindow(
               payload,
-              pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+              pickInitialBounds(
+                payload,
+                theme,
+                apps,
+                undefined,
+                nextCascadeIndex(state),
+              ),
             );
           },
         },
@@ -350,7 +356,16 @@ function NetworkGlyph() {
 
 function SpeakerGlyph() {
   return (
-    <svg width={14} height={14} viewBox="0 0 14 14" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.1} strokeLinejoin="round">
+    <svg
+      width={14}
+      height={14}
+      viewBox="0 0 14 14"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.1}
+      strokeLinejoin="round"
+    >
       <path d="M2 5 H4 L7.5 2.5 V11.5 L4 9 H2 Z" fill="currentColor" stroke="none" />
       <path d="M9.5 5 Q11 7 9.5 9" strokeLinecap="round" />
     </svg>
@@ -359,10 +374,34 @@ function SpeakerGlyph() {
 
 function BatteryGlyph() {
   return (
-    <svg width={16} height={14} viewBox="0 0 16 14" aria-hidden fill="none" stroke="currentColor" strokeWidth={1.1}>
+    <svg
+      width={16}
+      height={14}
+      viewBox="0 0 16 14"
+      aria-hidden
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.1}
+    >
       <rect x="1" y="4" width="11" height="6" rx="1.4" />
-      <rect x="3" y="6" width="6" height="2" rx="0.5" fill="currentColor" stroke="none" />
-      <rect x="13" y="5.6" width="1.6" height="2.8" rx="0.6" fill="currentColor" stroke="none" />
+      <rect
+        x="3"
+        y="6"
+        width="6"
+        height="2"
+        rx="0.5"
+        fill="currentColor"
+        stroke="none"
+      />
+      <rect
+        x="13"
+        y="5.6"
+        width="1.6"
+        height="2.8"
+        rx="0.6"
+        fill="currentColor"
+        stroke="none"
+      />
     </svg>
   );
 }

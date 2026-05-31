@@ -248,8 +248,7 @@ export function Timer() {
         {idle
           ? circleButton("Cancel", cancel, theme.palette.textSecondary, true)
           : circleButton("Cancel", cancel, CANCEL_RED)}
-        {idle &&
-          circleButton("Start", start, START_GREEN, pickedMs <= 0)}
+        {idle && circleButton("Start", start, START_GREEN, pickedMs <= 0)}
         {phase === "running" && circleButton("Pause", pause, theme.palette.textPrimary)}
         {phase === "paused" && circleButton("Resume", resume, START_GREEN)}
       </div>

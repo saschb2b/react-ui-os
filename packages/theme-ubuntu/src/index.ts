@@ -105,7 +105,8 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
         kind: "color-from-palette",
         section: "Appearance",
         label: "Accent",
-        description: "The Yaru accent. Tints the dock indicators, the focused-window highlight, and active toggles.",
+        description:
+          "The Yaru accent. Tints the dock indicators, the focused-window highlight, and active toggles.",
         // A subset of the ten Yaru accents.
         options: ["#E95420", "#77216f", "#3584e4", "#0e8420", "#c748ba", "#c7162b"],
       },

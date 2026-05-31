@@ -79,9 +79,7 @@ describe("status items", () => {
     // registration's unsubscribe must not evict the live record.
     track(registerStatusItem({ id: "track", icon: null, badge: "live" }));
     staleUnsub();
-    expect(listStatusItems().find((i) => i.id === "track")?.badge).toBe(
-      "live",
-    );
+    expect(listStatusItems().find((i) => i.id === "track")?.badge).toBe("live");
   });
 
   it("unregisters by id", () => {
@@ -111,12 +109,16 @@ describe("spotlight sources", () => {
   });
 
   it("replaces a source when the same id re-registers", () => {
-    track(registerSpotlightSource("dup", () => [
-      { id: "old", name: "old", onActivate: () => {} },
-    ]));
-    track(registerSpotlightSource("dup", () => [
-      { id: "new", name: "new", onActivate: () => {} },
-    ]));
+    track(
+      registerSpotlightSource("dup", () => [
+        { id: "old", name: "old", onActivate: () => {} },
+      ]),
+    );
+    track(
+      registerSpotlightSource("dup", () => [
+        { id: "new", name: "new", onActivate: () => {} },
+      ]),
+    );
     const ids = listSpotlightSources().flatMap((s) => s("").map((r) => r.id));
     expect(ids).toEqual(["new"]);
   });
@@ -159,9 +161,7 @@ describe("system windows", () => {
     systemKeys.push("test-win");
     registerSystemWindow("test-win", def);
     expect(getSystemWindow("test-win")).toBe(def);
-    expect(listSystemWindows().some((w) => w.systemId === "test-win")).toBe(
-      true,
-    );
+    expect(listSystemWindows().some((w) => w.systemId === "test-win")).toBe(true);
   });
 
   it("lists windows in declaration order (built-ins before later registrations)", () => {

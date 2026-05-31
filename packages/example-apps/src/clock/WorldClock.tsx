@@ -37,7 +37,10 @@ const CITIES: City[] = [
  * Intl rather than computed from a raw UTC offset (so DST is handled by
  * the platform's tz database).
  */
-function zoneParts(date: Date, timeZone: string): {
+function zoneParts(
+  date: Date,
+  timeZone: string,
+): {
   hour: number;
   minute: number;
   /** Day-of-month, used only to compare calendar dates across zones. */
