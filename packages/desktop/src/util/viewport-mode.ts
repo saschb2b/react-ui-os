@@ -1,6 +1,7 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useState } from "react";
+import { useIsomorphicLayoutEffect } from "./use-isomorphic-layout-effect";
 
 /**
  * The desktop has two layouts:
@@ -37,16 +38,16 @@ export function getViewportMode(): ViewportMode {
 // its own resize listener.
 const listeners = new Set<() => void>();
 let resizeBound = false;
-let cachedMode: ViewportMode = "regular";
+let lastNotified: ViewportMode = "regular";
 
 function ensureResizeListener(): void {
   if (resizeBound || typeof window === "undefined") return;
   resizeBound = true;
-  cachedMode = getViewportMode();
+  lastNotified = getViewportMode();
   window.addEventListener("resize", () => {
     const next = getViewportMode();
-    if (next === cachedMode) return;
-    cachedMode = next;
+    if (next === lastNotified) return;
+    lastNotified = next;
     for (const listener of listeners) listener();
   });
 }
@@ -59,19 +60,25 @@ function subscribe(listener: () => void): () => void {
   };
 }
 
-function getSnapshot(): ViewportMode {
-  ensureResizeListener();
-  return cachedMode;
-}
-
-function getServerSnapshot(): ViewportMode {
-  return "regular";
-}
-
 /**
- * React-side accessor. Re-renders the component when the desktop crosses
- * the compact / regular threshold.
+ * React-side accessor. Re-renders the component when the desktop crosses the
+ * compact / regular threshold.
+ *
+ * Two-pass on purpose: the first render returns the SSR-safe default so the
+ * hydrated markup matches the server, then a layout effect measures the real
+ * viewport and corrects before the browser paints. The server cannot know the
+ * client's size, and an SSR'd `<Desktop>` (for example inside a small docs
+ * iframe) must not stay frozen at that guess. The resize subscription is shared
+ * module-wide, so every consumer rides one listener.
  */
 export function useViewportMode(): ViewportMode {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const [mode, setMode] = useState<ViewportMode>("regular");
+  useIsomorphicLayoutEffect(() => {
+    const update = () => {
+      setMode(getViewportMode());
+    };
+    update();
+    return subscribe(update);
+  }, []);
+  return mode;
 }

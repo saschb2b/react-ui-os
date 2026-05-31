@@ -22,6 +22,7 @@ import { NOTIFICATION_CENTER_TOGGLE_EVENT, SPOTLIGHT_OPEN_EVENT } from "./events
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { getChromeMetrics } from "./util/layout";
+import { useIsomorphicLayoutEffect } from "./util/use-isomorphic-layout-effect";
 import { useViewportMode } from "./util/viewport-mode";
 
 export { DOCK_HEIGHT, DOCK_WIDTH } from "./util/layout";
@@ -126,13 +127,25 @@ export function Dock() {
     }
   }, [tick]);
 
-  // Keep the size array in sync if the app list changes.
-  useEffect(() => {
+  // Keep the size array in sync when the app list changes or the resting tile
+  // size does. The magnification loop parks at rest and only eases during a
+  // hover, so a `base` change while parked (the viewport crossing the compact
+  // threshold) has to be snapped here, or the tiles keep their old size until
+  // the next hover. A layout effect applies it before paint, so the corrected
+  // size never flashes (matters when an SSR'd desktop hydrates into a small
+  // viewport and first paints at the regular size).
+  useIsomorphicLayoutEffect(() => {
     if (sizesRef.current.length !== count) {
       const resized = Array.from(
         { length: count },
         (_, i) => sizesRef.current[i] ?? base,
       );
+      sizesRef.current = resized;
+      setSizes(resized);
+      return;
+    }
+    if (rafRef.current === null && sizesRef.current.some((s) => s !== base)) {
+      const resized = Array.from({ length: count }, () => base);
       sizesRef.current = resized;
       setSizes(resized);
     }
