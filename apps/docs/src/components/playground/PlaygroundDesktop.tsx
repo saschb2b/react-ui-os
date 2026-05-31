@@ -1,11 +1,13 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { OsTheme } from "@react-ui-os/core";
 import { Desktop } from "@react-ui-os/desktop";
 import { notify, useWindowManager } from "@react-ui-os/core";
 import type { WindowPayload } from "@react-ui-os/core";
 import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
+import { createRedmondTheme } from "@react-ui-os/theme-redmond";
 import { createSaasTheme } from "@react-ui-os/theme-saas";
+import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
 import { docsApps } from "./apps";
 import {
   NOTIFICATION_CENTER_TOGGLE_EVENT,
@@ -15,15 +17,62 @@ import {
   useTheme,
 } from "@react-ui-os/desktop";
 import { DocsSpotlightSource } from "./DocsSpotlightSource";
+import { ThemeSwitcher, type ThemeChoice } from "./ThemeSwitcher";
+import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
 
-type ThemeChoice = "mintables" | "saas" | "default";
+const THEME_STORAGE_KEY = "rui-os:playground-theme";
 
-function readThemeChoice(): ThemeChoice {
+function isThemeChoice(value: string | null): value is ThemeChoice {
+  return (
+    value === "default" ||
+    value === "mintables" ||
+    value === "saas" ||
+    value === "redmond" ||
+    value === "ubuntu"
+  );
+}
+
+// `?theme=` wins (an explicit, shareable deep link), then the last choice the
+// visitor made, then Mintables, the cinematic look the docs lead with.
+function readInitialThemeChoice(): ThemeChoice {
   if (typeof window === "undefined") return "mintables";
-  const value = new URLSearchParams(window.location.search).get("theme");
-  if (value === "saas") return "saas";
-  if (value === "default") return "default";
+  const fromUrl = new URLSearchParams(window.location.search).get("theme");
+  if (isThemeChoice(fromUrl)) return fromUrl;
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (isThemeChoice(stored)) return stored;
   return "mintables";
+}
+
+function persistThemeChoice(choice: ThemeChoice) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(THEME_STORAGE_KEY, choice);
+  // Mirror the choice into the URL so the current view stays shareable
+  // without forcing a reload.
+  const params = new URLSearchParams(window.location.search);
+  params.set("theme", choice);
+  window.history.replaceState(null, "", `${window.location.pathname}?${params}`);
+}
+
+// Prefix the configured base path (e.g. "/react-ui-os/" on GitHub Pages). A
+// bare relative wallpaper path would resolve against the current page URL and
+// 404 on a sub-path deploy.
+function assetBase(): string {
+  return import.meta.env.BASE_URL.endsWith("/")
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`;
+}
+
+function buildTheme(choice: ThemeChoice): OsTheme {
+  const base = assetBase();
+  if (choice === "default") return defaultTheme;
+  if (choice === "saas") return createSaasTheme();
+  if (choice === "redmond") {
+    return createRedmondTheme({ wallpaperSrc: `${base}redmond-wallpaper.jpg` });
+  }
+  if (choice === "ubuntu") {
+    return createUbuntuTheme({ wallpaperSrc: `${base}ubuntu-wallpaper.png` });
+  }
+  return createMintablesTheme({ wallpaperSrc: `${base}wallpaper.jpg` });
 }
 
 /**
@@ -158,29 +207,27 @@ function DemoActivator() {
 }
 
 /**
- * Client-only React island that boots the desktop. Renders the standard
- * Mintables-themed Desktop, then mounts a small invisible activator that
- * reads `?demo=` and opens the matching surface on boot. The activator
+ * Client-only React island that boots the desktop. Boots in the chosen theme
+ * (Mintables by default), mounts the on-canvas ThemeSwitcher so a visitor can
+ * swap the whole look with a click, and mounts a small invisible activator
+ * that reads `?demo=` and opens the matching surface on boot. The activator
  * sits inside the same provider so it can dispatch openWindow.
  */
 export default function PlaygroundDesktop() {
-  const themeChoice = readThemeChoice();
-  const theme = useMemo<OsTheme>(() => {
-    if (themeChoice === "saas") return createSaasTheme();
-    if (themeChoice === "default") return defaultTheme;
-    // Prefix the configured base path (e.g. "/react-ui-os/" on GitHub Pages).
-    // A bare relative path would resolve against the current page URL and 404
-    // on a sub-path deploy.
-    const base = import.meta.env.BASE_URL.endsWith("/")
-      ? import.meta.env.BASE_URL
-      : `${import.meta.env.BASE_URL}/`;
-    return createMintablesTheme({ wallpaperSrc: `${base}wallpaper.jpg` });
-  }, [themeChoice]);
+  const [themeChoice, setThemeChoice] = useState<ThemeChoice>(readInitialThemeChoice);
+  const theme = useMemo<OsTheme>(() => buildTheme(themeChoice), [themeChoice]);
+
+  const handleThemeChange = (choice: ThemeChoice) => {
+    setThemeChoice(choice);
+    persistThemeChoice(choice);
+  };
 
   return (
     <Desktop apps={docsApps} theme={theme} brand="react-ui-os.dev">
       <DemoActivator />
       <DocsSpotlightSource />
+      {themeChoice === "ubuntu" && <UbuntuQuickSettings />}
+      <ThemeSwitcher value={themeChoice} onChange={handleThemeChange} />
     </Desktop>
   );
 }

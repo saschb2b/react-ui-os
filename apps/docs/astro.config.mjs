@@ -18,7 +18,9 @@ const PACKAGES = [
   "example-apps",
   "theme-default",
   "theme-mintables",
+  "theme-redmond",
   "theme-saas",
+  "theme-ubuntu",
 ];
 const sourceAliases = PACKAGES.map((name) => ({
   find: `@react-ui-os/${name}`,

@@ -74,9 +74,15 @@ importers:
       '@react-ui-os/theme-mintables':
         specifier: workspace:*
         version: link:../../packages/theme-mintables
+      '@react-ui-os/theme-redmond':
+        specifier: workspace:*
+        version: link:../../packages/theme-redmond
       '@react-ui-os/theme-saas':
         specifier: workspace:*
         version: link:../../packages/theme-saas
+      '@react-ui-os/theme-ubuntu':
+        specifier: workspace:*
+        version: link:../../packages/theme-ubuntu
       astro:
         specifier: ^6.4.2
         version: 6.4.2(@types/node@24.12.4)(lightningcss@1.32.0)(rollup@4.60.4)(yaml@2.9.0)

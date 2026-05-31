@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { App as OsApp, OsTheme } from "@react-ui-os/core";
 import {
   Desktop,
@@ -14,6 +14,7 @@ import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
 import { exampleApps } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
+import { ThemeSwitcher, type ThemeChoice } from "./ThemeSwitcher";
 import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
 
 // Register the Recents system window once at module load. The desktop
@@ -54,10 +55,9 @@ function HelloContent({ focused }: { focused: boolean }) {
         <kbd>open calendar</kbd> to launch an app straight from the shell.
       </p>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
-        Try a different theme: append <kbd>?theme=mintables</kbd>,{" "}
-        <kbd>?theme=saas</kbd>, <kbd>?theme=redmond</kbd>, or <kbd>?theme=ubuntu</kbd>{" "}
-        to the URL and reload. SaaS pins the dock to the left edge and hides the menu
-        bar; Redmond swaps in Windows-style caption buttons and a taskbar that does not
+        Use the theme switcher at the top to swap the whole look between macOS,
+        Mintables, SaaS, Windows, and Ubuntu. SaaS pins the dock to the left edge and
+        hides the menu bar; Windows swaps in caption buttons and a taskbar that does not
         magnify; Ubuntu pairs a top bar with a left dock, centers the clock, and opens
         Quick Settings from the status cluster.
       </p>
@@ -117,40 +117,66 @@ const apps: OsApp[] = [
   ...exampleApps,
 ];
 
-type ThemeChoice = "default" | "mintables" | "saas" | "redmond" | "ubuntu";
+const THEME_STORAGE_KEY = "rui-os:playground-theme";
 
-function readThemeFromUrl(): ThemeChoice {
+function isThemeChoice(value: string | null): value is ThemeChoice {
+  return (
+    value === "default" ||
+    value === "mintables" ||
+    value === "saas" ||
+    value === "redmond" ||
+    value === "ubuntu"
+  );
+}
+
+// `?theme=` wins (an explicit, shareable deep link), then the last choice the
+// visitor made, then the neutral default.
+function readInitialThemeChoice(): ThemeChoice {
   if (typeof window === "undefined") return "default";
-  const params = new URLSearchParams(window.location.search);
-  const requested = params.get("theme");
-  if (requested === "mintables") return "mintables";
-  if (requested === "saas") return "saas";
-  if (requested === "redmond") return "redmond";
-  if (requested === "ubuntu") return "ubuntu";
+  const fromUrl = new URLSearchParams(window.location.search).get("theme");
+  if (isThemeChoice(fromUrl)) return fromUrl;
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (isThemeChoice(stored)) return stored;
   return "default";
 }
 
+function persistThemeChoice(choice: ThemeChoice) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(THEME_STORAGE_KEY, choice);
+  // Mirror the choice into the URL so the current view stays shareable
+  // without forcing a reload.
+  const params = new URLSearchParams(window.location.search);
+  params.set("theme", choice);
+  window.history.replaceState(null, "", `${window.location.pathname}?${params}`);
+}
+
+function buildTheme(choice: ThemeChoice): OsTheme {
+  if (choice === "mintables") {
+    return createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
+  }
+  if (choice === "saas") return createSaasTheme();
+  if (choice === "redmond") {
+    return createRedmondTheme({ wallpaperSrc: "/redmond-wallpaper.jpg" });
+  }
+  if (choice === "ubuntu") {
+    return createUbuntuTheme({ wallpaperSrc: "/ubuntu-wallpaper.png" });
+  }
+  return defaultTheme;
+}
+
 export default function App() {
-  const themeChoice = readThemeFromUrl();
-  const theme = useMemo<OsTheme>(() => {
-    if (themeChoice === "mintables") {
-      return createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
-    }
-    if (themeChoice === "saas") {
-      return createSaasTheme();
-    }
-    if (themeChoice === "redmond") {
-      return createRedmondTheme({ wallpaperSrc: "/redmond-wallpaper.jpg" });
-    }
-    if (themeChoice === "ubuntu") {
-      return createUbuntuTheme({ wallpaperSrc: "/ubuntu-wallpaper.png" });
-    }
-    return defaultTheme;
-  }, [themeChoice]);
+  const [themeChoice, setThemeChoice] = useState<ThemeChoice>(readInitialThemeChoice);
+  const theme = useMemo<OsTheme>(() => buildTheme(themeChoice), [themeChoice]);
+
+  const handleThemeChange = (choice: ThemeChoice) => {
+    setThemeChoice(choice);
+    persistThemeChoice(choice);
+  };
 
   return (
     <Desktop apps={apps} theme={theme} brand="react-ui-os">
       {themeChoice === "ubuntu" && <UbuntuQuickSettings />}
+      <ThemeSwitcher value={themeChoice} onChange={handleThemeChange} />
     </Desktop>
   );
 }
