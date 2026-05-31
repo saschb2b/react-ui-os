@@ -91,6 +91,8 @@ packages/
   theme-default/                 # @react-ui-os/theme-default
   theme-mintables/               # @react-ui-os/theme-mintables
   theme-saas/                    # @react-ui-os/theme-saas (left dock, no menu bar)
+  theme-redmond/                 # @react-ui-os/theme-redmond (Windows: caption buttons, taskbar)
+  theme-ubuntu/                  # @react-ui-os/theme-ubuntu (GNOME: top bar + left dock)
 tooling/
   react-compiler-esbuild.mjs     # runs babel-plugin-react-compiler inside the tsup builds
 .github/workflows/
