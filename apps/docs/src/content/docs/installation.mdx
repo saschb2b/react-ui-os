@@ -17,21 +17,21 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
   <TabItem label="pnpm">
 
 ```bash
-pnpm add @react-ui-os/core @react-ui-os/desktop @react-ui-os/theme-default
+pnpm add @react-ui-os/core @react-ui-os/desktop @react-ui-os/theme-macos
 ```
 
   </TabItem>
   <TabItem label="npm">
 
 ```bash
-npm install @react-ui-os/core @react-ui-os/desktop @react-ui-os/theme-default
+npm install @react-ui-os/core @react-ui-os/desktop @react-ui-os/theme-macos
 ```
 
   </TabItem>
   <TabItem label="bun">
 
 ```bash
-bun add @react-ui-os/core @react-ui-os/desktop @react-ui-os/theme-default
+bun add @react-ui-os/core @react-ui-os/desktop @react-ui-os/theme-macos
 ```
 
   </TabItem>
@@ -61,7 +61,7 @@ npm install @react-ui-os/theme-windows
 ```tsx title="App.tsx"
 import type { App } from "@react-ui-os/core";
 import { Desktop } from "@react-ui-os/desktop";
-import { defaultTheme } from "@react-ui-os/theme-default";
+import { macosTheme } from "@react-ui-os/theme-macos";
 
 const apps: App[] = [
   {
@@ -78,7 +78,7 @@ const apps: App[] = [
 ];
 
 export default function App() {
-  return <Desktop apps={apps} theme={defaultTheme} />;
+  return <Desktop apps={apps} theme={macosTheme} />;
 }
 ```
 

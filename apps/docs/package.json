@@ -18,7 +18,7 @@
     "@react-ui-os/core": "workspace:*",
     "@react-ui-os/desktop": "workspace:*",
     "@react-ui-os/example-apps": "workspace:*",
-    "@react-ui-os/theme-default": "workspace:*",
+    "@react-ui-os/theme-macos": "workspace:*",
     "@react-ui-os/theme-ubuntu": "workspace:*",
     "@react-ui-os/theme-windows": "workspace:*",
     "astro": "^6.4.2",

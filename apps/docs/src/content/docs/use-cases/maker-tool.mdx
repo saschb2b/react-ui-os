@@ -118,14 +118,14 @@ Mount `<PresetSpotlightSource />` inside `<Desktop>`. Typing a preset's name in 
 
 ## Give the one app a home
 
-The macOS theme is the cinematic look this shape suits. Build `theme-default` with your wallpaper and mount the single app:
+The macOS theme is the cinematic look this shape suits. Build `theme-macos` with your wallpaper and mount the single app:
 
 ```tsx title="src/App.tsx"
 import { Desktop } from "@react-ui-os/desktop";
-import { createDefaultTheme } from "@react-ui-os/theme-default";
+import { createMacosTheme } from "@react-ui-os/theme-macos";
 import { generatorApp } from "./generator";
 
-const theme = createDefaultTheme({ wallpaperSrc: "/macos-wallpaper.jpg" });
+const theme = createMacosTheme({ wallpaperSrc: "/macos-wallpaper.jpg" });
 
 export default function App() {
   return (

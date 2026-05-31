@@ -32,11 +32,11 @@ in the `apps` array.
 
 ```tsx
 import { Desktop } from "@react-ui-os/desktop";
-import { defaultTheme } from "@react-ui-os/theme-default";
+import { macosTheme } from "@react-ui-os/theme-macos";
 import { notesApp } from "./os-apps/notes";
 
 export function App() {
-  return <Desktop apps={[notesApp]} theme={defaultTheme} />;
+  return <Desktop apps={[notesApp]} theme={macosTheme} />;
 }
 ```
 

@@ -15,16 +15,16 @@ A working OS-style desktop for React. One tag renders the whole thing: wallpaper
 ## Install
 
 ```bash
-pnpm add @react-ui-os/desktop @react-ui-os/theme-default
+pnpm add @react-ui-os/desktop @react-ui-os/theme-macos
 ```
 
 ```tsx
 import { Desktop } from "@react-ui-os/desktop";
-import { defaultTheme } from "@react-ui-os/theme-default";
+import { macosTheme } from "@react-ui-os/theme-macos";
 
 const apps = [{ id: "hello", name: "Hello", content: () => <h1>Hello, desktop.</h1> }];
 
-<Desktop apps={apps} theme={defaultTheme} />;
+<Desktop apps={apps} theme={macosTheme} />;
 ```
 
 That single tag produces the wallpaper, dock, draggable resizable windows, focus tracking, a minimize-to-dock genie animation, Spotlight (Cmd-K), and Settings (Cmd-,). Add an app to the registry and it shows up in the dock, the menu bar, Spotlight, and the keyboard shortcuts at once. No extra wiring.
@@ -38,14 +38,15 @@ That single tag produces the wallpaper, dock, draggable resizable windows, focus
   </tr>
   <tr>
     <td width="50%"><img src=".github/assets/notifications.png" alt="Notification toast stack in the top-right corner"><br><b>Notifications</b><br>Call <code>notify(...)</code> from anywhere. Toasts, dock badges, and a Notification Center, all wired.</td>
-    <td width="50%"><img src=".github/assets/themes-ubuntu.png" alt="Ubuntu theme: a dark GNOME desktop with a top bar, a centered clock, and a left dock"><br><b>Themes change the stance</b><br>Move the dock to the side, center the clock, swap traffic lights for GNOME or Windows controls.</td>
+    <td width="50%"><img src=".github/assets/themes-macos.jpg" alt="macOS theme: a window with traffic lights and a floating dock over the macOS Tahoe wallpaper"><br><b>The macOS clone</b><br>Traffic lights, a floating dock with a fisheye, a translucent menu bar, the Tahoe wallpaper.</td>
   </tr>
   <tr>
-    <td colspan="2"><img src=".github/assets/themes-windows.png" alt="Windows theme: caption-button windows and a bottom taskbar with a Start launcher and a clock on a Windows 11 wallpaper"><br><b>The Windows theme</b><br>The same components, a Windows desktop: caption buttons, a flush taskbar with a Start launcher and a clock, no fisheye. A close clone of the Windows visual patterns, built from tokens.</td>
+    <td width="50%"><img src=".github/assets/themes-windows.jpg" alt="Windows theme: a caption-button window and a bottom taskbar with a Start launcher and a clock on a Windows 11 wallpaper"><br><b>The Windows clone</b><br>Caption buttons, a flush taskbar with a Start launcher and a clock, no fisheye.</td>
+    <td width="50%"><img src=".github/assets/themes-ubuntu.jpg" alt="Ubuntu theme: a window with GNOME controls, a top bar with a centered clock, a left dock, and a Quick Settings popover"><br><b>The Ubuntu clone</b><br>Yaru dark, a top bar with a centered clock, a left dock, GNOME window controls, a Quick Settings popover.</td>
   </tr>
 </table>
 
-There is more in the box: workspaces, Mission Control, an app switcher (Cmd-Tab), window snapping, a Finder-style file explorer, and a context-menu system. See the [docs](https://saschb2b.github.io/react-ui-os/) for the full tour.
+The same components carry all three. Swap the theme and the dock, the window controls, the menu bar, and the launcher all change. There is more in the box too: workspaces, Mission Control, an app switcher (Cmd-Tab), window snapping, a Finder-style file explorer, and a context-menu system. See the [docs](https://saschb2b.github.io/react-ui-os/) for the full tour.
 
 ## App Store
 
@@ -67,7 +68,7 @@ Most React UI libraries ship fifty components and let you wire them. That produc
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@react-ui-os/core`          | Pure logic. Window manager, app and theme types, storage adapter. No JSX.                                                                                                             |
 | `@react-ui-os/desktop`       | The components. `<Desktop>`, `<DesktopProvider>`, `<Wallpaper>`, `<MenuBar>`, `<Dock>`, `<WindowLayer>`, `<Window>`, `<Spotlight>`, `<Settings>`, `<FileExplorer>`, `<DesktopIcons>`. |
-| `@react-ui-os/theme-default` | macOS clone. Traffic lights, a floating dock with a fisheye, a translucent menu bar, the Tahoe wallpaper.                                                                             |
+| `@react-ui-os/theme-macos`   | macOS clone. Traffic lights, a floating dock with a fisheye, a translucent menu bar, the Tahoe wallpaper.                                                                             |
 | `@react-ui-os/theme-windows` | Windows clone. Caption-button controls, a bottom taskbar that does not magnify, a Start launcher, lighter shadows.                                                                    |
 | `@react-ui-os/theme-ubuntu`  | Ubuntu (GNOME) clone. Yaru dark palette, a top bar with a centered clock, a left dock, round symbolic window controls, a Quick Settings popover.                                      |
 
@@ -120,7 +121,7 @@ react-ui-os/
     desktop/                     # @react-ui-os/desktop (components)
     cli/                         # @react-ui-os/cli (installs apps from the registry)
     example-apps/                # @react-ui-os/example-apps (the registry's seed apps)
-    theme-default/               # @react-ui-os/theme-default (macOS)
+    theme-macos/               # @react-ui-os/theme-macos (macOS)
     theme-windows/               # @react-ui-os/theme-windows (Windows)
     theme-ubuntu/                # @react-ui-os/theme-ubuntu (Ubuntu)
   .github/workflows/             # CI + Pages deploy

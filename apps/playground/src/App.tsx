@@ -6,7 +6,7 @@ import {
   useDesktopContext,
   useTheme,
 } from "@react-ui-os/desktop";
-import { createDefaultTheme } from "@react-ui-os/theme-default";
+import { createMacosTheme } from "@react-ui-os/theme-macos";
 import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
 import { createWindowsTheme } from "@react-ui-os/theme-windows";
 import { exampleApps } from "@react-ui-os/example-apps";
@@ -118,18 +118,18 @@ const apps: OsApp[] = [
 const THEME_STORAGE_KEY = "rui-os:playground-theme";
 
 function isThemeChoice(value: string | null): value is ThemeChoice {
-  return value === "default" || value === "windows" || value === "ubuntu";
+  return value === "macos" || value === "windows" || value === "ubuntu";
 }
 
 // `?theme=` wins (an explicit, shareable deep link), then the last choice the
-// visitor made, then the neutral default.
+// visitor made, then macOS.
 function readInitialThemeChoice(): ThemeChoice {
-  if (typeof window === "undefined") return "default";
+  if (typeof window === "undefined") return "macos";
   const fromUrl = new URLSearchParams(window.location.search).get("theme");
   if (isThemeChoice(fromUrl)) return fromUrl;
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
   if (isThemeChoice(stored)) return stored;
-  return "default";
+  return "macos";
 }
 
 function persistThemeChoice(choice: ThemeChoice) {
@@ -149,7 +149,7 @@ function buildTheme(choice: ThemeChoice): OsTheme {
   if (choice === "ubuntu") {
     return createUbuntuTheme({ wallpaperSrc: "/ubuntu-wallpaper.png" });
   }
-  return createDefaultTheme({ wallpaperSrc: "/macos-wallpaper.jpg" });
+  return createMacosTheme({ wallpaperSrc: "/macos-wallpaper.jpg" });
 }
 
 export default function App() {

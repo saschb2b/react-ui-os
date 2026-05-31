@@ -42,11 +42,11 @@ Most React UI libraries ship fifty components and let you wire them. That instin
 
 ```tsx
 import { Desktop } from "@react-ui-os/desktop";
-import { defaultTheme } from "@react-ui-os/theme-default";
+import { macosTheme } from "@react-ui-os/theme-macos";
 
 const apps = [{ id: "notes", name: "Notes", content: () => <h1>Hello, desktop.</h1> }];
 
-<Desktop apps={apps} theme={defaultTheme} />;
+<Desktop apps={apps} theme={macosTheme} />;
 ```
 
 Wallpaper. Dock. Draggable resizable windows with macOS-style traffic lights. Focus tracking. Minimize-to-dock genie animation. Cmd-K Spotlight. Cmd-, Settings. All from that one tag.

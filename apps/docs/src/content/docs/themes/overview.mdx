@@ -6,17 +6,18 @@ sidebar:
 ---
 
 import TypeTable from "~/components/TypeTable.astro";
-import windowsShot from "../../../assets/themes-windows.png";
-import ubuntuShot from "../../../assets/themes-ubuntu.png";
+import macosShot from "../../../assets/themes-macos.jpg";
+import windowsShot from "../../../assets/themes-windows.jpg";
+import ubuntuShot from "../../../assets/themes-ubuntu.jpg";
 
 The library splits "the system" from "the look." The **window manager**, the **dock**, the **menu bar**, the **windowing rules**, the **keyboard shortcuts**: all of that is the skeleton. **Themes** are token bags that dress it.
 
 ## Two ways themes flex
 
-| Layer          | What changes                                                                                                         |
-| -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **Build-time** | The consumer picks one theme at app boot. `<Desktop theme={windowsTheme} />` vs. `<Desktop theme={defaultTheme} />`. |
-| **Runtime**    | The end user tweaks a bounded subset via the Settings panel. The theme declares which tokens are open.               |
+| Layer          | What changes                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Build-time** | The consumer picks one theme at app boot. `<Desktop theme={windowsTheme} />` vs. `<Desktop theme={macosTheme} />`. |
+| **Runtime**    | The end user tweaks a bounded subset via the Settings panel. The theme declares which tokens are open.             |
 
 Runtime themes are not full theme swaps. They are **overlays**: user prefs sit on top of the declared theme's defaults, and only the paths the theme listed under `customizable` are applied. Stale prefs (a token the theme later removed) are silently ignored.
 
@@ -56,11 +57,24 @@ A few more `chrome` tokens dress the top bar. `menuBarClock` places the clock `"
 
 | Package                      | Stance                                                                                                                                                                                                                 |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@react-ui-os/theme-default` | macOS clone. Traffic lights, a floating dock with a fisheye, a translucent top menu bar, the Tahoe wallpaper. With no wallpaper it doubles as the bare skeleton. Call `createDefaultTheme({ wallpaperSrc })`.          |
+| `@react-ui-os/theme-macos`   | macOS clone. Traffic lights, a floating dock with a fisheye, a translucent top menu bar, the Tahoe wallpaper. With no wallpaper it doubles as the bare skeleton. Call `createMacosTheme({ wallpaperSrc })`.            |
 | `@react-ui-os/theme-windows` | Windows clone. Caption-button window controls, a bottom taskbar that does not magnify, a Start launcher, no menu bar, lighter shadows. Exercises `chrome.windowControls: "windows"` and `motion.dockMagnification: 1`. |
 | `@react-ui-os/theme-ubuntu`  | Ubuntu (GNOME) clone. Yaru dark palette, Ubuntu orange, a left bar dock, round symbolic window controls, a centered clock, and a Quick Settings popover. The only theme that pairs a top menu bar with a left dock.    |
 
-The same components, in the Windows stance: caption-button windows, a bottom taskbar with a Start launcher and a clock, on a Windows 11 wallpaper.
+The same components, in the macOS stance: traffic-light windows, a floating dock with a fisheye, a translucent menu bar, on the Tahoe wallpaper.
+
+<img
+  src={macosShot.src}
+  alt="The macOS theme: a window with red, yellow, and green traffic-light controls and a floating dock over the macOS Tahoe wallpaper"
+  style={{
+    maxWidth: "100%",
+    height: "auto",
+    borderRadius: "8px",
+    border: "1px solid var(--sl-color-gray-5)",
+  }}
+/>
+
+And in the Windows stance: caption-button windows, a bottom taskbar with a Start launcher and a clock, on a Windows 11 wallpaper.
 
 <img
   src={windowsShot.src}
@@ -89,12 +103,12 @@ And in the Ubuntu stance: a top bar with a centered clock, a left bar dock, roun
 ## Picking a theme
 
 ```tsx
-import { defaultTheme, createDefaultTheme } from "@react-ui-os/theme-default";
+import { macosTheme, createMacosTheme } from "@react-ui-os/theme-macos";
 import { createWindowsTheme } from "@react-ui-os/theme-windows";
 import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
 
 // Build-time choice. Swap the right side for whichever stance fits.
-const theme = createDefaultTheme({ wallpaperSrc: "/macos-wallpaper.jpg" });
+const theme = createMacosTheme({ wallpaperSrc: "/macos-wallpaper.jpg" });
 
 <Desktop apps={apps} theme={theme} />;
 ```

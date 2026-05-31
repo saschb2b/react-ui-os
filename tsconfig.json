@@ -4,7 +4,7 @@
   "references": [
     { "path": "./packages/core" },
     { "path": "./packages/desktop" },
-    { "path": "./packages/theme-default" },
+    { "path": "./packages/theme-macos" },
     { "path": "./apps/playground" }
   ]
 }

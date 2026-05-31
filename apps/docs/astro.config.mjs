@@ -16,7 +16,7 @@ const PACKAGES = [
   "core",
   "desktop",
   "example-apps",
-  "theme-default",
+  "theme-macos",
   "theme-ubuntu",
   "theme-windows",
 ];

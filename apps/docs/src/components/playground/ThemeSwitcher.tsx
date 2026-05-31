@@ -1,11 +1,11 @@
 import { useTheme } from "@react-ui-os/desktop";
 
-export type ThemeChoice = "default" | "windows" | "ubuntu";
+export type ThemeChoice = "macos" | "windows" | "ubuntu";
 
 // Each theme is a clone of its platform's chrome, labeled so a visitor
 // recognizes it at a glance.
 const CHOICES: { id: ThemeChoice; label: string }[] = [
-  { id: "default", label: "macOS" },
+  { id: "macos", label: "macOS" },
   { id: "windows", label: "Windows" },
   { id: "ubuntu", label: "Ubuntu" },
 ];

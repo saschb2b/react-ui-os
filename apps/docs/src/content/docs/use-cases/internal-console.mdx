@@ -20,7 +20,7 @@ Not every operator sees every tool. Resolve the app list from the signed-in user
 ```tsx title="src/Console.tsx"
 import { useEffect, useState } from "react";
 import { Desktop } from "@react-ui-os/desktop";
-import { defaultTheme } from "@react-ui-os/theme-default";
+import { macosTheme } from "@react-ui-os/theme-macos";
 import type { App } from "@react-ui-os/core";
 import { deployApp, flagsApp, userLookupApp, onCallApp, metricsApp } from "./tools";
 
@@ -38,7 +38,7 @@ export function Console({ role }: { role: string }) {
   }, [role]);
 
   if (!apps) return <Splash />;
-  return <Desktop apps={apps} theme={defaultTheme} brand="acme ops" />;
+  return <Desktop apps={apps} theme={macosTheme} brand="acme ops" />;
 }
 ```
 
@@ -107,7 +107,7 @@ Engineers move between a laptop and a desk machine. Back the desktop with a [`St
 ```tsx
 import { Desktop } from "@react-ui-os/desktop";
 
-<Desktop apps={apps} theme={defaultTheme} storage={remoteStorage} />;
+<Desktop apps={apps} theme={macosTheme} storage={remoteStorage} />;
 ```
 
 The interface is synchronous, so hydrate the cache before mounting and write through in the background. The full adapter is in the [persist-windows recipe](/recipes/overview/#persist-windows-across-reloads).

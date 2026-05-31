@@ -68,9 +68,9 @@ importers:
       '@react-ui-os/example-apps':
         specifier: workspace:*
         version: link:../../packages/example-apps
-      '@react-ui-os/theme-default':
+      '@react-ui-os/theme-macos':
         specifier: workspace:*
-        version: link:../../packages/theme-default
+        version: link:../../packages/theme-macos
       '@react-ui-os/theme-ubuntu':
         specifier: workspace:*
         version: link:../../packages/theme-ubuntu
@@ -111,9 +111,9 @@ importers:
       '@react-ui-os/example-apps':
         specifier: workspace:*
         version: link:../../packages/example-apps
-      '@react-ui-os/theme-default':
+      '@react-ui-os/theme-macos':
         specifier: workspace:*
-        version: link:../../packages/theme-default
+        version: link:../../packages/theme-macos
       '@react-ui-os/theme-ubuntu':
         specifier: workspace:*
         version: link:../../packages/theme-ubuntu
@@ -238,7 +238,7 @@ importers:
         specifier: ^3.0.0
         version: 3.2.4(@types/debug@4.1.13)(@types/node@24.12.4)(lightningcss@1.32.0)(msw@2.14.6(@types/node@24.12.4)(typescript@6.0.3))(yaml@2.9.0)
 
-  packages/theme-default:
+  packages/theme-macos:
     dependencies:
       '@react-ui-os/core':
         specifier: workspace:*

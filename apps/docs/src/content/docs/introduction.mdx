@@ -13,7 +13,7 @@ react-ui-os is a React component library that ships a working OS-style desktop i
 - **Settings** as a real desktop window that renders the active theme's `customizable` schema.
 - **A FileExplorer** primitive with the macOS Finder interaction model: multi-select, Shift-range, right-click context menu, F2 rename.
 - **State-earned desktop folders** so the desktop icon for a folder only appears once the user has put something in it.
-- **Three themes** out of the box: `theme-default` (macOS), `theme-windows` (Windows: caption buttons, taskbar), `theme-ubuntu` (Ubuntu: top bar, left dock, GNOME controls).
+- **Three themes** out of the box: `theme-macos` (macOS), `theme-windows` (Windows: caption buttons, taskbar), `theme-ubuntu` (Ubuntu: top bar, left dock, GNOME controls).
 - **An App Store**: a CLI copies prebuilt apps into your codebase from a registry, and you can host your own registry to share apps with others.
 
 ## When to reach for it
@@ -38,7 +38,7 @@ The same primitives are reachable at three levels.
 
 ```tsx
 // 1. One-line desktop: full default composition.
-<Desktop apps={apps} theme={defaultTheme} />
+<Desktop apps={apps} theme={macosTheme} />
 
 // 2. Composable provider: pick which surfaces to render.
 <DesktopProvider apps={apps} theme={theme}>

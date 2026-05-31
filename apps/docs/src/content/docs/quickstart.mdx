@@ -49,11 +49,11 @@ export const apps: App[] = [
 
 ```tsx title="src/App.tsx"
 import { Desktop } from "@react-ui-os/desktop";
-import { defaultTheme } from "@react-ui-os/theme-default";
+import { macosTheme } from "@react-ui-os/theme-macos";
 import { apps } from "./apps";
 
 export default function App() {
-  return <Desktop apps={apps} theme={defaultTheme} brand="acme" />;
+  return <Desktop apps={apps} theme={macosTheme} brand="acme" />;
 }
 ```
 

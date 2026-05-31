@@ -1,6 +1,6 @@
 import type { OsTheme } from "@react-ui-os/core";
 
-export interface DefaultThemeOptions {
+export interface MacosThemeOptions {
   /**
    * Accent override. Defaults to the macOS-style blue (#6b8afd). Used as the
    * system-wide accent fallback when no per-app accent is set.
@@ -27,10 +27,10 @@ export interface DefaultThemeOptions {
  * the Settings panel. Returns a fresh object on each call so caller
  * customizations never leak between consumers.
  */
-export function createDefaultTheme(options: DefaultThemeOptions = {}): OsTheme {
+export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
   const accent = options.accent ?? "#6b8afd";
   return {
-    id: "default",
+    id: "macos",
     name: "macOS",
     palette: {
       background: "#1e2129",
@@ -177,9 +177,9 @@ export function createDefaultTheme(options: DefaultThemeOptions = {}): OsTheme {
 
 /**
  * The macOS theme with no wallpaper: the unbranded baseline. Kept as a static
- * export so a consumer can drop in `<Desktop theme={defaultTheme} />` without
- * the factory call. Supply a wallpaper with `createDefaultTheme({ ... })`.
+ * export so a consumer can drop in `<Desktop theme={macosTheme} />` without
+ * the factory call. Supply a wallpaper with `createMacosTheme({ ... })`.
  */
-export const defaultTheme: OsTheme = createDefaultTheme();
+export const macosTheme: OsTheme = createMacosTheme();
 
 export type { OsTheme } from "@react-ui-os/core";

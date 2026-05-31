@@ -16,7 +16,7 @@ The library presents itself as an operating system, not a webpage. Every visual 
 
 The library is built so the same components can carry very different products. Three reference points worth keeping in mind when making design choices:
 
-1. **Maker / personal-tool theme.** Photographic wallpaper, dark glass surfaces, accent gradients, full macOS-style traffic lights. This is the macOS register (`theme-default` with a wallpaper). Cinematic first paint, demo-friendly.
+1. **Maker / personal-tool theme.** Photographic wallpaper, dark glass surfaces, accent gradients, full macOS-style traffic lights. This is the macOS register (`theme-macos` with a wallpaper). Cinematic first paint, demo-friendly.
 2. **SaaS / productivity theme.** Light or neutral background, no wallpaper, dock on the left as an app rail, minimal window chrome (no traffic lights, only a close glyph). The library should never assume the dock is at the bottom or that there is a wallpaper.
 3. **Retro / playful theme.** Sharp pixel borders, Windows 95 chrome, sound effects. Possible because `chrome.windowControls = "windows"` is a real option and themes can override `shape.windowRadius` to 0.
 
@@ -72,7 +72,7 @@ An `App` carries three optional visual hooks: `accent`, `icon`, `iconArt`. Theme
 
 ## Default theme principles
 
-`theme-default` is the unbranded baseline. Its job is to look "stock" so a consumer immediately sees the shape of the skeleton and knows what to dress.
+`theme-macos` is the unbranded baseline. Its job is to look "stock" so a consumer immediately sees the shape of the skeleton and knows what to dress.
 
 - Palette: dark, neutral, low saturation. No brand color.
 - Wallpaper: none. The palette background fills the desktop.
