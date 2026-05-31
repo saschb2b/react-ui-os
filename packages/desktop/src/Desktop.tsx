@@ -8,7 +8,7 @@ import { MenuBar } from "./MenuBar";
 import { Dock } from "./Dock";
 import { WindowLayer } from "./WindowLayer";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
-import { Spotlight } from "./Spotlight";
+import { Launcher } from "./launcher";
 import { DesktopIcons } from "./DesktopIcons";
 import { NotificationToasts } from "./NotificationToasts";
 import { NotificationCenter } from "./NotificationCenter";
@@ -59,7 +59,7 @@ export function Desktop({ apps, theme, brand, storage, children }: DesktopProps)
         <WindowLayer />
         <Dock />
         <KeyboardShortcuts />
-        <Spotlight />
+        <Launcher />
         <NotificationToasts />
         <NotificationCenter />
         <QuickSettings />

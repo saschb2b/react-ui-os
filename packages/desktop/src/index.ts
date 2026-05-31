@@ -7,7 +7,14 @@ export { MenuBar, MENU_BAR_HEIGHT } from "./MenuBar";
 export { Dock, DOCK_HEIGHT, DOCK_WIDTH, getDockTileRect } from "./Dock";
 export { WindowLayer } from "./WindowLayer";
 export { Window } from "./Window";
-export { Spotlight } from "./Spotlight";
+export {
+  Launcher,
+  // Back-compat alias: the macOS-style palette was the only launcher.
+  Launcher as Spotlight,
+  useLauncher,
+  type LauncherState,
+  type LauncherResult,
+} from "./launcher";
 export { KeyboardShortcuts } from "./keyboard-shortcuts";
 export { NotificationToasts } from "./NotificationToasts";
 export { NotificationCenter } from "./NotificationCenter";

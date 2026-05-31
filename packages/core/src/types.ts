@@ -130,6 +130,17 @@ export interface OsThemeChrome {
    */
   dockStyle?: "floating" | "bar";
   /**
+   * Presentation of the app launcher / search surface. `"spotlight"` (default)
+   * is the macOS centered command palette; `"grid"` is the GNOME Activities
+   * app-grid overview (a full-bleed search field over a grid of app icons);
+   * `"menu"` is the Windows Start menu (a panel anchored above the dock
+   * launcher with a search field and a grid of app tiles). All three share the
+   * same results (apps, system windows, and `registerSpotlightSource` rows) and
+   * the same Cmd/Ctrl+K shortcut; only the layout changes. Build a fully custom
+   * launcher with the exported `useLauncher` hook.
+   */
+  launcher?: "spotlight" | "grid" | "menu";
+  /**
    * How a `"bar"` dock packs its app icons along its long axis. `"center"`
    * (default) is the macOS / Windows 11 placement; `"start"` packs them at the
    * top (left dock) or left (bottom dock), the GNOME / Ubuntu and Windows 10
