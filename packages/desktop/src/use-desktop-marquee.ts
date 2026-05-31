@@ -57,10 +57,14 @@ interface UseDesktopMarqueeOptions {
 }
 
 /**
- * The desktop's bare-area pointer interaction, in one place: a left drag sweeps
- * a rubber-band marquee that selects the icons it covers, a plain click clears
- * the selection, and a click on a window or the dock clears it too. Returns the
- * live rectangle for the caller to paint, or null when no sweep is in progress.
+ * The desktop's bare-area pointer interaction, in one place. Returns the live
+ * marquee rectangle for the caller to paint, or null when no sweep is running.
+ *
+ *  - a left drag sweeps a rubber-band marquee that selects the icons it covers
+ *  - holding Shift / Cmd / Ctrl adds the sweep to the existing selection
+ *  - Escape, or pressing the right button mid-sweep, cancels and restores it
+ *  - a plain click clears the selection; a click on a window or the dock too
+ *  - keyboard focus lands on the icon column after a sweep that selected
  *
  * One document `pointerdown` listener drives all of it; the latest props are
  * reached through a ref so the listener attaches once.
@@ -90,7 +94,30 @@ export function useDesktopMarquee({
 
       const x0 = e.clientX;
       const y0 = e.clientY;
+      // Shift / Cmd / Ctrl held at the start adds the sweep to whatever was
+      // already selected, the way macOS and Windows extend a selection. The
+      // selection present at the start is also what a cancel restores, so it is
+      // captured either way.
+      const additive = e.shiftKey || e.metaKey || e.ctrlKey;
+      const base = new Set(latest.current.selectedIds);
       let dragging = false;
+      let lastApplied: string[] = [];
+
+      const teardown = () => {
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("contextmenu", onContextMenu, true);
+        window.removeEventListener("keydown", onKey, true);
+        document.body.style.userSelect = "";
+        setMarquee(null);
+      };
+
+      // Abort the sweep and put the selection back where it started.
+      const cancel = () => {
+        if (dragging) latest.current.selectIcons(Array.from(base));
+        teardown();
+      };
+
       const onMove = (ev: PointerEvent) => {
         if (
           !dragging &&
@@ -102,20 +129,47 @@ export function useDesktopMarquee({
         document.body.style.userSelect = "none";
         const rect = marqueeFromPoints(x0, y0, ev.clientX, ev.clientY);
         setMarquee(rect);
-        latest.current.selectIcons(iconsInMarquee(rect, containerRef.current));
+        const swept = iconsInMarquee(rect, containerRef.current);
+        lastApplied = additive ? Array.from(new Set([...base, ...swept])) : swept;
+        latest.current.selectIcons(lastApplied);
       };
+
       const onUp = () => {
-        document.removeEventListener("pointermove", onMove);
-        document.removeEventListener("pointerup", onUp);
-        document.body.style.userSelect = "";
-        // A press and release without a drag is a plain click: clear.
-        if (!dragging && latest.current.selectedIds.size > 0) {
-          latest.current.clearSelection();
+        teardown();
+        if (!dragging) {
+          // A plain click clears; a modifier-held click keeps the selection.
+          if (!additive && latest.current.selectedIds.size > 0) {
+            latest.current.clearSelection();
+          }
+          return;
         }
-        setMarquee(null);
+        // After a sweep that selected something, keyboard focus lands on the
+        // desktop so the arrow keys work immediately.
+        if (lastApplied.length > 0) containerRef.current?.focus();
       };
+
+      const onKey = (ev: KeyboardEvent) => {
+        if (ev.key === "Escape" && dragging) {
+          ev.preventDefault();
+          ev.stopPropagation(); // don't let it also restore a maximized window
+          cancel();
+        }
+      };
+
+      // A right-click mid-sweep aborts it (Windows). Swallow that context menu
+      // so the abort is clean; a right-click with no sweep underway is left to
+      // open the desktop menu as usual.
+      const onContextMenu = (ev: MouseEvent) => {
+        if (!dragging) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        cancel();
+      };
+
       document.addEventListener("pointermove", onMove);
       document.addEventListener("pointerup", onUp);
+      document.addEventListener("contextmenu", onContextMenu, true);
+      window.addEventListener("keydown", onKey, true);
     };
     document.addEventListener("pointerdown", onPointerDown);
     return () => {
