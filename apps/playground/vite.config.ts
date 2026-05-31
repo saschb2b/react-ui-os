@@ -13,6 +13,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     conditions: ["source"],
+    // @vitejs/plugin-react 6 stopped adding these to resolve.dedupe
+    // automatically, so a monorepo with multiple workspace deps could pull in
+    // more than one React copy. Pin them to a single instance explicitly.
+    dedupe: ["react", "react-dom"],
   },
   server: {
     port: 5173,
