@@ -133,6 +133,16 @@ export function createRedmondTheme(options: RedmondThemeOptions = {}): OsTheme {
           { value: "floating", label: "Floating" },
         ],
       },
+      "chrome.dockAlign": {
+        kind: "select",
+        section: "Layout",
+        label: "Taskbar alignment",
+        description: "Center the icons (Windows 11) or pack them to the left (Windows 10).",
+        options: [
+          { value: "center", label: "Center" },
+          { value: "start", label: "Left" },
+        ],
+      },
       "chrome.menuBar": {
         kind: "select",
         section: "Layout",

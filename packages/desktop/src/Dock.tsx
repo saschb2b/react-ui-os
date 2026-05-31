@@ -169,6 +169,29 @@ export function Dock() {
   const showTray = isBar && !topMenuBar;
   const launcherTrailing = isBar && isLeft && topMenuBar;
 
+  // Bar-dock icon alignment along the long axis. macOS / Windows 11 center;
+  // GNOME / Ubuntu and Windows 10 pack from the start. When not centered, the
+  // run is inset so it clears the absolutely-positioned launcher and tray; a
+  // free edge keeps a small breathing gap.
+  const align = theme.chrome.dockAlign ?? "center";
+  const barJustify =
+    align === "start" ? "flex-start" : align === "end" ? "flex-end" : "center";
+  const LAUNCHER_SLOT = 44;
+  const FREE_EDGE = 8;
+  const leadingPad =
+    align === "center" ? 0 : isBar && !launcherTrailing ? LAUNCHER_SLOT : FREE_EDGE;
+  const trailingPad =
+    align === "center"
+      ? 0
+      : isBar && (launcherTrailing || showTray)
+        ? LAUNCHER_SLOT
+        : FREE_EDGE;
+  // Map leading/trailing onto the long axis: top/bottom for a left bar,
+  // left/right for a bottom bar.
+  const barPadding = isLeft
+    ? `${String(leadingPad)}px 0 ${String(trailingPad)}px`
+    : `0 ${String(trailingPad)}px 0 ${String(leadingPad)}px`;
+
   const handleMove = (e: ReactPointerEvent) => {
     cursorRef.current = isLeft ? e.clientY : e.clientX;
     startLoop();
@@ -226,9 +249,9 @@ export function Dock() {
       ? {
           // Flush taskbar: full span, square, only an edge-facing hairline.
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: barJustify,
           gap,
-          padding: 0,
+          padding: barPadding,
           borderRadius: 0,
           ...(isLeft
             ? {

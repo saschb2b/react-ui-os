@@ -90,6 +90,8 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       windowControls: "gnome",
       dockPosition: "left",
       dockStyle: "bar",
+      // Ubuntu packs the app icons from the top, launcher pinned at the bottom.
+      dockAlign: "start",
       menuBar: "top",
       menuBarClock: "center",
       quickSettings: true,
@@ -131,6 +133,17 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
           { value: "left", label: "Left" },
           { value: "bottom", label: "Bottom" },
           { value: "hidden", label: "Hidden" },
+        ],
+      },
+      "chrome.dockAlign": {
+        kind: "select",
+        section: "Layout",
+        label: "Dock icon alignment",
+        description: "Where the app icons sit along the dock.",
+        options: [
+          { value: "start", label: "Start" },
+          { value: "center", label: "Center" },
+          { value: "end", label: "End" },
         ],
       },
       "chrome.menuBarClock": {

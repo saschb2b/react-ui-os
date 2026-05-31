@@ -129,6 +129,15 @@ export interface OsThemeChrome {
    * `"hidden"`.
    */
   dockStyle?: "floating" | "bar";
+  /**
+   * How a `"bar"` dock packs its app icons along its long axis. `"center"`
+   * (default) is the macOS / Windows 11 placement; `"start"` packs them at the
+   * top (left dock) or left (bottom dock), the GNOME / Ubuntu and Windows 10
+   * placement, leaving the launcher at the far end; `"end"` packs them at the
+   * far end. Ignored by the `"floating"` dock, whose pill always hugs its
+   * icons. Windows 11 exposes the same lever as "Taskbar alignment".
+   */
+  dockAlign?: "start" | "center" | "end";
   menuBar: "top" | "in-window" | "none";
   /**
    * Where the clock sits in the top menu bar. `"right"` (default) is the macOS
