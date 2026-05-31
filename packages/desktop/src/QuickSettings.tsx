@@ -2,7 +2,6 @@
 
 import {
   useEffect,
-  useRef,
   useState,
   useSyncExternalStore,
   type CSSProperties,
@@ -17,7 +16,6 @@ import {
   listQuickSettings,
   subscribeQuickSettings,
   type QuickSettingAction,
-  type QuickSettingItem,
   type QuickSettingSlider,
   type QuickSettingToggle,
 } from "./quick-settings";
