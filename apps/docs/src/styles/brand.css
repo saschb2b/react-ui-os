@@ -33,3 +33,16 @@
 .hero h1 {
   letter-spacing: -0.01em;
 }
+
+/* Caption that sits under the landing-page live demo. Pulled up close to the
+   embed it annotates and muted so it reads as a hint, not body copy. */
+.demo-caption {
+  margin-top: -0.75rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--sl-color-gray-3);
+}
+
+.demo-caption kbd {
+  font-size: 0.78em;
+}

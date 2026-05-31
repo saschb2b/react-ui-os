@@ -19,8 +19,20 @@ hero:
 ---
 
 import LivePreview from "~/components/LivePreview.astro";
+import ThemeGallery from "~/components/ThemeGallery.astro";
 
-<LivePreview label="react-ui-os playground" height="520px" />
+<LivePreview label="react-ui-os playground" height="560px" />
+
+<p class="demo-caption">
+  Live, not a screenshot. Switch the look at the top, drag and resize the windows, and
+  press <kbd>Cmd-K</kbd> or <kbd>Ctrl-K</kbd> for Spotlight.
+</p>
+
+## Five looks, one skeleton
+
+The same apps, window manager, and keyboard shortcuts under every theme. macOS, Windows, and Ubuntu mirror each platform's chrome down to the window controls and dock; Mintables is a cinematic original and SaaS is a light product shell. Switch live in the demo above, or open any look on its own.
+
+<ThemeGallery />
 
 ## Why this exists
 
