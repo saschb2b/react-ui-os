@@ -343,6 +343,12 @@
           "description": "Where the clock sits in the top menu bar. `\"right\"` (default) is the macOS\nplacement, in the status cluster. `\"center\"` adopts the GNOME top-bar\narrangement: the clock and date sit centered, the workspace switcher moves\nto the left, and the status indicators stay on the right. Ignored unless\n`menuBar` is `\"top\"`."
         },
         {
+          "name": "menuBarBrand",
+          "type": "boolean",
+          "optional": true,
+          "description": "Whether the top menu bar carries the brand button on the left (the macOS\nApple-menu analog that opens About / Settings). Defaults to true. A\nGNOME-style theme sets false: the top-left then holds only the workspace\nswitcher, and system actions stay reachable through Quick Settings,\nSpotlight, and the keyboard. Ignored unless `menuBar` is `\"top\"`."
+        },
+        {
           "name": "quickSettings",
           "type": "boolean",
           "optional": true,

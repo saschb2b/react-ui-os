@@ -56,6 +56,7 @@ The structural variants. This is where the OS spectrum gets honest.
 - `dockAlign`: `"center"` (macOS / Windows 11), `"start"` (GNOME / Windows 10), `"end"`. Bar docks only.
 - `menuBar`: `"top"` (system-wide menu), `"in-window"` (inside each title bar), `"none"`.
 - `menuBarClock`: `"right"` (macOS, in the status cluster), `"center"` (GNOME).
+- `menuBarBrand`: whether the top bar carries the brand button. Default `true`; a GNOME theme sets `false`.
 - `quickSettings`: when set, the menu-bar status cluster opens the Quick Settings popover (GNOME system menu / macOS Control Center).
 
 The components must respect every combination. A theme that picks `dockPosition: "hidden"` and `menuBar: "none"` should still produce a working desktop (the user opens apps through Spotlight or via `useWindowManager().openWindow` from their own UI).

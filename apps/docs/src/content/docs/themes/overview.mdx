@@ -48,7 +48,7 @@ This is the part that does not exist in component libraries. It is what lets a S
 
 `dockStyle` chooses the dock's form: `"floating"` (the macOS dock, a centered rounded pill that hovers above the edge) or `"bar"` (the Windows taskbar / GNOME panel shape, a flat bar flush to the edge, full width on the bottom or full height on the left, with an accent underline under running apps). It defaults to `"floating"`; Redmond and Ubuntu set `"bar"`. `dockAlign` then packs a bar dock's icons `"center"` (macOS, Windows 11), `"start"` (GNOME, Windows 10), or `"end"`; Ubuntu sets `"start"` so the icons sit at the top with the launcher at the bottom.
 
-Two more `chrome` tokens dress the top bar. `menuBarClock` places the clock `"right"` (the macOS default, in the status cluster) or `"center"` (the GNOME placement, with the status indicators kept on the right). `quickSettings`, when true, turns the menu-bar status cluster into a single button that opens the [Quick Settings](/components/quicksettings/) popover. The Ubuntu theme sets both.
+A few more `chrome` tokens dress the top bar. `menuBarClock` places the clock `"right"` (the macOS default, in the status cluster) or `"center"` (the GNOME placement, with the status indicators kept on the right and the workspace switcher on the left). `menuBarBrand` (default `true`) controls whether the bar carries the brand button; the macOS app-menu pattern reads as a relic in the GNOME register, so the Ubuntu theme sets it `false` and leaves the top-left to the workspace switcher. `quickSettings`, when true, turns the menu-bar status cluster into a single button that opens the [Quick Settings](/components/quicksettings/) popover. The Ubuntu theme sets all three.
 
 ## Themes that ship
 
