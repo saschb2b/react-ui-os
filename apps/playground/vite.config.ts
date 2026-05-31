@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 
 /**
  * The library packages declare a `source` condition in their `exports` field
@@ -10,7 +11,12 @@ import react from "@vitejs/plugin-react";
  * point at the bundled `dist/` output.
  */
 export default defineConfig({
-  plugins: [react()],
+  // React Compiler runs as a Babel pass. plugin-react 6 handles React Refresh
+  // and JSX through Oxc and no longer carries Babel, so the compiler is wired
+  // separately via @rolldown/plugin-babel + reactCompilerPreset (the setup
+  // documented by @vitejs/plugin-react). React 19 ships the compiler runtime
+  // (react/compiler-runtime), so reactCompilerPreset needs no target/runtime.
+  plugins: [react(), babel({ presets: [reactCompilerPreset()] })],
   resolve: {
     conditions: ["source"],
     // @vitejs/plugin-react 6 stopped adding these to resolve.dedupe

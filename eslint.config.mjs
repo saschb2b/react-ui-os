@@ -61,6 +61,20 @@ export default [
       "react-hooks": reactHooks,
     },
     rules: {
+      // Adopt the React Compiler's ESLint diagnostics incrementally. The plugin
+      // ships a large set of correctness rules (refs-during-render,
+      // setState-in-effect, static-components, ...) at error in
+      // recommended-latest. This is a mature codebase that predates the
+      // compiler, and the compiler bails out of optimizing a component it can't
+      // prove safe rather than miscompiling it, so surface these as warnings
+      // instead of failing the build on existing patterns. rules-of-hooks, the
+      // one rule that flags genuinely broken code, stays an error.
+      ...Object.fromEntries(
+        Object.keys(reactHooks.configs["recommended-latest"].rules).map(
+          (name) => [name, "warn"],
+        ),
+      ),
+      "react-hooks/rules-of-hooks": "error",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
@@ -68,8 +82,6 @@ export default [
       "no-unused-vars": "off",
       "react/jsx-uses-react": "off",
       "react/react-in-jsx-scope": "off",
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
     },
     settings: { react: { version: "19.0.0" } },
   },
