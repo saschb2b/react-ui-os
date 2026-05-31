@@ -9,3 +9,8 @@ export {
   type SnapZone,
   type SnapRect,
 } from "./snap-store";
+export {
+  recordSnapRestore,
+  peekSnapRestore,
+  clearSnapRestore,
+} from "./snap-restore-store";

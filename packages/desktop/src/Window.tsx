@@ -20,6 +20,9 @@ import {
   rectForZone,
   setSnapPreview,
   getSnapPreview,
+  recordSnapRestore,
+  peekSnapRestore,
+  clearSnapRestore,
   type SnapZone,
 } from "./snap";
 import { showHud } from "./hud";
@@ -181,10 +184,6 @@ export function Window({ win, hidden = false }: WindowProps) {
   const elRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<DragState | null>(null);
   const resizeRef = useRef<ResizeState | null>(null);
-  // Size the window had before it was snapped to a zone, so dragging it away
-  // restores that size (Windows). Set when a drag snaps, cleared on tear-off or
-  // a manual resize. A ref, not state: it never affects rendering on its own.
-  const preSnapSizeRef = useRef<{ w: number; h: number } | null>(null);
   const [phase, setPhase] = useState<AnimationPhase>("opening");
   // True only while a pointer drag or resize is in flight. Those write the
   // transform (and size) to the DOM every frame, so the CSS geometry
@@ -204,6 +203,15 @@ export function Window({ win, hidden = false }: WindowProps) {
       window.clearTimeout(id);
     };
   }, [theme.motion.windowOpenDurationMs]);
+
+  // Forget this window's pre-snap size when it closes. Ids are reused
+  // (`app:notes` survives close + reopen), so a stale record would make a
+  // reopened window restore to the wrong size on its first drag.
+  useEffect(() => {
+    return () => {
+      clearSnapRestore(win.id);
+    };
+  }, [win.id]);
 
   // Un-minimize plays the genie in reverse: the window grows out of its dock
   // tile back to where it sat. Detected here (not at the restore call site)
@@ -342,8 +350,7 @@ export function Window({ win, hidden = false }: WindowProps) {
     (e: ReactPointerEvent<HTMLDivElement>) => {
       if (e.button !== 0) return;
       const fromMaximized = win.state === "maximized";
-      const snapRestore =
-        !fromMaximized && preSnapSizeRef.current ? preSnapSizeRef.current : undefined;
+      const snapRestore = fromMaximized ? undefined : peekSnapRestore(win.id);
       // Anchor the pointer on the title bar so a tear-off can keep it there.
       const bar = e.currentTarget.getBoundingClientRect();
       const grabFracX = bar.width > 0 ? (e.clientX - bar.left) / bar.width : 0.5;
@@ -401,7 +408,7 @@ export function Window({ win, hidden = false }: WindowProps) {
         if (drag.fromMaximized) toggleMaximize(win.id);
         setBounds(win.id, restoredX, restoredY, restoreW, restoreH);
         setGesturing(true);
-        preSnapSizeRef.current = null;
+        clearSnapRestore(win.id);
         drag.fromMaximized = false;
         drag.snapRestore = undefined;
         drag.startX = restoredX;
@@ -462,11 +469,9 @@ export function Window({ win, hidden = false }: WindowProps) {
       const snap = getSnapPreview();
       if (snap && snap.windowId === win.id) {
         // Remember the size to come back to when this snap is later dragged
-        // off. Only the first snap records it, so re-snapping keeps the
-        // original pre-snap size.
-        if (!preSnapSizeRef.current) {
-          preSnapSizeRef.current = { w: win.w, h: win.h };
-        }
+        // off (recordSnapRestore keeps the first size, so re-snapping does not
+        // overwrite it).
+        recordSnapRestore(win.id, { w: win.w, h: win.h });
         setBounds(win.id, snap.rect.x, snap.rect.y, snap.rect.w, snap.rect.h);
         showHud({ title: snapZoneLabel(snap.zone) });
       } else {
@@ -543,7 +548,7 @@ export function Window({ win, hidden = false }: WindowProps) {
       if (!r || r.pointerId !== e.pointerId) return;
       setGesturing(false);
       // A hand-picked size cancels the snap memory: dragging away now keeps it.
-      preSnapSizeRef.current = null;
+      clearSnapRestore(win.id);
       setBounds(win.id, r.lastX, r.lastY, r.lastW, r.lastH);
       resizeRef.current = null;
     },

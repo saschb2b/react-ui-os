@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useWindowManager, windowIdOf } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { SPOTLIGHT_OPEN_EVENT } from "./events";
-import { rectForZone, type SnapZone } from "./snap";
+import { rectForZone, recordSnapRestore, type SnapZone } from "./snap";
 import { showHud } from "./hud";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { getWorkArea } from "./util/layout";
@@ -161,6 +161,12 @@ export function KeyboardShortcuts() {
         const zone = arrowToZone(e.key, e.shiftKey);
         if (zone) {
           e.preventDefault();
+          // Same as a drag-snap: remember the pre-snap size so dragging the
+          // window off the zone later restores it.
+          recordSnapRestore(focusedWindow.id, {
+            w: focusedWindow.w,
+            h: focusedWindow.h,
+          });
           const rect = rectForZone(zone, getWorkArea(theme));
           setBounds(focusedWindow.id, rect.x, rect.y, rect.w, rect.h);
           showHud({ title: snapZoneLabel(zone) });
