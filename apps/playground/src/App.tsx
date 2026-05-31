@@ -162,7 +162,7 @@ export default function App() {
   };
 
   return (
-    <Desktop apps={apps} theme={theme} brand="react-ui-os">
+    <Desktop apps={apps} theme={theme}>
       {themeChoice === "ubuntu" && <UbuntuQuickSettings />}
       <ThemeSwitcher value={themeChoice} onChange={handleThemeChange} />
     </Desktop>

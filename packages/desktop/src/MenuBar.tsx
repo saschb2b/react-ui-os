@@ -18,11 +18,13 @@ import { useViewportMode } from "./util/viewport-mode";
 export { MENU_BAR_HEIGHT };
 
 /**
- * System chrome at the top of the desktop. Left: brand. Center-right: the
- * focused app's name. Right: a small status cluster (live clock). Returns
- * null when `theme.chrome.menuBar` is "none".
+ * System chrome at the top of the desktop. Left: an optional brand (the macOS
+ * Apple-menu slot), then the focused app's name. Right: a small status cluster
+ * (live clock). The brand renders only when the consumer supplies one, so the
+ * library never stamps its own name on a desktop. Returns null when
+ * `theme.chrome.menuBar` is "none".
  */
-export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
+export function MenuBar({ brand }: { brand?: string }) {
   const theme = useTheme();
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
@@ -50,6 +52,7 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
 
   // The brand acts as the macOS Apple menu: a system menu anchored at top-left.
   const openBrandMenu = (e: React.MouseEvent) => {
+    if (!brand) return;
     const r = e.currentTarget.getBoundingClientRect();
     openContextMenu({
       x: r.left,
@@ -112,7 +115,7 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        {showBrand && (
+        {showBrand && brand && (
           <button
             type="button"
             onClick={openBrandMenu}

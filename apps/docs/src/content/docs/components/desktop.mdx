@@ -46,13 +46,13 @@ const apps: App[] = [{ id: "notes", name: "Notes", content: () => <h1>Notes</h1>
 
 ## Props
 
-| Prop       | Type             | Default         | Description                                                                                                                                                                           |
-| ---------- | ---------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps`     | `App[]`          | **required**    | The app registry. Order matters: Cmd-1..9 maps to indices, dock tiles render in this order.                                                                                           |
-| `theme`    | `OsTheme`        | **required**    | The active theme. Pass `macosTheme` or call `createWindowsTheme(...)`.                                                                                                                |
-| `brand`    | `string`         | `"react-ui-os"` | Label shown on the left of the menu bar.                                                                                                                                              |
-| `storage`  | `StorageAdapter` | `localStorage`  | Backend for user preferences and state-earned folders. Defaults to a `localStorage`-backed adapter; swap for a server adapter to sync across devices.                                 |
-| `children` | `ReactNode`      | `undefined`     | Headless companions rendered inside the provider alongside the default surfaces. Use for URL sync, deep-link activators, analytics, or any component that needs `useWindowManager()`. |
+| Prop       | Type             | Default        | Description                                                                                                                                                                           |
+| ---------- | ---------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps`     | `App[]`          | **required**   | The app registry. Order matters: Cmd-1..9 maps to indices, dock tiles render in this order.                                                                                           |
+| `theme`    | `OsTheme`        | **required**   | The active theme. Pass `macosTheme` or call `createWindowsTheme(...)`.                                                                                                                |
+| `brand`    | `string`         | none           | Optional label on the left of the menu bar (the macOS Apple-menu slot). Hidden when omitted, so the library never stamps its own name on your desktop.                                |
+| `storage`  | `StorageAdapter` | `localStorage` | Backend for user preferences and state-earned folders. Defaults to a `localStorage`-backed adapter; swap for a server adapter to sync across devices.                                 |
+| `children` | `ReactNode`      | `undefined`    | Headless companions rendered inside the provider alongside the default surfaces. Use for URL sync, deep-link activators, analytics, or any component that needs `useWindowManager()`. |
 
 ## Examples
 

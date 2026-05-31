@@ -213,7 +213,7 @@ export default function PlaygroundDesktop() {
   };
 
   return (
-    <Desktop apps={docsApps} theme={theme} brand="react-ui-os.dev">
+    <Desktop apps={docsApps} theme={theme}>
       <DemoActivator />
       <DocsSpotlightSource />
       {themeChoice === "ubuntu" && <UbuntuQuickSettings />}
