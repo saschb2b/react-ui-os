@@ -48,6 +48,10 @@ export function ThemeSwitcher({ value, onChange }: Props) {
         zIndex: 9000,
         display: "flex",
         alignItems: "center",
+        justifyContent: "center",
+        // Wrap to a second row instead of clipping on a narrow embed or phone.
+        flexWrap: "wrap",
+        maxWidth: "calc(100vw - 16px)",
         gap: 2,
         padding: 3,
         // Concentric with the inner buttons: outer radius = inner + padding.
