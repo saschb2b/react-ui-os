@@ -3,10 +3,11 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { notify, useNotifications, useWindowManager } from "@react-ui-os/core";
 import { useApp, useApps, useTheme } from "./desktop-context";
-import { openContextMenu } from "./context-menu";
+import { openContextMenu, type ContextMenuItem } from "./context-menu";
 import {
   NOTIFICATION_CENTER_TOGGLE_EVENT,
   QUICK_SETTINGS_TOGGLE_EVENT,
+  SPOTLIGHT_OPEN_EVENT,
 } from "./events";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
@@ -150,13 +151,23 @@ export function MenuBar({ brand }: { brand?: string }) {
             Activities. In the centered-clock (GNOME) layout it lives here;
             otherwise it sits in the right cluster, the macOS placement. */}
         {clockCentered && <WorkspaceIndicator />}
-        {/* The focused-app name is the macOS app-menu element; GNOME has no
-            equivalent, so it shows only in the right-clock (macOS) layout. */}
-        {!clockCentered && focusedName && (
-          <span style={{ fontWeight: 600, color: theme.palette.textPrimary }}>
-            {focusedName}
-          </span>
-        )}
+        {/* The macOS app menu: the focused app's name in bold, then its
+            standard menu titles. GNOME has no equivalent, so it shows only in
+            the right-clock (macOS) layout. Compact viewports keep just the
+            name so the bar does not crowd the right cluster. */}
+        {!clockCentered &&
+          focusedName &&
+          (mode === "compact" ? (
+            <span style={{ fontWeight: 600, color: theme.palette.textPrimary }}>
+              {focusedName}
+            </span>
+          ) : (
+            <AppMenus
+              name={focusedName}
+              windowId={focusedWindow?.id ?? null}
+              maximized={focusedWindow?.state === "maximized"}
+            />
+          ))}
       </div>
       {clockCentered && (
         // GNOME centers the clock/date in the top bar; the status indicators
@@ -191,6 +202,193 @@ export function MenuBar({ brand }: { brand?: string }) {
         )}
       </div>
     </header>
+  );
+}
+
+/**
+ * The macOS app-menu row: the focused app's name in bold, then the standard
+ * menu titles (File, Edit, View, Window, Help). Each opens a real menu. The
+ * window-mapped items drive the window manager (Hide/Quit/Close/Minimize/Zoom/
+ * Full Screen); Edit forwards to the browser's editing commands so Copy and
+ * Select All work in a focused field; Help opens Spotlight, the system search.
+ * No Apple logo: the library renders platform marks as neutral affordances
+ * (the Windows theme does the same for the Start glyph).
+ */
+function AppMenus({
+  name,
+  windowId,
+  maximized,
+}: {
+  name: string;
+  windowId: string | null;
+  maximized: boolean;
+}) {
+  const { closeWindow, minimizeWindow, toggleMaximize } = useWindowManager();
+  const has = windowId !== null;
+  const onWindow = (fn: (id: string) => void) => () => {
+    if (windowId) fn(windowId);
+  };
+  // Best-effort: operates on the focused editable element, a no-op otherwise.
+  const edit = (command: string) => () => {
+    if (typeof document !== "undefined") document.execCommand(command);
+  };
+
+  const menus: { label: string; bold?: boolean; items: ContextMenuItem[] }[] = [
+    {
+      label: name,
+      bold: true,
+      items: [
+        {
+          label: `About ${name}`,
+          onSelect: () =>
+            notify({
+              title: name,
+              body: `${name}, running on react-ui-os.`,
+              level: "info",
+            }),
+        },
+        { separator: true },
+        {
+          label: `Hide ${name}`,
+          shortcut: "⌘H",
+          disabled: !has,
+          onSelect: onWindow(minimizeWindow),
+        },
+        { separator: true },
+        {
+          label: `Quit ${name}`,
+          shortcut: "⌘Q",
+          disabled: !has,
+          onSelect: onWindow(closeWindow),
+        },
+      ],
+    },
+    {
+      label: "File",
+      items: [
+        {
+          label: "Close Window",
+          shortcut: "⌘W",
+          disabled: !has,
+          onSelect: onWindow(closeWindow),
+        },
+      ],
+    },
+    {
+      label: "Edit",
+      items: [
+        { label: "Undo", shortcut: "⌘Z", onSelect: edit("undo") },
+        { label: "Redo", shortcut: "⇧⌘Z", onSelect: edit("redo") },
+        { separator: true },
+        { label: "Cut", shortcut: "⌘X", onSelect: edit("cut") },
+        { label: "Copy", shortcut: "⌘C", onSelect: edit("copy") },
+        { label: "Paste", shortcut: "⌘V", onSelect: edit("paste") },
+        { label: "Select All", shortcut: "⌘A", onSelect: edit("selectAll") },
+      ],
+    },
+    {
+      label: "View",
+      items: [
+        {
+          label: maximized ? "Exit Full Screen" : "Enter Full Screen",
+          shortcut: "⌃⌘F",
+          disabled: !has,
+          onSelect: onWindow(toggleMaximize),
+        },
+      ],
+    },
+    {
+      label: "Window",
+      items: [
+        {
+          label: "Minimize",
+          shortcut: "⌘M",
+          disabled: !has,
+          onSelect: onWindow(minimizeWindow),
+        },
+        { label: "Zoom", disabled: !has, onSelect: onWindow(toggleMaximize) },
+      ],
+    },
+    {
+      label: "Help",
+      items: [
+        {
+          label: "Search",
+          onSelect: () => window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT)),
+        },
+      ],
+    },
+  ];
+
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      {menus.map((menu) => (
+        <MenuTitle
+          key={menu.label}
+          label={menu.label}
+          bold={menu.bold}
+          items={menu.items}
+        />
+      ))}
+    </div>
+  );
+}
+
+function MenuTitle({
+  label,
+  bold,
+  items,
+}: {
+  label: string;
+  bold?: boolean;
+  items: ContextMenuItem[];
+}) {
+  const theme = useTheme();
+  const hover = `${theme.palette.textPrimary}14`;
+  return (
+    <button
+      type="button"
+      aria-haspopup="menu"
+      aria-label={`${label} menu`}
+      // Open on press, the macOS behavior. preventDefault keeps focus on the
+      // document (so the Edit commands act on the focused field) and stops the
+      // opening click from reaching the menu's dismiss backdrop.
+      onPointerDown={(e) => {
+        if (items.length === 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const r = e.currentTarget.getBoundingClientRect();
+        openContextMenu({
+          x: r.left,
+          y: r.bottom + 4,
+          items,
+          ariaLabel: `${label} menu`,
+        });
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = hover;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+      }}
+      style={{
+        appearance: "none",
+        background: "transparent",
+        border: 0,
+        margin: 0,
+        padding: "3px 8px",
+        borderRadius: theme.shape.small,
+        color: theme.palette.textPrimary,
+        fontFamily: "inherit",
+        fontSize: 13,
+        fontWeight: bold ? 600 : 400,
+        lineHeight: 1,
+        cursor: "default",
+        transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+      }}
+    >
+      {label}
+    </button>
   );
 }
 
