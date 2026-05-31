@@ -97,6 +97,11 @@ export function Slider({
     margin: 0,
     padding: 0,
     cursor: disabled ? "not-allowed" : "pointer",
+    // The track span is absolutely positioned and precedes the input in the
+    // DOM, so without this the track would paint over the (statically
+    // positioned) input and cross through its thumb. Lift the input above it.
+    position: "relative",
+    zIndex: 1,
   };
 
   return (
