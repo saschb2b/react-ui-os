@@ -21,9 +21,9 @@ When research turns up several valid fixes, or a problem has many instances, do 
 
 ## Tech stack
 
-- **TypeScript strict, ESM + CJS dual bundles** via tsup.
-- **React 19** peer dependency.
-- **Vite 7** for the playground app, **Astro 6 + Starlight 0.39** for the docs site.
+- **TypeScript 6 strict, ESM + CJS dual bundles** via tsup.
+- **React 19** peer dependency. **React Compiler** (babel-plugin-react-compiler) runs at build time, so shipped components are pre-optimized. See "Memoization is the compiler's job".
+- **Vite 8** for the playground app, **Astro 6 + Starlight 0.39** for the docs site.
 - **Vitest 3** for unit tests.
 - **pnpm workspaces + Turborepo** for monorepo orchestration.
 - **ESLint + Prettier** for linting and formatting. No Biome.
@@ -91,6 +91,8 @@ packages/
   theme-default/                 # @react-ui-os/theme-default
   theme-mintables/               # @react-ui-os/theme-mintables
   theme-saas/                    # @react-ui-os/theme-saas (left dock, no menu bar)
+tooling/
+  react-compiler-esbuild.mjs     # runs babel-plugin-react-compiler inside the tsup builds
 .github/workflows/
   ci.yml                         # typecheck/test/build on push + PR
   docs.yml                       # Pages deploy on push to main
@@ -276,6 +278,12 @@ Window open / close / minimize use a local `phase` state machine. The dispatch t
 
 `createLocalStorageAdapter()` dispatches a custom `CustomEvent` on every write, plus listens for the native `storage` event for cross-tab updates. Any feature that depends on persisted state (Settings, downloads, presets, state-earned folders) subscribes via `storage.subscribe(...)`. Never poll.
 
+### Memoization is the compiler's job.
+
+React Compiler runs on the library. The playground compiles workspace source through `@rolldown/plugin-babel` + `reactCompilerPreset`; the tsup builds run it via `tooling/react-compiler-esbuild.mjs` so the published `dist` ships pre-optimized. Write components without manual `useMemo` / `useCallback`: the compiler memoizes derived values and handler identities. `eslint-plugin-react-hooks` 7 surfaces the compiler diagnostics as warnings (an incremental-adoption choice on an existing codebase); `rules-of-hooks` stays an error.
+
+Keep manual memoization only where the compiler cannot help: a value whose stable identity feeds a `useEffect` dependency array (without the wrapper the effect re-subscribes every render, and `exhaustive-deps` flags it), or a value passed into a hook the compiler bailed on. The compiler skips any component or hook it cannot prove safe rather than miscompiling it, so a bail-out is a silent loss of optimization, not an error; the ESLint warnings (refs-during-render, setState-in-effect, and so on) mark the code that bails. Removing redundant memoization is a cleanup, never required: leaving it in place is also fine.
+
 ### Three uniform contribution shapes.
 
 The whole "ecosystem feel" lives in this: adding to the system is always one of three shapes.
@@ -290,7 +298,7 @@ All three are declarative. All three persist via the same event-driven storage p
 
 ### A new component
 
-Lives in `packages/desktop/src/`. Reads tokens via `useTheme()`, app data via `useApps()` or `useApp(id)`, window state via `useWindowManager()`. Inline styles consumed from theme tokens.
+Lives in `packages/desktop/src/`. Reads tokens via `useTheme()`, app data via `useApps()` or `useApp(id)`, window state via `useWindowManager()`. Inline styles consumed from theme tokens. Skip manual `useMemo` / `useCallback`: the compiler handles it (see "Memoization is the compiler's job" for the two cases where it stays).
 
 Export it from `packages/desktop/src/index.ts` so consumers can use it directly in depth-2 compositions.
 
@@ -314,6 +322,7 @@ Call `registerSpotlightSource(id, query => results)` at module load or inside a 
 - **Phase 3.** `@react-ui-os/theme-mintables` cinematic theme. Chrome variants (dock-on-left, hidden menu bar). Wallpaper parallax.
 - **Phase 4.** FileExplorer primitive with full macOS-Finder interaction model. State-earned desktop folders.
 - **Phase 5.** Bundling via tsup. Docs site rebuilt on Astro Starlight. `SystemWindowArgs` for multi-instance system windows. `registerSpotlightSource` for arbitrary result kinds. CI + Pages deploy.
+- **Phase 6.** Vite 8 and TypeScript 6. React Compiler integrated across the playground, the tsup library builds (`tooling/react-compiler-esbuild.mjs`, so `dist` is pre-compiled), and the `eslint-plugin-react-hooks` 7 diagnostics. Redundant manual memoization removed where the compiler covers it.
 
 ## No AI slop
 
