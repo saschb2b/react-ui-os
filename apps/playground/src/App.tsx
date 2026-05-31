@@ -10,9 +10,11 @@ import { defaultTheme } from "@react-ui-os/theme-default";
 import { createMintablesTheme } from "@react-ui-os/theme-mintables";
 import { createRedmondTheme } from "@react-ui-os/theme-redmond";
 import { createSaasTheme } from "@react-ui-os/theme-saas";
+import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
 import { exampleApps } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
+import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
 
 // Register the Recents system window once at module load. The desktop
 // icon for it surfaces only when `hasRecents(storage)` returns true, so
@@ -53,9 +55,11 @@ function HelloContent({ focused }: { focused: boolean }) {
       </p>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
         Try a different theme: append <kbd>?theme=mintables</kbd>,{" "}
-        <kbd>?theme=saas</kbd>, or <kbd>?theme=redmond</kbd> to the URL and reload.
-        SaaS pins the dock to the left edge and hides the menu bar; Redmond swaps in
-        Windows-style caption buttons and a taskbar that does not magnify.
+        <kbd>?theme=saas</kbd>, <kbd>?theme=redmond</kbd>, or <kbd>?theme=ubuntu</kbd>{" "}
+        to the URL and reload. SaaS pins the dock to the left edge and hides the menu
+        bar; Redmond swaps in Windows-style caption buttons and a taskbar that does not
+        magnify; Ubuntu pairs a top bar with a left dock, centers the clock, and opens
+        Quick Settings from the status cluster.
       </p>
       <div
         style={{
@@ -113,7 +117,7 @@ const apps: OsApp[] = [
   ...exampleApps,
 ];
 
-type ThemeChoice = "default" | "mintables" | "saas" | "redmond";
+type ThemeChoice = "default" | "mintables" | "saas" | "redmond" | "ubuntu";
 
 function readThemeFromUrl(): ThemeChoice {
   if (typeof window === "undefined") return "default";
@@ -122,6 +126,7 @@ function readThemeFromUrl(): ThemeChoice {
   if (requested === "mintables") return "mintables";
   if (requested === "saas") return "saas";
   if (requested === "redmond") return "redmond";
+  if (requested === "ubuntu") return "ubuntu";
   return "default";
 }
 
@@ -137,8 +142,15 @@ export default function App() {
     if (themeChoice === "redmond") {
       return createRedmondTheme({ wallpaperSrc: "/redmond-wallpaper.jpg" });
     }
+    if (themeChoice === "ubuntu") {
+      return createUbuntuTheme();
+    }
     return defaultTheme;
   }, [themeChoice]);
 
-  return <Desktop apps={apps} theme={theme} brand="react-ui-os" />;
+  return (
+    <Desktop apps={apps} theme={theme} brand="react-ui-os">
+      {themeChoice === "ubuntu" && <UbuntuQuickSettings />}
+    </Desktop>
+  );
 }
