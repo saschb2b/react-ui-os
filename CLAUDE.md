@@ -63,7 +63,7 @@ packages/
       Dock.tsx                   # per-app indicator dot + unread badge
       WindowLayer.tsx            # filters windows by active workspace
       Window.tsx                 # drag with snap preview + HUD
-      Spotlight.tsx              # apps + system windows + external sources
+      launcher/                  # useLauncher hook + Launcher (spotlight / grid / menu)
       Settings.tsx               # renders Slider / Toggle per customizable field
       FileExplorer.tsx
       DesktopIcons.tsx
@@ -220,7 +220,7 @@ These library systems share the same shape: a **module-level vanilla store** + a
 | HUD              | `showHud({ title, ... })`        | `<HudOverlay>`                                  | `desktop/hud/hud-store.ts`      |
 | Status tray      | `registerStatusItem(...)`        | `<StatusItems>` inside `<MenuBar>`              | `desktop/status-items.ts`       |
 | Quick settings   | `registerQuickSetting(...)`      | `<QuickSettings>`                               | `desktop/quick-settings.ts`     |
-| Spotlight source | `registerSpotlightSource(...)`   | inside `<Spotlight>`                            | `desktop/spotlight-sources.ts`  |
+| Spotlight source | `registerSpotlightSource(...)`   | inside `<Launcher>`                             | `desktop/spotlight-sources.ts`  |
 
 Reasons:
 

@@ -1,33 +1,43 @@
 ---
-title: Spotlight
-description: A Cmd-K command palette that fuzzy-searches across registered apps and system windows. Activating any result reuses the same openWindow primitive a dock click uses.
+title: Launcher
+description: The app launcher and search surface. One set of results and one Cmd-K shortcut, presented three ways (macOS Spotlight, GNOME app grid, Windows Start menu) by a theme token, with a useLauncher hook for fully custom launchers.
 sidebar:
   order: 5
 ---
 
 import LivePreview from "~/components/LivePreview.astro";
 
-`Spotlight` is the keyboard front door. It is self-contained: owns its own open/close state, listens for both Cmd-K and a custom event, and restores the previously focused element when it closes.
+The launcher is the keyboard front door: type a few letters, get the right window. Every OS presents this differently, so the library splits it into a shared brain and a swappable face. The data (apps, system windows, and `registerSpotlightSource` rows), the Cmd-K shortcut, selection, and activation are the same in every register; `theme.chrome.launcher` picks the layout.
 
-<LivePreview src="?demo=spotlight" label="Spotlight opens on load" height="420px" />
+<LivePreview src="?demo=spotlight" label="The launcher in its Spotlight register" height="420px" />
+
+## Presentations
+
+`theme.chrome.launcher` chooses the face. All three carry the same results and filter the same way.
+
+| Value                 | Reads as          | Layout                                                                                 |
+| --------------------- | ----------------- | -------------------------------------------------------------------------------------- |
+| `"spotlight"` (default) | macOS Spotlight | A centered command palette: search field over a vertical result list.                  |
+| `"grid"`              | GNOME Activities  | A full-bleed overview: a centered search field over a grid of large app icons.         |
+| `"menu"`              | Windows Start     | A panel raised from the dock launcher: a search field over a grid of app tiles.        |
+
+The default theme uses `"spotlight"`, Ubuntu uses `"grid"`, and Redmond uses `"menu"`. The arrow keys navigate every register (the grid and menu add left/right); Enter activates; Escape dismisses and restores focus.
 
 ## Import
 
 ```tsx
-import { Spotlight, SPOTLIGHT_OPEN_EVENT } from "@react-ui-os/desktop";
+import { Launcher, useLauncher, SPOTLIGHT_OPEN_EVENT } from "@react-ui-os/desktop";
 ```
 
-## Props
+`<Launcher>` is mounted by the default `<Desktop>`. `<Spotlight>` is still exported as a back-compat alias of `<Launcher>`.
 
-None. Drop the component anywhere inside `<DesktopProvider>` and it works. The default `<Desktop>` already mounts it.
-
-## Opening Spotlight
+## Opening the launcher
 
 | Trigger                                                       | Behavior                                                        |
 | ------------------------------------------------------------- | --------------------------------------------------------------- |
-| `Cmd-K` (macOS) / `Ctrl-K` (elsewhere)                        | Toggles the palette. Bails when typing in an input or textarea. |
+| `Cmd-K` (macOS) / `Ctrl-K` (elsewhere)                        | Toggles it. Bails when typing in an input or textarea.          |
 | `window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT))` | Opens from any component without prop drilling.                 |
-| A custom button calling the above                             | Standard pattern for a "search" button in your own menu bar.    |
+| The dock launcher button                                      | Dispatches the event above. The bar dock shows it; the menu and grid pop where the OS does. |
 
 ## Result kinds
 
@@ -37,24 +47,13 @@ None. Drop the component anywhere inside `<DesktopProvider>` and it works. The d
 | System   | Every entry in the `systemWindows` registry (Settings by default, plus any you register).                      |
 | External | Every result returned by a function registered via [`registerSpotlightSource`](/api/registerspotlightsource/). |
 
-Each row shows an accent tile, name, and tagline. Activating an App or System result calls `openWindow(...)`, the same primitive a dock click uses. External results run their own `onActivate` callback so they can navigate, dispatch, or open a URL. From "I typed three letters" to "the right thing happens" is one keystroke and one dispatch.
-
-## Keyboard
-
-| Key        | Effect                                                               |
-| ---------- | -------------------------------------------------------------------- |
-| ↑ / ↓      | Move selection. Wraps at the ends.                                   |
-| Enter      | Activate the selected result.                                        |
-| Escape     | Dismiss. Focus returns to whatever owned it before Spotlight opened. |
-| Cmd/Ctrl-K | Dismiss (toggle off).                                                |
+Activating an App or System result calls `openWindow(...)`, the same primitive a dock click uses. External results run their own `onActivate` so they can navigate, dispatch, or open a URL.
 
 ## Adding your own results
 
-Two contribution paths, depending on whether the result is a window or something else.
-
 **Use `registerSystemWindow(...)`** when activating the result should open a window managed by react-ui-os. Settings is the canonical example.
 
-**Use [`registerSpotlightSource(...)`](/api/registerspotlightsource/)** when activating the result should do something else: navigate to a docs page, open an external URL, dispatch a custom event, or trigger an app-specific action. A source is a function `(query) => SpotlightResult[]`, and each result owns its own `onActivate`.
+**Use [`registerSpotlightSource(...)`](/api/registerspotlightsource/)** when activating should do something else: navigate to a docs page, open a URL, dispatch an event. A source is `(query) => SpotlightResult[]`, and each result owns its `onActivate`. Sources feed every presentation, not just Spotlight.
 
 ```tsx
 import { registerSpotlightSource } from "@react-ui-os/desktop";
@@ -75,15 +74,39 @@ useEffect(() => {
 }, []);
 ```
 
+## A custom launcher: `useLauncher`
+
+When the three presentations do not fit, build your own face on the same brain. `useLauncher()` returns the open state, the query, the merged and filtered `results`, the selection, and `activate` / `moveSelection` / `close`. It also owns the Cmd-K toggle and the open event, so a custom launcher gets those for free. Render it at [depth 2](/architecture/patterns/#the-three-depths) in place of `<Launcher>`.
+
+```tsx
+import { useLauncher } from "@react-ui-os/desktop";
+
+function MyLauncher() {
+  const { open, query, setQuery, results, activate, close } = useLauncher();
+  if (!open) return null;
+  return (
+    <div role="dialog" aria-label="Launcher">
+      <input value={query} onChange={(e) => setQuery(e.target.value)} autoFocus />
+      {results.map((r) => (
+        <button key={r.key} onClick={() => activate(r)}>
+          {r.name}
+        </button>
+      ))}
+      <button onClick={close}>Close</button>
+    </div>
+  );
+}
+```
+
 ## Accessibility
 
-- Backdrop is `role="presentation"` with click-to-dismiss.
-- Panel is `role="dialog" aria-modal="true" aria-label="Spotlight"`.
-- Results list is `role="listbox" aria-label="Spotlight results"`.
-- Each row is `role="option" aria-selected="<bool>"`.
-- Focus restoration on close, never traps the user.
+- The search field is a `role="combobox"` wired to its results listbox with `aria-activedescendant`, so screen readers announce the highlighted result as the arrows move it.
+- The Spotlight backdrop is `role="presentation"` with click-to-dismiss; the panels are `role="dialog"`.
+- Each result is a `role="option"` with `aria-selected`.
+- Focus restores on close and is never trapped.
 
 ## See also
 
-- [KeyboardShortcuts](/components/desktopicons/#see-also) registers the global Cmd-K binding.
-- [registerSystemWindow](/components/desktopicons/): how to surface custom windows in Spotlight.
+- [Themes overview](/themes/overview/): the `chrome.launcher` token.
+- [registerSpotlightSource](/api/registerspotlightsource/): contribute findable rows.
+- [registerSystemWindow](/components/desktopicons/): surface custom windows.

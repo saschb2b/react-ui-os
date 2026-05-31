@@ -326,6 +326,12 @@
           "description": "Dock form. `\"floating\"` is the macOS dock: a centered rounded pill that\nhovers above the edge with a gap. `\"bar\"` is the Windows taskbar / GNOME\npanel shape: a flat bar flush to the edge, spanning the full width (bottom)\nor height (left), square corners, an accent underline under running apps.\nOptional, defaults to `\"floating\"`. Ignored when `dockPosition` is\n`\"hidden\"`."
         },
         {
+          "name": "launcher",
+          "type": "\"spotlight\" | \"grid\" | \"menu\"",
+          "optional": true,
+          "description": "Presentation of the app launcher / search surface. `\"spotlight\"` (default)\nis the macOS centered command palette; `\"grid\"` is the GNOME Activities\napp-grid overview (a full-bleed search field over a grid of app icons);\n`\"menu\"` is the Windows Start menu (a panel anchored above the dock\nlauncher with a search field and a grid of app tiles). All three share the\nsame results (apps, system windows, and `registerSpotlightSource` rows) and\nthe same Cmd/Ctrl+K shortcut; only the layout changes. Build a fully custom\nlauncher with the exported `useLauncher` hook."
+        },
+        {
           "name": "dockAlign",
           "type": "\"start\" | \"center\" | \"end\"",
           "optional": true,

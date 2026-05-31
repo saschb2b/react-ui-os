@@ -54,6 +54,7 @@ The structural variants. This is where the OS spectrum gets honest.
 - `dockPosition`: `"bottom"`, `"left"`, `"hidden"`.
 - `dockStyle`: `"floating"` (macOS pill), `"bar"` (flush taskbar / GNOME panel).
 - `dockAlign`: `"center"` (macOS / Windows 11), `"start"` (GNOME / Windows 10), `"end"`. Bar docks only.
+- `launcher`: `"spotlight"` (macOS palette), `"grid"` (GNOME app grid), `"menu"` (Windows Start menu).
 - `menuBar`: `"top"` (system-wide menu), `"in-window"` (inside each title bar), `"none"`.
 - `menuBarClock`: `"right"` (macOS, in the status cluster), `"center"` (GNOME).
 - `menuBarBrand`: whether the top bar carries the brand button. Default `true`; a GNOME theme sets `false`.
