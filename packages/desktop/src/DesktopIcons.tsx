@@ -17,14 +17,10 @@ import {
   resolveSystemWindowName,
   type SystemWindowDef,
 } from "./system-windows";
+import { useDesktopMarquee } from "./use-desktop-marquee";
 import { nextIconIndex } from "./util/desktop-icon-nav";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { getChromeMetrics } from "./util/layout";
-import {
-  marqueeFromPoints,
-  marqueeIntersects,
-  type MarqueeRect,
-} from "./util/marquee";
 import { useViewportMode } from "./util/viewport-mode";
 
 interface VisibleIcon {
@@ -36,47 +32,10 @@ const ICON_TILE = 56;
 const ICON_LABEL_GAP = 4;
 const ICON_GAP = 18;
 const EDGE_INSET = 14;
-// Pointer travel before a left-drag on the bare desktop becomes a marquee, so
-// a plain click that just clears the selection never flashes a rectangle.
-const MARQUEE_THRESHOLD_PX = 4;
 
 /** Stable DOM id per option, used for the listbox `aria-activedescendant`. */
 function optionDomId(systemId: string): string {
   return `rui-desktop-icon-${systemId}`;
-}
-
-/**
- * True when a pointer event started on the bare desktop, not on a window, the
- * dock, the menu bar, a desktop icon, a context-menu region, or a form field.
- * The marquee only begins there, the same surface where the desktop right-click
- * menu is allowed to open.
- */
-function isBareDesktop(target: HTMLElement | null): boolean {
-  if (!target) return false;
-  if (
-    target.closest("[data-rui-window]") ||
-    target.closest("[data-rui-dock]") ||
-    target.closest("[data-rui-menubar]") ||
-    target.closest("[data-rui-context-region]") ||
-    target.closest("[data-desktop-icon-id]")
-  ) {
-    return false;
-  }
-  const tag = target.tagName.toLowerCase();
-  return !(tag === "input" || tag === "textarea" || target.isContentEditable);
-}
-
-/** Ids of the desktop icons inside `container` whose tiles overlap `rect`. */
-function iconsInMarquee(rect: MarqueeRect, container: HTMLElement | null): string[] {
-  if (!container) return [];
-  const ids: string[] = [];
-  container
-    .querySelectorAll<HTMLElement>("[data-desktop-icon-id]")
-    .forEach((el) => {
-      const id = el.getAttribute("data-desktop-icon-id");
-      if (id && marqueeIntersects(rect, el.getBoundingClientRect())) ids.push(id);
-    });
-  return ids;
 }
 
 /**
@@ -110,7 +69,6 @@ export function DesktopIcons() {
   const [visible, setVisible] = useState<VisibleIcon[]>(() => computeVisible(storage));
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [marquee, setMarquee] = useState<MarqueeRect | null>(null);
   const listboxRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -136,63 +94,24 @@ export function DesktopIcons() {
     setActiveId((prev) => (prev && ids.has(prev) ? prev : null));
   }, [visible]);
 
-  // Clicking off the column clears the selection, like the macOS desktop. Only
-  // listen while something is selected. A marquee drag sets its own selection;
-  // a no-drag click on the bare desktop falls through to here and clears.
-  useEffect(() => {
-    if (selectedIds.size === 0) return;
-    const onPointerDown = (e: PointerEvent) => {
-      const el = listboxRef.current;
-      const target = e.target as HTMLElement | null;
-      if (el && target && el.contains(target)) return;
-      setSelectedIds(new Set());
-      setActiveId(null);
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-    };
-  }, [selectedIds.size]);
-
-  // Rubber-band marquee: a left drag starting on the bare desktop draws a
-  // selection rectangle and selects the icons it covers, the way every desktop
-  // OS does. Right-drag is left alone so the context-menu handler can run.
-  useEffect(() => {
-    const onPointerDown = (e: PointerEvent) => {
-      if (e.button !== 0) return;
-      if (!isBareDesktop(e.target as HTMLElement | null)) return;
-      const x0 = e.clientX;
-      const y0 = e.clientY;
-      let dragging = false;
-      const onMove = (ev: PointerEvent) => {
-        if (
-          !dragging &&
-          Math.hypot(ev.clientX - x0, ev.clientY - y0) < MARQUEE_THRESHOLD_PX
-        ) {
-          return;
-        }
-        dragging = true;
-        document.body.style.userSelect = "none";
-        const rect = marqueeFromPoints(x0, y0, ev.clientX, ev.clientY);
-        setMarquee(rect);
-        const ids = iconsInMarquee(rect, listboxRef.current);
-        setSelectedIds(new Set(ids));
-        setActiveId(ids.length > 0 ? (ids[ids.length - 1] ?? null) : null);
-      };
-      const onUp = () => {
-        document.removeEventListener("pointermove", onMove);
-        document.removeEventListener("pointerup", onUp);
-        document.body.style.userSelect = "";
-        setMarquee(null);
-      };
-      document.addEventListener("pointermove", onMove);
-      document.addEventListener("pointerup", onUp);
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-    };
+  const selectIcons = useCallback((ids: string[]) => {
+    setSelectedIds(new Set(ids));
+    setActiveId(ids.length > 0 ? (ids[ids.length - 1] ?? null) : null);
   }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+    setActiveId(null);
+  }, []);
+
+  // Bare-desktop pointer behavior: left-drag marquee, click-to-clear, and
+  // click-a-window-to-clear all live in this one hook.
+  const marquee = useDesktopMarquee({
+    containerRef: listboxRef,
+    selectedIds,
+    selectIcons,
+    clearSelection,
+  });
 
   const openIcon = useCallback(
     (systemId: string) => {
@@ -249,7 +168,7 @@ export function DesktopIcons() {
     // Cmd/Ctrl+A selects every icon.
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "a") {
       e.preventDefault();
-      setSelectedIds(new Set(ids));
+      selectIcons(ids);
       return;
     }
     const currentIdx = activeId ? ids.indexOf(activeId) : -1;
@@ -261,9 +180,8 @@ export function DesktopIcons() {
     ) {
       e.preventDefault();
       const next = nextIconIndex(currentIdx, e.key, ids.length);
-      const id = ids[next] ?? null;
-      setActiveId(id);
-      setSelectedIds(id ? new Set([id]) : new Set());
+      const id = ids[next];
+      selectIcons(id ? [id] : []);
       return;
     }
     if (e.key === "Enter") {
@@ -278,8 +196,7 @@ export function DesktopIcons() {
     }
     if (e.key === "Escape" && selectedIds.size > 0) {
       e.preventDefault();
-      setSelectedIds(new Set());
-      setActiveId(null);
+      clearSelection();
     }
   };
 
