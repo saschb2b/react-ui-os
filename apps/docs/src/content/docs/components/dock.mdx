@@ -46,6 +46,18 @@ The dock honors `theme.chrome.dockPosition`:
 
 The work area reserves the dock's thickness either way, so maximized windows stop above a taskbar just as they stop above a floating dock. The [Redmond theme](/themes/overview/) ships `"bar"`; every other theme uses `"floating"`.
 
+## Alignment
+
+`theme.chrome.dockAlign` sets where a `"bar"` dock packs its app icons along its long axis. The floating pill ignores it (the pill always hugs its icons).
+
+| Value      | Packs icons                                                                 |
+| ---------- | --------------------------------------------------------------------------- |
+| `"center"` | Centered. The macOS and Windows 11 placement. The default.                  |
+| `"start"`  | At the top (left dock) or left (bottom dock), launcher pinned at the far end. The GNOME / Ubuntu and Windows 10 placement. |
+| `"end"`    | At the far end.                                                             |
+
+A non-centered run is inset so it clears the launcher and tray at the edges. Windows 11 exposes the same lever as "Taskbar alignment"; the Ubuntu theme ships `"start"`, and both the Ubuntu and Redmond themes expose it as a Settings select.
+
 ## Magnification
 
 Hovering tracks the cursor and magnifies the icon beneath it, with its neighbors falling off smoothly over a fixed influence radius, like the macOS dock fisheye. The panel's cross-axis is pinned so magnified icons overflow above (or beside) it rather than ballooning the panel, and the dock makes room by widening. The app name shows in a label centered above the magnified icon.

@@ -53,6 +53,7 @@ The structural variants. This is where the OS spectrum gets honest.
 - `windowControls`: `"traffic-lights"` (macOS), `"windows"` (close on right, min/max left of it), `"gnome"` (round symbolic min/max/close on the right, the Adwaita/Yaru look), `"minimal"` (one close glyph, nothing else).
 - `dockPosition`: `"bottom"`, `"left"`, `"hidden"`.
 - `dockStyle`: `"floating"` (macOS pill), `"bar"` (flush taskbar / GNOME panel).
+- `dockAlign`: `"center"` (macOS / Windows 11), `"start"` (GNOME / Windows 10), `"end"`. Bar docks only.
 - `menuBar`: `"top"` (system-wide menu), `"in-window"` (inside each title bar), `"none"`.
 - `menuBarClock`: `"right"` (macOS, in the status cluster), `"center"` (GNOME).
 - `quickSettings`: when set, the menu-bar status cluster opens the Quick Settings popover (GNOME system menu / macOS Control Center).

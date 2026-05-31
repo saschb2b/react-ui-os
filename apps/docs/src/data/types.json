@@ -326,6 +326,12 @@
           "description": "Dock form. `\"floating\"` is the macOS dock: a centered rounded pill that\nhovers above the edge with a gap. `\"bar\"` is the Windows taskbar / GNOME\npanel shape: a flat bar flush to the edge, spanning the full width (bottom)\nor height (left), square corners, an accent underline under running apps.\nOptional, defaults to `\"floating\"`. Ignored when `dockPosition` is\n`\"hidden\"`."
         },
         {
+          "name": "dockAlign",
+          "type": "\"start\" | \"center\" | \"end\"",
+          "optional": true,
+          "description": "How a `\"bar\"` dock packs its app icons along its long axis. `\"center\"`\n(default) is the macOS / Windows 11 placement; `\"start\"` packs them at the\ntop (left dock) or left (bottom dock), the GNOME / Ubuntu and Windows 10\nplacement, leaving the launcher at the far end; `\"end\"` packs them at the\nfar end. Ignored by the `\"floating\"` dock, whose pill always hugs its\nicons. Windows 11 exposes the same lever as \"Taskbar alignment\"."
+        },
+        {
           "name": "menuBar",
           "type": "\"top\" | \"in-window\" | \"none\"",
           "optional": false
