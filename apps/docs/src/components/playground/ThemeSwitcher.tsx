@@ -1,14 +1,12 @@
 import { useTheme } from "@react-ui-os/desktop";
 
-export type ThemeChoice = "default" | "mintables" | "saas" | "redmond" | "ubuntu";
+export type ThemeChoice = "default" | "windows" | "ubuntu";
 
-// Friendly labels. The three OS clones read as their platform so a visitor
-// recognizes them at a glance; Mintables and SaaS keep their library names.
+// Each theme is a clone of its platform's chrome, labeled so a visitor
+// recognizes it at a glance.
 const CHOICES: { id: ThemeChoice; label: string }[] = [
   { id: "default", label: "macOS" },
-  { id: "mintables", label: "Mintables" },
-  { id: "saas", label: "SaaS" },
-  { id: "redmond", label: "Windows" },
+  { id: "windows", label: "Windows" },
   { id: "ubuntu", label: "Ubuntu" },
 ];
 

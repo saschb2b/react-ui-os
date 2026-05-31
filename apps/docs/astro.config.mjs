@@ -17,10 +17,8 @@ const PACKAGES = [
   "desktop",
   "example-apps",
   "theme-default",
-  "theme-mintables",
-  "theme-redmond",
-  "theme-saas",
   "theme-ubuntu",
+  "theme-windows",
 ];
 const sourceAliases = PACKAGES.map((name) => ({
   find: `@react-ui-os/${name}`,
@@ -35,10 +33,10 @@ const sourceAliases = PACKAGES.map((name) => ({
 const SITE = process.env.ASTRO_SITE ?? "https://saschb2b.github.io";
 const BASE = process.env.ASTRO_BASE ?? "/react-ui-os";
 
-// Social card image used by every page. Using the desktop wallpaper as the
-// stand-in until a dedicated branded card is rendered, see Changelog
-// roadmap. The image lives at apps/docs/public/wallpaper.jpg.
-const SOCIAL_IMAGE = `${SITE}${BASE}/wallpaper.jpg`;
+// Social card image used by every page. Using the macOS desktop wallpaper as
+// the stand-in until a dedicated branded card is rendered, see Changelog
+// roadmap. The image lives at apps/docs/public/macos-wallpaper.jpg.
+const SOCIAL_IMAGE = `${SITE}${BASE}/macos-wallpaper.jpg`;
 
 // https://astro.build/config
 export default defineConfig({
@@ -59,8 +57,8 @@ export default defineConfig({
         // Open Graph: Slack, LinkedIn, iMessage.
         { tag: "meta", attrs: { property: "og:type", content: "website" } },
         { tag: "meta", attrs: { property: "og:image", content: SOCIAL_IMAGE } },
-        { tag: "meta", attrs: { property: "og:image:width", content: "3840" } },
-        { tag: "meta", attrs: { property: "og:image:height", content: "2160" } },
+        { tag: "meta", attrs: { property: "og:image:width", content: "2560" } },
+        { tag: "meta", attrs: { property: "og:image:height", content: "1440" } },
         {
           tag: "meta",
           attrs: { property: "og:image:alt", content: "react-ui-os desktop wallpaper" },

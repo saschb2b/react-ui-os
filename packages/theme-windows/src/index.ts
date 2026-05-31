@@ -1,6 +1,6 @@
 import type { OsTheme } from "@react-ui-os/core";
 
-export interface RedmondThemeOptions {
+export interface WindowsThemeOptions {
   /**
    * Optional accent override. Defaults to the Windows 11 "Default blue"
    * (#0078d4). Used as the system-wide accent fallback when no per-app
@@ -16,7 +16,7 @@ export interface RedmondThemeOptions {
 }
 
 /**
- * Windows-style register. Where the default theme reads as macOS, this one
+ * The Windows register. Where the default theme reads as macOS, this one
  * exercises the non-macOS levers end to end: caption buttons instead of
  * traffic lights (`chrome.windowControls: "windows"`), a bottom taskbar with
  * no fisheye (`motion.dockMagnification: 1`), no global menu bar, softly
@@ -31,11 +31,11 @@ export interface RedmondThemeOptions {
  * Returns a fresh theme object on each call so caller customizations never
  * leak between consumers.
  */
-export function createRedmondTheme(options: RedmondThemeOptions = {}): OsTheme {
+export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
   const accent = options.accent ?? "#0078d4";
   return {
-    id: "redmond",
-    name: "Redmond",
+    id: "windows",
+    name: "Windows",
     palette: {
       background: "#f3f3f3",
       surface: "rgba(243, 243, 243, 0.82)",

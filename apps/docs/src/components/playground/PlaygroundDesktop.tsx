@@ -3,11 +3,9 @@ import type { OsTheme } from "@react-ui-os/core";
 import { Desktop } from "@react-ui-os/desktop";
 import { notify, useWindowManager } from "@react-ui-os/core";
 import type { WindowPayload } from "@react-ui-os/core";
-import { defaultTheme } from "@react-ui-os/theme-default";
-import { createMintablesTheme } from "@react-ui-os/theme-mintables";
-import { createRedmondTheme } from "@react-ui-os/theme-redmond";
-import { createSaasTheme } from "@react-ui-os/theme-saas";
+import { createDefaultTheme } from "@react-ui-os/theme-default";
 import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
+import { createWindowsTheme } from "@react-ui-os/theme-windows";
 import { docsApps } from "./apps";
 import {
   NOTIFICATION_CENTER_TOGGLE_EVENT,
@@ -23,24 +21,18 @@ import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
 const THEME_STORAGE_KEY = "rui-os:playground-theme";
 
 function isThemeChoice(value: string | null): value is ThemeChoice {
-  return (
-    value === "default" ||
-    value === "mintables" ||
-    value === "saas" ||
-    value === "redmond" ||
-    value === "ubuntu"
-  );
+  return value === "default" || value === "windows" || value === "ubuntu";
 }
 
 // `?theme=` wins (an explicit, shareable deep link), then the last choice the
-// visitor made, then Mintables, the cinematic look the docs lead with.
+// visitor made, then macOS, the look the docs lead with.
 function readInitialThemeChoice(): ThemeChoice {
-  if (typeof window === "undefined") return "mintables";
+  if (typeof window === "undefined") return "default";
   const fromUrl = new URLSearchParams(window.location.search).get("theme");
   if (isThemeChoice(fromUrl)) return fromUrl;
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
   if (isThemeChoice(stored)) return stored;
-  return "mintables";
+  return "default";
 }
 
 function persistThemeChoice(choice: ThemeChoice) {
@@ -64,15 +56,13 @@ function assetBase(): string {
 
 function buildTheme(choice: ThemeChoice): OsTheme {
   const base = assetBase();
-  if (choice === "default") return defaultTheme;
-  if (choice === "saas") return createSaasTheme();
-  if (choice === "redmond") {
-    return createRedmondTheme({ wallpaperSrc: `${base}redmond-wallpaper.jpg` });
+  if (choice === "windows") {
+    return createWindowsTheme({ wallpaperSrc: `${base}windows-wallpaper.jpg` });
   }
   if (choice === "ubuntu") {
     return createUbuntuTheme({ wallpaperSrc: `${base}ubuntu-wallpaper.png` });
   }
-  return createMintablesTheme({ wallpaperSrc: `${base}wallpaper.jpg` });
+  return createDefaultTheme({ wallpaperSrc: `${base}macos-wallpaper.jpg` });
 }
 
 /**
@@ -208,7 +198,7 @@ function DemoActivator() {
 
 /**
  * Client-only React island that boots the desktop. Boots in the chosen theme
- * (Mintables by default), mounts the on-canvas ThemeSwitcher so a visitor can
+ * (macOS by default), mounts the on-canvas ThemeSwitcher so a visitor can
  * swap the whole look with a click, and mounts a small invisible activator
  * that reads `?demo=` and opens the matching surface on boot. The activator
  * sits inside the same provider so it can dispatch openWindow.

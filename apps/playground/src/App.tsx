@@ -6,11 +6,9 @@ import {
   useDesktopContext,
   useTheme,
 } from "@react-ui-os/desktop";
-import { defaultTheme } from "@react-ui-os/theme-default";
-import { createMintablesTheme } from "@react-ui-os/theme-mintables";
-import { createRedmondTheme } from "@react-ui-os/theme-redmond";
-import { createSaasTheme } from "@react-ui-os/theme-saas";
+import { createDefaultTheme } from "@react-ui-os/theme-default";
 import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
+import { createWindowsTheme } from "@react-ui-os/theme-windows";
 import { exampleApps } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
@@ -55,11 +53,11 @@ function HelloContent({ focused }: { focused: boolean }) {
         <kbd>open calendar</kbd> to launch an app straight from the shell.
       </p>
       <p style={{ margin: "0 0 8px", opacity: 0.78 }}>
-        Use the theme switcher at the top to swap the whole look between macOS,
-        Mintables, SaaS, Windows, and Ubuntu. SaaS pins the dock to the left edge and
-        hides the menu bar; Windows swaps in caption buttons and a taskbar that does not
-        magnify; Ubuntu pairs a top bar with a left dock, centers the clock, and opens
-        Quick Settings from the status cluster.
+        Use the theme switcher at the top to swap the whole look between macOS, Windows,
+        and Ubuntu. Each clones its platform's chrome: Windows trades the traffic lights
+        for caption buttons and a flush taskbar that does not magnify; Ubuntu pairs a
+        top bar with a left dock, centers the clock, and opens Quick Settings from the
+        status cluster.
       </p>
       <div
         style={{
@@ -120,13 +118,7 @@ const apps: OsApp[] = [
 const THEME_STORAGE_KEY = "rui-os:playground-theme";
 
 function isThemeChoice(value: string | null): value is ThemeChoice {
-  return (
-    value === "default" ||
-    value === "mintables" ||
-    value === "saas" ||
-    value === "redmond" ||
-    value === "ubuntu"
-  );
+  return value === "default" || value === "windows" || value === "ubuntu";
 }
 
 // `?theme=` wins (an explicit, shareable deep link), then the last choice the
@@ -151,17 +143,13 @@ function persistThemeChoice(choice: ThemeChoice) {
 }
 
 function buildTheme(choice: ThemeChoice): OsTheme {
-  if (choice === "mintables") {
-    return createMintablesTheme({ wallpaperSrc: "/wallpaper.jpg" });
-  }
-  if (choice === "saas") return createSaasTheme();
-  if (choice === "redmond") {
-    return createRedmondTheme({ wallpaperSrc: "/redmond-wallpaper.jpg" });
+  if (choice === "windows") {
+    return createWindowsTheme({ wallpaperSrc: "/windows-wallpaper.jpg" });
   }
   if (choice === "ubuntu") {
     return createUbuntuTheme({ wallpaperSrc: "/ubuntu-wallpaper.png" });
   }
-  return defaultTheme;
+  return createDefaultTheme({ wallpaperSrc: "/macos-wallpaper.jpg" });
 }
 
 export default function App() {

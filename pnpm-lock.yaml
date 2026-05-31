@@ -71,18 +71,12 @@ importers:
       '@react-ui-os/theme-default':
         specifier: workspace:*
         version: link:../../packages/theme-default
-      '@react-ui-os/theme-mintables':
-        specifier: workspace:*
-        version: link:../../packages/theme-mintables
-      '@react-ui-os/theme-redmond':
-        specifier: workspace:*
-        version: link:../../packages/theme-redmond
-      '@react-ui-os/theme-saas':
-        specifier: workspace:*
-        version: link:../../packages/theme-saas
       '@react-ui-os/theme-ubuntu':
         specifier: workspace:*
         version: link:../../packages/theme-ubuntu
+      '@react-ui-os/theme-windows':
+        specifier: workspace:*
+        version: link:../../packages/theme-windows
       astro:
         specifier: ^6.4.2
         version: 6.4.2(@types/node@24.12.4)(lightningcss@1.32.0)(rollup@4.60.4)(yaml@2.9.0)
@@ -120,18 +114,12 @@ importers:
       '@react-ui-os/theme-default':
         specifier: workspace:*
         version: link:../../packages/theme-default
-      '@react-ui-os/theme-mintables':
-        specifier: workspace:*
-        version: link:../../packages/theme-mintables
-      '@react-ui-os/theme-redmond':
-        specifier: workspace:*
-        version: link:../../packages/theme-redmond
-      '@react-ui-os/theme-saas':
-        specifier: workspace:*
-        version: link:../../packages/theme-saas
       '@react-ui-os/theme-ubuntu':
         specifier: workspace:*
         version: link:../../packages/theme-ubuntu
+      '@react-ui-os/theme-windows':
+        specifier: workspace:*
+        version: link:../../packages/theme-windows
       react:
         specifier: ^19.0.0
         version: 19.2.6
@@ -260,37 +248,17 @@ importers:
         specifier: ^6.0.0
         version: 6.0.3
 
-  packages/theme-mintables:
-    dependencies:
-      '@react-ui-os/core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      typescript:
-        specifier: ^6.0.0
-        version: 6.0.3
-
-  packages/theme-redmond:
-    dependencies:
-      '@react-ui-os/core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      typescript:
-        specifier: ^6.0.0
-        version: 6.0.3
-
-  packages/theme-saas:
-    dependencies:
-      '@react-ui-os/core':
-        specifier: workspace:*
-        version: link:../core
-    devDependencies:
-      typescript:
-        specifier: ^6.0.0
-        version: 6.0.3
-
   packages/theme-ubuntu:
+    dependencies:
+      '@react-ui-os/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
+
+  packages/theme-windows:
     dependencies:
       '@react-ui-os/core':
         specifier: workspace:*
