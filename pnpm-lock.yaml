@@ -114,6 +114,9 @@ importers:
       '@react-ui-os/theme-saas':
         specifier: workspace:*
         version: link:../../packages/theme-saas
+      '@react-ui-os/theme-ubuntu':
+        specifier: workspace:*
+        version: link:../../packages/theme-ubuntu
       react:
         specifier: ^19.0.0
         version: 19.2.6
@@ -251,6 +254,16 @@ importers:
         version: 5.9.3
 
   packages/theme-saas:
+    dependencies:
+      '@react-ui-os/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/theme-ubuntu:
     dependencies:
       '@react-ui-os/core':
         specifier: workspace:*

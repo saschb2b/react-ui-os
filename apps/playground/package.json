@@ -18,6 +18,7 @@
     "@react-ui-os/theme-mintables": "workspace:*",
     "@react-ui-os/theme-redmond": "workspace:*",
     "@react-ui-os/theme-saas": "workspace:*",
+    "@react-ui-os/theme-ubuntu": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
