@@ -28,17 +28,22 @@ export interface MacosThemeOptions {
  * customizations never leak between consumers.
  */
 export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
-  const accent = options.accent ?? "#6b8afd";
+  // macOS "Blue" accent, the default highlight color (System Settings >
+  // Appearance). Apple ships it as the system control-accent blue.
+  const accent = options.accent ?? "#0a84ff";
   return {
     id: "macos",
     name: "macOS",
     palette: {
-      background: "#1e2129",
-      surface: "rgba(28, 30, 38, 0.78)",
-      textPrimary: "#f1f3f8",
-      textSecondary: "rgba(241, 243, 248, 0.65)",
+      // Light appearance, matching the Tahoe Day wallpaper in the reference.
+      // Surfaces are a light vibrancy material (translucent so the wallpaper
+      // tints them through the blur); text is Apple's near-black label color.
+      background: "#f4f5f7",
+      surface: "rgba(246, 247, 249, 0.72)",
+      textPrimary: "#1d1d1f",
+      textSecondary: "rgba(0, 0, 0, 0.55)",
       accent,
-      border: "rgba(255, 255, 255, 0.10)",
+      border: "rgba(0, 0, 0, 0.12)",
     },
     shape: {
       windowRadius: 12,
@@ -60,9 +65,12 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       spotlight: "blur(28px) saturate(160%)",
     },
     elevation: {
+      // Light appearance: macOS floats windows on a soft, wide shadow, far
+      // lighter than a dark surface needs (a heavy black halo reads as muddy
+      // over light vibrancy).
       windowFocused:
-        "0 20px 50px -12px rgba(0,0,0,0.55), 0 8px 18px -6px rgba(0,0,0,0.35)",
-      windowUnfocused: "0 10px 24px -8px rgba(0,0,0,0.4)",
+        "0 22px 48px -16px rgba(0,0,0,0.28), 0 6px 16px -8px rgba(0,0,0,0.18)",
+      windowUnfocused: "0 10px 26px -14px rgba(0,0,0,0.18)",
     },
     wallpaper: {
       // No wallpaper reads as the bare skeleton; supply one for the Mac look.
@@ -81,7 +89,9 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
         section: "Appearance",
         label: "Accent color",
         description: "Tints the dock tile gradients and focused-window highlight.",
-        options: ["#6b8afd", "#f59e0b", "#22c55e", "#a855f7", "#ec4899", "#06b6d4"],
+        // The macOS System Settings accent palette: Blue, Purple, Pink, Red,
+        // Orange, Green.
+        options: ["#0a84ff", "#8944ab", "#f74f9e", "#ff5257", "#f7821b", "#62ba46"],
       },
       "shape.windowRadius": {
         kind: "range",
