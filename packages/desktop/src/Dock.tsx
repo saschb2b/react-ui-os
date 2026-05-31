@@ -161,6 +161,14 @@ export function Dock() {
 
   const crossSize = base + metrics.dockPadding * 2 + 2;
 
+  const topMenuBar = theme.chrome.menuBar === "top";
+  // When a top menu bar already owns the clock and status tray (the GNOME
+  // layout: top bar plus a left dock), the dock drops its own tray and moves
+  // the launcher to the trailing edge, where Ubuntu's "Show Applications" grid
+  // sits. The Windows register (bottom bar, no menu bar) keeps both.
+  const showTray = isBar && !topMenuBar;
+  const launcherTrailing = isBar && isLeft && topMenuBar;
+
   const handleMove = (e: ReactPointerEvent) => {
     cursorRef.current = isLeft ? e.clientY : e.clientX;
     startLoop();
@@ -225,7 +233,9 @@ export function Dock() {
           ...(isLeft
             ? {
                 left: 0,
-                top: 0,
+                // Sit below the top menu bar when there is one, so the bar can
+                // span the full width above the dock (the GNOME arrangement).
+                top: topMenuBar ? metrics.menuBarHeight : 0,
                 bottom: 0,
                 width: metrics.taskbarSize,
                 borderRight: `1px solid ${theme.palette.border}`,
@@ -328,8 +338,8 @@ export function Dock() {
           {focusedApp.name}
         </span>
       ) : null}
-      {isBar && <StartButton vertical={isLeft} />}
-      {isBar && <TaskbarTray vertical={isLeft} />}
+      {isBar && <StartButton vertical={isLeft} trailing={launcherTrailing} />}
+      {showTray && <TaskbarTray vertical={isLeft} />}
     </nav>
   );
 }
@@ -339,7 +349,7 @@ export function Dock() {
  * A neutral 2x2 grid glyph, not the Windows logo: it opens Spotlight, the
  * library's app launcher, respecting the pattern without copying the mark.
  */
-function StartButton({ vertical }: { vertical: boolean }) {
+function StartButton({ vertical, trailing }: { vertical: boolean; trailing: boolean }) {
   const theme = useTheme();
   const hover = `${theme.palette.textPrimary}14`;
   return (
@@ -358,8 +368,12 @@ function StartButton({ vertical }: { vertical: boolean }) {
       style={{
         position: "absolute",
         ...(vertical
-          ? { top: 6, left: "50%", transform: "translateX(-50%)" }
-          : { left: 8, top: "50%", transform: "translateY(-50%)" }),
+          ? trailing
+            ? { bottom: 6, left: "50%", transform: "translateX(-50%)" }
+            : { top: 6, left: "50%", transform: "translateX(-50%)" }
+          : trailing
+            ? { right: 8, top: "50%", transform: "translateY(-50%)" }
+            : { left: 8, top: "50%", transform: "translateY(-50%)" }),
         width: 32,
         height: 32,
         display: "flex",
