@@ -23,6 +23,14 @@ import {
 } from "../system-windows";
 import { listSpotlightSources, subscribeSpotlightSources } from "../spotlight-sources";
 
+// `process.env.NODE_ENV` is the bundler-agnostic dev/prod switch: bundlers
+// replace this exact expression at build time and tree-shake the warning
+// below out of production. This package targets the browser and does not
+// depend on @types/node, so type just the one global we read rather than
+// pull Node's globals into a browser package. TS 6 stopped auto-including
+// @types/node anyway (`types` now defaults to `[]`).
+declare const process: { env?: { NODE_ENV?: string } } | undefined;
+
 /** One launcher result: a registered app, a system window, or an external source row. */
 export type LauncherResult =
   | {

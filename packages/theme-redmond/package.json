@@ -28,6 +28,6 @@
     "@react-ui-os/core": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.0"
   }
 }

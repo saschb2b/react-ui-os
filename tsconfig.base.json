@@ -15,7 +15,12 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "noEmit": true
+    "noEmit": true,
+    // tsup injects `baseUrl: "."` into its synthetic tsconfig for the .d.ts
+    // build (tsup/dist/rollup.js), and TS 6 turns the deprecated `baseUrl`
+    // into an error. This is the option's sanctioned 6.x bridge; the option
+    // is gone in TS 7. See https://aka.ms/ts6
+    "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "dist"]
 }
