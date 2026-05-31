@@ -1188,46 +1188,96 @@ function TrafficLights({
   onMinimize: () => void;
   onMaximize: () => void;
 }) {
+  // macOS reveals the close/minimize/zoom glyphs only while the cursor is over
+  // the group, and only then. Track the group hover and pass it to each light.
+  const [hovered, setHovered] = useState(false);
   return (
     <div
       onPointerDown={(e) => {
         // Don't let traffic-light clicks bubble up to start a window drag.
         e.stopPropagation();
       }}
-      style={{ display: "flex", gap: 6 }}
+      onMouseEnter={() => {
+        setHovered(true);
+      }}
+      onMouseLeave={() => {
+        setHovered(false);
+      }}
+      // 8 px between centers matches the macOS title-bar spacing.
+      style={{ display: "flex", gap: 8 }}
     >
       <TrafficLight
+        kind="close"
         color="#ff5f57"
-        hoverGlyph="x"
         onClick={onClose}
         focused={focused}
+        revealed={hovered}
       />
       <TrafficLight
+        kind="minimize"
         color="#febc2e"
-        hoverGlyph="-"
         onClick={onMinimize}
         focused={focused}
+        revealed={hovered}
       />
       <TrafficLight
+        kind="zoom"
         color="#28c840"
-        hoverGlyph="+"
         onClick={onMaximize}
         focused={focused}
+        revealed={hovered}
       />
     </div>
   );
 }
 
+function TrafficLightGlyph({ kind }: { kind: "close" | "minimize" | "zoom" }) {
+  const stroke = "rgba(0,0,0,0.55)";
+  if (kind === "close") {
+    return (
+      <svg width="7" height="7" viewBox="0 0 7 7" aria-hidden>
+        <path
+          d="M1.4 1.4 L5.6 5.6 M5.6 1.4 L1.4 5.6"
+          stroke={stroke}
+          strokeWidth="1.1"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+  if (kind === "minimize") {
+    return (
+      <svg width="8" height="7" viewBox="0 0 8 7" aria-hidden>
+        <path
+          d="M1.2 3.5 H6.8"
+          stroke={stroke}
+          strokeWidth="1.1"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+  // Zoom: the two opposed triangles macOS shows for the green button.
+  return (
+    <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden fill="rgba(0,0,0,0.55)">
+      <path d="M1.2 1.2 H5 L1.2 5 Z" />
+      <path d="M6.8 6.8 H3 L6.8 3 Z" />
+    </svg>
+  );
+}
+
 function TrafficLight({
+  kind,
   color,
-  hoverGlyph,
   onClick,
   focused,
+  revealed,
 }: {
+  kind: "close" | "minimize" | "zoom";
   color: string;
-  hoverGlyph: string;
   onClick: () => void;
   focused: boolean;
+  revealed: boolean;
 }) {
   return (
     <button
@@ -1239,24 +1289,32 @@ function TrafficLight({
         borderRadius: "50%",
         border: "none",
         cursor: "pointer",
-        background: focused ? color : "#555",
+        // Unfocused windows wash the lights to a single pale gray, the macOS
+        // inactive treatment (a dark fill reads as a bug on a light window).
+        background: focused ? color : "rgba(0,0,0,0.16)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: 0,
-        fontFamily: "system-ui, sans-serif",
-        fontSize: 10,
         lineHeight: 1,
-        color: "rgba(0,0,0,0.6)",
-        boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.25)",
+        boxShadow: "inset 0 0 0 0.5px rgba(0,0,0,0.18)",
       }}
       aria-label={
-        hoverGlyph === "x" ? "Close" : hoverGlyph === "-" ? "Minimize" : "Maximize"
+        kind === "close" ? "Close" : kind === "minimize" ? "Minimize" : "Maximize"
       }
     >
-      {/* Glyph hidden by default, revealed on group hover via a parent CSS rule
-          if a theme wants it. For phase 1, traffic lights stay glyph-less to
-          keep the look honest. */}
+      {/* Glyphs reveal only on group hover, and only on focused (colored)
+          lights, the macOS behavior. */}
+      <span
+        aria-hidden
+        style={{
+          display: "flex",
+          opacity: revealed && focused ? 1 : 0,
+          transition: "opacity 120ms ease",
+        }}
+      >
+        <TrafficLightGlyph kind={kind} />
+      </span>
     </button>
   );
 }
