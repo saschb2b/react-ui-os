@@ -134,6 +134,10 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
         >
           {brand}
         </button>
+        {/* GNOME keeps the workspace switcher at the top-left, next to
+            Activities. In the centered-clock (GNOME) layout it lives here;
+            otherwise it sits in the right cluster, the macOS placement. */}
+        {clockCentered && <WorkspaceIndicator />}
         {focusedName && (
           // macOS emphasizes the active app with a bold, full-contrast name.
           <span style={{ fontWeight: 600, color: theme.palette.textPrimary }}>
@@ -163,7 +167,7 @@ export function MenuBar({ brand = "react-ui-os" }: { brand?: string }) {
         </div>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <WorkspaceIndicator />
+        {!clockCentered && <WorkspaceIndicator />}
         <StatusItems />
         {theme.chrome.quickSettings && <QuickSettingsTrigger />}
         {!clockCentered && (

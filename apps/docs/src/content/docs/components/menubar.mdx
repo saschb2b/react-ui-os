@@ -37,7 +37,7 @@ import { MenuBar, MENU_BAR_HEIGHT } from "@react-ui-os/desktop";
 
 - **Left cluster:** the `brand` (a button that opens an Apple-style system menu), followed by the focused app's `name` (or the focused system window's resolved name) in bold, the macOS emphasis for the active app.
 - **Right cluster:** the workspace switcher (when more than one space exists), any registered status items, and a live system clock formatted via `Intl.DateTimeFormat`. Clicking the clock opens the Notification Center. Hover highlights on every control are rounded and theme-adaptive. SSR-safe: the clock renders nothing on first paint, then updates on mount.
-- **Clock placement:** `theme.chrome.menuBarClock` moves the clock. `"right"` (default) keeps it in the status cluster, the macOS placement; `"center"` floats it in the middle of the bar with the status indicators kept on the right, the GNOME placement.
+- **Clock placement:** `theme.chrome.menuBarClock` moves the clock. `"right"` (default) keeps it in the status cluster, the macOS placement; `"center"` adopts the GNOME arrangement, the clock centered with the status indicators on the right and the workspace switcher moved to the left.
 - **Quick Settings:** when `theme.chrome.quickSettings` is set, the status cluster becomes a single button (network / sound / battery glyphs) that opens the [Quick Settings](/components/quicksettings/) popover, the way GNOME groups its indicators.
 
 ## What goes here

@@ -334,7 +334,7 @@
           "name": "menuBarClock",
           "type": "\"right\" | \"center\"",
           "optional": true,
-          "description": "Where the clock sits in the top menu bar. `\"right\"` (default) is the macOS\nplacement, in the status cluster. `\"center\"` is the GNOME placement: the\nclock and date sit centered in the bar, with the status indicators kept on\nthe right. Ignored unless `menuBar` is `\"top\"`."
+          "description": "Where the clock sits in the top menu bar. `\"right\"` (default) is the macOS\nplacement, in the status cluster. `\"center\"` adopts the GNOME top-bar\narrangement: the clock and date sit centered, the workspace switcher moves\nto the left, and the status indicators stay on the right. Ignored unless\n`menuBar` is `\"top\"`."
         },
         {
           "name": "quickSettings",
