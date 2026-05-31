@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type {
   ColorFromPaletteField,
   CustomizableField,
@@ -26,16 +26,16 @@ export function Settings() {
   const baseTheme = useBaseTheme();
   const { schema, prefs, setPref, resetPref, resetAll } = useSettings();
 
-  const grouped = useMemo(() => {
-    const sections = new Map<string, Array<[string, CustomizableField]>>();
-    for (const [path, field] of Object.entries(schema)) {
-      const section = field.section ?? "General";
-      const arr = sections.get(section) ?? [];
-      arr.push([path, field]);
-      sections.set(section, arr);
-    }
-    return Array.from(sections.entries());
-  }, [schema]);
+  // Group the schema fields by section. The React Compiler memoizes the
+  // result, so no useMemo is needed.
+  const sections = new Map<string, Array<[string, CustomizableField]>>();
+  for (const [path, field] of Object.entries(schema)) {
+    const section = field.section ?? "General";
+    const arr = sections.get(section) ?? [];
+    arr.push([path, field]);
+    sections.set(section, arr);
+  }
+  const grouped = Array.from(sections.entries());
 
   const hasPrefs = Object.keys(prefs).length > 0;
   const [active, setActive] = useState<string>(() => grouped[0]?.[0] ?? "");

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -149,11 +148,11 @@ function Surface({ state }: { state: ContextMenuState }) {
     };
   }, [focusIdx, items, navItems]);
 
-  const handleBackdrop = useCallback((e: React.MouseEvent) => {
+  const handleBackdrop = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       closeContextMenu();
     }
-  }, []);
+  };
 
   const surface: CSSProperties = {
     position: "fixed",
