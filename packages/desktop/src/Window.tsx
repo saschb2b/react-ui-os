@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -238,8 +237,7 @@ export function Window({ win, hidden = false }: WindowProps) {
   // placement; once placed, the ternary skips the scan.
   const cascadeIndex = win.autoBounds
     ? wm.state.windows.filter(
-        (w) =>
-          w.id !== win.id && w.workspaceId === win.workspaceId && w.z < win.z,
+        (w) => w.id !== win.id && w.workspaceId === win.workspaceId && w.z < win.z,
       ).length
     : 0;
 
@@ -256,7 +254,10 @@ export function Window({ win, hidden = false }: WindowProps) {
     setBounds(win.id, b.x, b.y, b.w, b.h);
   }, [win.autoBounds, win.id, win.payload, theme, apps, setBounds, cascadeIndex]);
 
-  const handleClose = useCallback(() => {
+  // These handlers were hand-wrapped in useCallback for stable identity when
+  // passed to the title bar and resize grips. The React Compiler memoizes
+  // them now, so they are plain functions.
+  const handleClose = () => {
     setPhase("closing");
     const t = window.setTimeout(() => {
       closeWindow(win.id);
@@ -264,9 +265,9 @@ export function Window({ win, hidden = false }: WindowProps) {
     return () => {
       window.clearTimeout(t);
     };
-  }, [closeWindow, theme.motion.windowOpenDurationMs, win.id]);
+  };
 
-  const handleMinimize = useCallback(() => {
+  const handleMinimize = () => {
     if (elRef.current) setGenieVars(elRef.current, appPayload);
     setPhase("minimizing");
     const t = window.setTimeout(() => {
@@ -276,240 +277,213 @@ export function Window({ win, hidden = false }: WindowProps) {
     return () => {
       window.clearTimeout(t);
     };
-  }, [appPayload, minimizeWindow, theme.motion.genieDurationMs, win.id]);
+  };
 
-  const handleMaximize = useCallback(() => {
+  const handleMaximize = () => {
     const willMaximize = win.state !== "maximized";
     toggleMaximize(win.id);
     showHud({ title: willMaximize ? "Maximized" : "Restored" });
-  }, [toggleMaximize, win.id, win.state]);
+  };
 
-  const handleTitleContextMenu = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      const isMaximized = win.state === "maximized";
-      const wmState = wm.state;
-      const workspaces = wmState.workspaces;
-      const items: ContextMenuItem[] = [
-        {
-          label: isMaximized ? "Restore" : "Maximize",
-          shortcut: isMaximized ? "Esc" : "⌘↩",
-          onSelect: handleMaximize,
-        },
-        {
-          label: "Minimize",
-          shortcut: "⌘M",
-          onSelect: () => {
-            handleMinimize();
-          },
-        },
-      ];
-      if (workspaces.length > 1) {
-        items.push({ separator: true });
-        for (let i = 0; i < workspaces.length; i++) {
-          const wsId = workspaces[i];
-          if (!wsId) continue;
-          items.push({
-            label: `Move to Workspace ${String(i + 1)}`,
-            disabled: wsId === win.workspaceId,
-            onSelect: () => {
-              wm.moveWindowToWorkspace(win.id, wsId);
-            },
-          });
-        }
-      }
-      items.push({ separator: true });
-      items.push({
-        label: "Close",
-        shortcut: "⌘W",
-        danger: true,
+  const handleTitleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const isMaximized = win.state === "maximized";
+    const wmState = wm.state;
+    const workspaces = wmState.workspaces;
+    const items: ContextMenuItem[] = [
+      {
+        label: isMaximized ? "Restore" : "Maximize",
+        shortcut: isMaximized ? "Esc" : "⌘↩",
+        onSelect: handleMaximize,
+      },
+      {
+        label: "Minimize",
+        shortcut: "⌘M",
         onSelect: () => {
-          handleClose();
+          handleMinimize();
         },
-      });
-      openContextMenu({
-        x: e.clientX,
-        y: e.clientY,
-        items,
-        ariaLabel: `${title} window menu`,
-      });
-    },
-    [
-      handleClose,
-      handleMaximize,
-      handleMinimize,
-      win.state,
-      win.id,
-      win.workspaceId,
-      title,
-      wm,
-    ],
-  );
-
-  const startDrag = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (e.button !== 0) return;
-      const fromMaximized = win.state === "maximized";
-      const snapRestore = fromMaximized ? undefined : peekSnapRestore(win.id);
-      // Anchor the pointer on the title bar so a tear-off can keep it there.
-      const bar = e.currentTarget.getBoundingClientRect();
-      const grabFracX = bar.width > 0 ? (e.clientX - bar.left) / bar.width : 0.5;
-      const grabOffsetY = e.clientY - bar.top;
-      focusWindow(win.id);
-      e.currentTarget.setPointerCapture(e.pointerId);
-      // A maximized or snapped window stays put (and keeps its transition) until
-      // the pointer tears it off in moveDrag; a plain drag starts gesturing now.
-      if (!fromMaximized && !snapRestore) setGesturing(true);
-      dragRef.current = {
-        pointerId: e.pointerId,
-        startClientX: e.clientX,
-        startClientY: e.clientY,
-        startX: win.x,
-        startY: win.y,
-        lastX: win.x,
-        lastY: win.y,
-        grabFracX,
-        grabOffsetY,
-        fromMaximized,
-        snapRestore,
-      };
-    },
-    [focusWindow, win.id, win.state, win.x, win.y],
-  );
-
-  const moveDrag = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      const drag = dragRef.current;
-      if (!drag || drag.pointerId !== e.pointerId) return;
-      const work = getWorkArea(theme);
-      if (drag.fromMaximized || drag.snapRestore) {
-        // Wait for real travel so a click or double-click on a maximized or
-        // snapped title bar is not mistaken for a tear-off.
-        if (
-          Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) <
-          TEAR_OFF_PX
-        ) {
-          return;
-        }
-        // Restore the window under the cursor (Windows 11): a maximized window
-        // returns to its normal size, a snapped one to its pre-snap size, with
-        // the pointer kept at the same fraction along, and the same offset down,
-        // the now-narrower title bar, so it lands right under the cursor.
-        const restoreW = drag.snapRestore ? drag.snapRestore.w : win.w;
-        const restoreH = drag.snapRestore ? drag.snapRestore.h : win.h;
-        const restoredX = Math.max(
-          work.x,
-          Math.min(
-            e.clientX - restoreW * drag.grabFracX,
-            work.x + work.width - restoreW,
-          ),
-        );
-        const restoredY = Math.max(work.y, e.clientY - drag.grabOffsetY);
-        if (drag.fromMaximized) toggleMaximize(win.id);
-        setBounds(win.id, restoredX, restoredY, restoreW, restoreH);
-        setGesturing(true);
-        clearSnapRestore(win.id);
-        drag.fromMaximized = false;
-        drag.snapRestore = undefined;
-        drag.startX = restoredX;
-        drag.startY = restoredY;
-        drag.startClientX = e.clientX;
-        drag.startClientY = e.clientY;
-        drag.lastX = restoredX;
-        drag.lastY = restoredY;
-        const elNow = elRef.current;
-        if (elNow) {
-          elNow.style.transform = `translate3d(${String(restoredX)}px, ${String(restoredY)}px, 0)`;
-          elNow.style.width = `${String(restoreW)}px`;
-          elNow.style.height = `${String(restoreH)}px`;
-        }
-        return;
-      }
-      const targetX = drag.startX + (e.clientX - drag.startClientX);
-      const targetY = drag.startY + (e.clientY - drag.startClientY);
-      const clamped = clampWindowToWorkArea(targetX, targetY, win.w, win.h, work);
-      drag.lastX = clamped.x;
-      drag.lastY = clamped.y;
-      const el = elRef.current;
-      if (el) {
-        el.style.transform = `translate3d(${String(clamped.x)}px, ${String(clamped.y)}px, 0)`;
-      }
-      // Snap preview tracks the pointer, not the window. Drag the pointer
-      // into the edge zone; the preview lights up; on release we snap.
-      const zone = computeSnapZone(e.clientX, e.clientY, work);
-      if (zone) {
-        setSnapPreview({
-          windowId: win.id,
-          zone,
-          rect: rectForZone(zone, work),
+      },
+    ];
+    if (workspaces.length > 1) {
+      items.push({ separator: true });
+      for (let i = 0; i < workspaces.length; i++) {
+        const wsId = workspaces[i];
+        if (!wsId) continue;
+        items.push({
+          label: `Move to Workspace ${String(i + 1)}`,
+          disabled: wsId === win.workspaceId,
+          onSelect: () => {
+            wm.moveWindowToWorkspace(win.id, wsId);
+          },
         });
-      } else {
-        setSnapPreview(null);
       }
-    },
-    [theme, win.id, win.w, win.h, toggleMaximize, setBounds],
-  );
+    }
+    items.push({ separator: true });
+    items.push({
+      label: "Close",
+      shortcut: "⌘W",
+      danger: true,
+      onSelect: () => {
+        handleClose();
+      },
+    });
+    openContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      items,
+      ariaLabel: `${title} window menu`,
+    });
+  };
 
-  const endDrag = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      const drag = dragRef.current;
-      if (!drag || drag.pointerId !== e.pointerId) return;
-      if (drag.fromMaximized || drag.snapRestore) {
-        // Released without ever tearing off: a click (or the first half of a
-        // double-click) on a maximized or snapped title bar. Leave the window
-        // as it is; double-click still restores a maximized one via its own
-        // handler, and a snapped one stays snapped.
-        dragRef.current = null;
+  const startDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    const fromMaximized = win.state === "maximized";
+    const snapRestore = fromMaximized ? undefined : peekSnapRestore(win.id);
+    // Anchor the pointer on the title bar so a tear-off can keep it there.
+    const bar = e.currentTarget.getBoundingClientRect();
+    const grabFracX = bar.width > 0 ? (e.clientX - bar.left) / bar.width : 0.5;
+    const grabOffsetY = e.clientY - bar.top;
+    focusWindow(win.id);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    // A maximized or snapped window stays put (and keeps its transition) until
+    // the pointer tears it off in moveDrag; a plain drag starts gesturing now.
+    if (!fromMaximized && !snapRestore) setGesturing(true);
+    dragRef.current = {
+      pointerId: e.pointerId,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startX: win.x,
+      startY: win.y,
+      lastX: win.x,
+      lastY: win.y,
+      grabFracX,
+      grabOffsetY,
+      fromMaximized,
+      snapRestore,
+    };
+  };
+
+  const moveDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== e.pointerId) return;
+    const work = getWorkArea(theme);
+    if (drag.fromMaximized || drag.snapRestore) {
+      // Wait for real travel so a click or double-click on a maximized or
+      // snapped title bar is not mistaken for a tear-off.
+      if (
+        Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) <
+        TEAR_OFF_PX
+      ) {
         return;
       }
-      // The gesture is over, so the transition comes back on: a snap glides
-      // into its zone, while a plain release commits to the spot the window
-      // already sits at (same value, so nothing animates).
-      setGesturing(false);
-      const snap = getSnapPreview();
-      if (snap && snap.windowId === win.id) {
-        // Remember the size to come back to when this snap is later dragged
-        // off (recordSnapRestore keeps the first size, so re-snapping does not
-        // overwrite it).
-        recordSnapRestore(win.id, { w: win.w, h: win.h });
-        setBounds(win.id, snap.rect.x, snap.rect.y, snap.rect.w, snap.rect.h);
-        showHud({ title: snapZoneLabel(snap.zone) });
-      } else {
-        setBounds(win.id, drag.lastX, drag.lastY, win.w, win.h);
-      }
-      setSnapPreview(null);
-      dragRef.current = null;
-    },
-    [setBounds, win.id, win.w, win.h],
-  );
-
-  const startResize = useCallback(
-    (dir: ResizeDir, e: ReactPointerEvent<HTMLDivElement>) => {
-      if (e.button !== 0) return;
-      if (win.state === "maximized") return;
-      e.stopPropagation();
+      // Restore the window under the cursor (Windows 11): a maximized window
+      // returns to its normal size, a snapped one to its pre-snap size, with
+      // the pointer kept at the same fraction along, and the same offset down,
+      // the now-narrower title bar, so it lands right under the cursor.
+      const restoreW = drag.snapRestore ? drag.snapRestore.w : win.w;
+      const restoreH = drag.snapRestore ? drag.snapRestore.h : win.h;
+      const restoredX = Math.max(
+        work.x,
+        Math.min(e.clientX - restoreW * drag.grabFracX, work.x + work.width - restoreW),
+      );
+      const restoredY = Math.max(work.y, e.clientY - drag.grabOffsetY);
+      if (drag.fromMaximized) toggleMaximize(win.id);
+      setBounds(win.id, restoredX, restoredY, restoreW, restoreH);
       setGesturing(true);
-      focusWindow(win.id);
-      e.currentTarget.setPointerCapture(e.pointerId);
-      resizeRef.current = {
-        pointerId: e.pointerId,
-        dir,
-        startClientX: e.clientX,
-        startClientY: e.clientY,
-        startX: win.x,
-        startY: win.y,
-        startW: win.w,
-        startH: win.h,
-        lastX: win.x,
-        lastY: win.y,
-        lastW: win.w,
-        lastH: win.h,
-      };
-    },
-    [focusWindow, win.id, win.state, win.x, win.y, win.w, win.h],
-  );
+      clearSnapRestore(win.id);
+      drag.fromMaximized = false;
+      drag.snapRestore = undefined;
+      drag.startX = restoredX;
+      drag.startY = restoredY;
+      drag.startClientX = e.clientX;
+      drag.startClientY = e.clientY;
+      drag.lastX = restoredX;
+      drag.lastY = restoredY;
+      const elNow = elRef.current;
+      if (elNow) {
+        elNow.style.transform = `translate3d(${String(restoredX)}px, ${String(restoredY)}px, 0)`;
+        elNow.style.width = `${String(restoreW)}px`;
+        elNow.style.height = `${String(restoreH)}px`;
+      }
+      return;
+    }
+    const targetX = drag.startX + (e.clientX - drag.startClientX);
+    const targetY = drag.startY + (e.clientY - drag.startClientY);
+    const clamped = clampWindowToWorkArea(targetX, targetY, win.w, win.h, work);
+    drag.lastX = clamped.x;
+    drag.lastY = clamped.y;
+    const el = elRef.current;
+    if (el) {
+      el.style.transform = `translate3d(${String(clamped.x)}px, ${String(clamped.y)}px, 0)`;
+    }
+    // Snap preview tracks the pointer, not the window. Drag the pointer
+    // into the edge zone; the preview lights up; on release we snap.
+    const zone = computeSnapZone(e.clientX, e.clientY, work);
+    if (zone) {
+      setSnapPreview({
+        windowId: win.id,
+        zone,
+        rect: rectForZone(zone, work),
+      });
+    } else {
+      setSnapPreview(null);
+    }
+  };
 
-  const moveResize = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+  const endDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== e.pointerId) return;
+    if (drag.fromMaximized || drag.snapRestore) {
+      // Released without ever tearing off: a click (or the first half of a
+      // double-click) on a maximized or snapped title bar. Leave the window
+      // as it is; double-click still restores a maximized one via its own
+      // handler, and a snapped one stays snapped.
+      dragRef.current = null;
+      return;
+    }
+    // The gesture is over, so the transition comes back on: a snap glides
+    // into its zone, while a plain release commits to the spot the window
+    // already sits at (same value, so nothing animates).
+    setGesturing(false);
+    const snap = getSnapPreview();
+    if (snap && snap.windowId === win.id) {
+      // Remember the size to come back to when this snap is later dragged
+      // off (recordSnapRestore keeps the first size, so re-snapping does not
+      // overwrite it).
+      recordSnapRestore(win.id, { w: win.w, h: win.h });
+      setBounds(win.id, snap.rect.x, snap.rect.y, snap.rect.w, snap.rect.h);
+      showHud({ title: snapZoneLabel(snap.zone) });
+    } else {
+      setBounds(win.id, drag.lastX, drag.lastY, win.w, win.h);
+    }
+    setSnapPreview(null);
+    dragRef.current = null;
+  };
+
+  const startResize = (dir: ResizeDir, e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    if (win.state === "maximized") return;
+    e.stopPropagation();
+    setGesturing(true);
+    focusWindow(win.id);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    resizeRef.current = {
+      pointerId: e.pointerId,
+      dir,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      startX: win.x,
+      startY: win.y,
+      startW: win.w,
+      startH: win.h,
+      lastX: win.x,
+      lastY: win.y,
+      lastW: win.w,
+      lastH: win.h,
+    };
+  };
+
+  const moveResize = (e: ReactPointerEvent<HTMLDivElement>) => {
     const r = resizeRef.current;
     if (!r || r.pointerId !== e.pointerId) return;
     const dx = e.clientX - r.startClientX;
@@ -540,20 +514,17 @@ export function Window({ win, hidden = false }: WindowProps) {
       el.style.width = `${String(w)}px`;
       el.style.height = `${String(h)}px`;
     }
-  }, []);
+  };
 
-  const endResize = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      const r = resizeRef.current;
-      if (!r || r.pointerId !== e.pointerId) return;
-      setGesturing(false);
-      // A hand-picked size cancels the snap memory: dragging away now keeps it.
-      clearSnapRestore(win.id);
-      setBounds(win.id, r.lastX, r.lastY, r.lastW, r.lastH);
-      resizeRef.current = null;
-    },
-    [setBounds, win.id],
-  );
+  const endResize = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const r = resizeRef.current;
+    if (!r || r.pointerId !== e.pointerId) return;
+    setGesturing(false);
+    // A hand-picked size cancels the snap memory: dragging away now keeps it.
+    clearSnapRestore(win.id);
+    setBounds(win.id, r.lastX, r.lastY, r.lastW, r.lastH);
+    resizeRef.current = null;
+  };
 
   const maximized = win.state === "maximized";
   const work = getWorkArea(theme);
@@ -981,9 +952,7 @@ function CaptionButton({
   // Neutral hover tint (a translucent slice of the text color) reads on light
   // and dark surfaces alike; the close button overrides it with red.
   const hover = `${theme.palette.textPrimary}1a`;
-  const idleColor = focused
-    ? theme.palette.textPrimary
-    : theme.palette.textSecondary;
+  const idleColor = focused ? theme.palette.textPrimary : theme.palette.textSecondary;
   return (
     <button
       type="button"
@@ -1045,14 +1014,24 @@ function GnomeControls({
       }}
       style={{ display: "flex", alignItems: "center", gap: 6 }}
     >
-      <GnomeControl glyph="minimize" focused={focused} onClick={onMinimize} ariaLabel="Minimize" />
+      <GnomeControl
+        glyph="minimize"
+        focused={focused}
+        onClick={onMinimize}
+        ariaLabel="Minimize"
+      />
       <GnomeControl
         glyph={maximized ? "restore" : "maximize"}
         focused={focused}
         onClick={onMaximize}
         ariaLabel={maximized ? "Restore" : "Maximize"}
       />
-      <GnomeControl glyph="close" focused={focused} onClick={onClose} ariaLabel="Close" />
+      <GnomeControl
+        glyph="close"
+        focused={focused}
+        onClick={onClose}
+        ariaLabel="Close"
+      />
     </div>
   );
 }
@@ -1154,7 +1133,13 @@ function MinimalControls({
 
 type CaptionGlyphKind = "minimize" | "maximize" | "restore" | "close";
 
-function CaptionGlyph({ glyph, size = 10 }: { glyph: CaptionGlyphKind; size?: number }) {
+function CaptionGlyph({
+  glyph,
+  size = 10,
+}: {
+  glyph: CaptionGlyphKind;
+  size?: number;
+}) {
   const stroke = {
     fill: "none",
     stroke: "currentColor",
