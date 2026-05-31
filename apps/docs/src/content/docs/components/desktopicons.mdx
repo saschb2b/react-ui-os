@@ -66,16 +66,23 @@ registerSystemWindow("downloads", {
 
 ## Interaction
 
-The column mirrors the macOS desktop selection model (the same one [FileExplorer](/components/fileexplorer/) uses) and is a single ARIA listbox (`role="listbox"` + `role="option"` with `aria-selected`), so the whole column is one tab stop and assistive tech announces the active icon.
+The column mirrors the macOS desktop selection model (the same one [FileExplorer](/components/fileexplorer/) uses) and is an ARIA multi-select listbox (`role="listbox"` with `aria-multiselectable`, `role="option"` with `aria-selected`), so the whole column is one tab stop and assistive tech announces the active icon.
 
 | Gesture / key        | Effect                                                                          |
 | -------------------- | ------------------------------------------------------------------------------- |
 | Single click         | Selects the icon (accent highlight)                                             |
+| Cmd / Ctrl click     | Toggles the icon in the selection                                               |
+| Shift click          | Extends the selection from the active icon                                      |
 | Double click / Enter | Opens the matching system window via `openWindow({ kind: "system", systemId })` |
 | Right click          | Selects the icon and opens its context menu (Open)                              |
 | ArrowUp / ArrowDown  | Moves the selection within the column                                           |
 | Home / End           | Selects the first / last icon                                                   |
+| Cmd / Ctrl + A       | Selects every icon                                                              |
 | Escape / click off   | Clears the selection                                                            |
+
+### Marquee
+
+A left drag that starts on the bare desktop (off any window, the dock, the menu bar, or an icon) sweeps a rubber-band rectangle and selects the icons it covers, the way macOS, Windows, and GNOME all do. Hold Shift, Cmd, or Ctrl as the drag starts to add the sweep to the current selection rather than replace it. Press Escape, or the right mouse button, mid-sweep to cancel it and restore the previous selection. After a sweep that selected something, keyboard focus lands on the column so the arrow keys work right away.
 
 ## Position
 
