@@ -157,70 +157,65 @@ export function FileExplorer<T extends ExplorerItem>({
     if (renamingId && !validIds.has(renamingId)) setRenamingId(null);
   }, [items, renamingId]);
 
-  const handleSelect = useCallback(
-    (id: string, modifiers: { ctrl?: boolean; shift?: boolean }) => {
-      if (modifiers.shift && anchorId) {
-        const anchorIdx = filtered.findIndex((it) => it.id === anchorId);
-        const clickIdx = filtered.findIndex((it) => it.id === id);
-        if (anchorIdx >= 0 && clickIdx >= 0) {
-          const [from, to] =
-            anchorIdx <= clickIdx ? [anchorIdx, clickIdx] : [clickIdx, anchorIdx];
-          const next = new Set<string>();
-          for (let i = from; i <= to; i++) {
-            const item = filtered[i];
-            if (item) next.add(item.id);
-          }
-          setSelectedIds(next);
-          return;
+  // These handlers and the visible-action list are passed to compiled child
+  // rows; the React Compiler memoizes them, so no manual useCallback/useMemo.
+  // (filtered, selectedItems, and beginRename stay memoized: they feed effect
+  // dependency arrays below.)
+  const handleSelect = (id: string, modifiers: { ctrl?: boolean; shift?: boolean }) => {
+    if (modifiers.shift && anchorId) {
+      const anchorIdx = filtered.findIndex((it) => it.id === anchorId);
+      const clickIdx = filtered.findIndex((it) => it.id === id);
+      if (anchorIdx >= 0 && clickIdx >= 0) {
+        const [from, to] =
+          anchorIdx <= clickIdx ? [anchorIdx, clickIdx] : [clickIdx, anchorIdx];
+        const next = new Set<string>();
+        for (let i = from; i <= to; i++) {
+          const item = filtered[i];
+          if (item) next.add(item.id);
         }
-      }
-      if (modifiers.ctrl) {
-        setSelectedIds((prev) => {
-          const next = new Set(prev);
-          if (next.has(id)) next.delete(id);
-          else next.add(id);
-          return next;
-        });
-        setAnchorId(id);
+        setSelectedIds(next);
         return;
       }
-      setSelectedIds(new Set([id]));
+    }
+    if (modifiers.ctrl) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
       setAnchorId(id);
-    },
-    [anchorId, filtered],
-  );
+      return;
+    }
+    setSelectedIds(new Set([id]));
+    setAnchorId(id);
+  };
 
-  const handleContextMenu = useCallback(
-    (e: ReactMouseEvent, itemId: string | null) => {
-      e.preventDefault();
-      e.stopPropagation();
-      let ids: string[];
-      if (itemId === null) {
-        ids = [];
-      } else if (selectedIds.has(itemId)) {
-        ids = Array.from(selectedIds);
-      } else {
-        // Promote the right-clicked item to single selection.
-        ids = [itemId];
-        setSelectedIds(new Set([itemId]));
-        setAnchorId(itemId);
-      }
-      setMenu({ x: e.clientX, y: e.clientY, itemIds: ids });
-    },
-    [selectedIds],
-  );
+  const handleContextMenu = (e: ReactMouseEvent, itemId: string | null) => {
+    e.preventDefault();
+    e.stopPropagation();
+    let ids: string[];
+    if (itemId === null) {
+      ids = [];
+    } else if (selectedIds.has(itemId)) {
+      ids = Array.from(selectedIds);
+    } else {
+      // Promote the right-clicked item to single selection.
+      ids = [itemId];
+      setSelectedIds(new Set([itemId]));
+      setAnchorId(itemId);
+    }
+    setMenu({ x: e.clientX, y: e.clientY, itemIds: ids });
+  };
 
-  const commitRename = useCallback(
-    (id: string, newName: string) => {
-      const item = items.find((it) => it.id === id);
-      const trimmed = newName.trim();
-      if (item && onRename && trimmed && trimmed !== item.name) {
-        onRename(item, trimmed);
-      }
-      setRenamingId(null);
-    },
-    [items, onRename],
-  );
+  const commitRename = (id: string, newName: string) => {
+    const item = items.find((it) => it.id === id);
+    const trimmed = newName.trim();
+    if (item && onRename && trimmed && trimmed !== item.name) {
+      onRename(item, trimmed);
+    }
+    setRenamingId(null);
+  };
 
   const beginRename = useCallback(() => {
     if (!onRename) return;
@@ -229,17 +224,14 @@ export function FileExplorer<T extends ExplorerItem>({
     if (id !== undefined) setRenamingId(id);
   }, [onRename, selectedIds]);
 
-  const handleHeaderSort = useCallback(
-    (field: SortField) => {
-      if (sort === field) {
-        setDir(dir === "asc" ? "desc" : "asc");
-      } else {
-        setSort(field);
-        setDir(field === "name" ? "asc" : "desc");
-      }
-    },
-    [sort, dir],
-  );
+  const handleHeaderSort = (field: SortField) => {
+    if (sort === field) {
+      setDir(dir === "asc" ? "desc" : "asc");
+    } else {
+      setSort(field);
+      setDir(field === "name" ? "asc" : "desc");
+    }
+  };
 
   // Global keyboard shortcuts.
   useEffect(() => {
@@ -292,13 +284,8 @@ export function FileExplorer<T extends ExplorerItem>({
   }, [actions, beginRename, filtered, items, onOpen, selectedItems, selectedIds]);
 
   /** Toolbar actions visible right now: hide singleOnly when >1 selected. */
-  const visibleActions = useMemo(
-    () =>
-      actions.filter(
-        (a) =>
-          selectedItems.length > 0 && (!a.singleOnly || selectedItems.length === 1),
-      ),
-    [actions, selectedItems.length],
+  const visibleActions = actions.filter(
+    (a) => selectedItems.length > 0 && (!a.singleOnly || selectedItems.length === 1),
   );
 
   return (
