@@ -193,6 +193,10 @@ export function MenuBar({ brand }: { brand?: string }) {
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         {!clockCentered && <WorkspaceIndicator />}
         <StatusItems />
+        {/* The macOS menu bar carries a Spotlight magnifier next to the clock;
+            it opens the same palette as Cmd-K. The GNOME register searches
+            from its app grid instead, so this is the right-clock layout only. */}
+        {!clockCentered && <SpotlightTrigger />}
         {theme.chrome.quickSettings && <QuickSettingsTrigger />}
         {!clockCentered && (
           <SystemClock
@@ -504,6 +508,54 @@ function StatusItemView({ item }: { item: StatusItem }) {
  * glyphs that toggles the Quick Settings popover. Rendered only when the theme
  * sets `chrome.quickSettings`.
  */
+function SpotlightTrigger() {
+  const theme = useTheme();
+  const hover = `${theme.palette.textPrimary}1a`;
+  return (
+    <Tooltip text="Spotlight Search" shortcut="⌘K" placement="bottom">
+      <button
+        type="button"
+        aria-label="Spotlight Search"
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT));
+        }}
+        style={{
+          appearance: "none",
+          background: "transparent",
+          border: 0,
+          padding: "3px 6px",
+          cursor: "pointer",
+          borderRadius: theme.shape.small,
+          display: "inline-flex",
+          alignItems: "center",
+          color: theme.palette.textPrimary,
+          transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = hover;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+        }}
+      >
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          aria-hidden
+        >
+          <circle cx="6.8" cy="6.8" r="4.3" />
+          <path d="M10 10 L14 14" />
+        </svg>
+      </button>
+    </Tooltip>
+  );
+}
+
 function QuickSettingsTrigger() {
   const theme = useTheme();
   const hover = `${theme.palette.textPrimary}1a`;
