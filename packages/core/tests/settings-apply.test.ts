@@ -165,4 +165,17 @@ describe("applyAppearance", () => {
     // Dark is this theme's base, so the dark resolution is a no-op.
     expect(applyAppearance(darkBase, "dark")).toBe(darkBase);
   });
+
+  it("overlays the variant wallpaper while keeping the base wallpaper fields", () => {
+    const themed: OsTheme = {
+      ...baseTheme,
+      wallpaper: { src: "light.jpg", parallax: true, vignette: false },
+      appearances: { dark: { wallpaper: { src: "dark.jpg" } } },
+    };
+    const next = applyAppearance(themed, "dark");
+    expect(next.wallpaper.src).toBe("dark.jpg");
+    // parallax/vignette are inherited from the base, not the variant.
+    expect(next.wallpaper.parallax).toBe(true);
+    expect(next.wallpaper.vignette).toBe(false);
+  });
 });
