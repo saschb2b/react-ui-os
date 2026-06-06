@@ -469,8 +469,14 @@ function SettingRow({
   // the description keeps its width instead of being squeezed beside the control.
   const stacked = field.kind === "image-pick" || (narrow && field.kind !== "toggle");
   const control = <FieldControl field={field} value={value} onChange={onChange} />;
+  // A slider fills the row when stacked under its label; inline it is capped so
+  // it doesn't dominate the row.
   const controlNode =
-    field.kind === "range" ? <div style={{ width: 180 }}>{control}</div> : control;
+    field.kind === "range" ? (
+      <div style={{ width: stacked ? "100%" : 180 }}>{control}</div>
+    ) : (
+      control
+    );
   const reset = overridden ? (
     <button
       type="button"
@@ -518,23 +524,37 @@ function SettingRow({
         gap: stacked ? 10 : 16,
       }}
     >
-      {labelBlock}
       {stacked ? (
-        controlNode
-      ) : (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            flexShrink: 0,
-          }}
-        >
-          {reset}
+        <>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: 12,
+            }}
+          >
+            {labelBlock}
+            {reset}
+          </div>
           {controlNode}
-        </div>
+        </>
+      ) : (
+        <>
+          {labelBlock}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              flexShrink: 0,
+            }}
+          >
+            {reset}
+            {controlNode}
+          </div>
+        </>
       )}
-      {stacked && reset}
     </div>
   );
 }
