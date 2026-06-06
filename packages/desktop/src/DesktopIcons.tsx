@@ -304,6 +304,14 @@ function DesktopShortcut({
   // The desktop shortcut opens the no-args instance of the system window,
   // so the icon label uses the name with `undefined` args.
   const label = resolveSystemWindowName(def);
+  // The label sits on the wallpaper, not a themed surface, so it can't rely on
+  // the theme's text color: a light theme's near-black text vanishes on a dark
+  // wallpaper. Over a wallpaper, use white with a dark shadow (the macOS /
+  // Windows desktop treatment, readable on any image); with no wallpaper the
+  // solid background is the theme's, so the theme text color is right.
+  const onWallpaper = Boolean(theme.wallpaper.src);
+  const labelColor = onWallpaper ? "#fff" : theme.palette.textPrimary;
+  const labelShadow = onWallpaper ? "0 1px 3px rgba(0,0,0,0.8)" : "none";
   const handleClick = (e: ReactMouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
     onSelect({ toggle: e.metaKey || e.ctrlKey, range: e.shiftKey });
@@ -355,7 +363,8 @@ function DesktopShortcut({
         style={{
           fontSize: 11,
           fontWeight: 500,
-          textShadow: "0 1px 3px rgba(0,0,0,0.6)",
+          color: labelColor,
+          textShadow: labelShadow,
           whiteSpace: "nowrap",
           maxWidth: ICON_TILE + 24,
           overflow: "hidden",
