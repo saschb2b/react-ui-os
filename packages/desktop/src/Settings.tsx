@@ -764,9 +764,14 @@ function SelectControl({
   onChange: (value: unknown) => void;
 }) {
   const theme = useTheme();
+  // A segmented control is a radio group: the arrow keys move the selection,
+  // and only the selected option (or the first, when nothing is set) is in the
+  // tab order, so Tab steps over the whole control rather than each option.
+  const selectedIndex = field.options.findIndex((o) => o.value === value);
+  const focusIndex = selectedIndex >= 0 ? selectedIndex : 0;
   return (
     <div
-      role="group"
+      role="radiogroup"
       aria-label={field.label}
       style={{
         display: "inline-flex",
@@ -775,15 +780,36 @@ function SelectControl({
         overflow: "hidden",
       }}
     >
-      {field.options.map((opt) => {
+      {field.options.map((opt, index) => {
         const selected = value === opt.value;
         return (
           <button
             key={opt.value}
             type="button"
-            aria-pressed={selected}
+            role="radio"
+            aria-checked={selected}
+            tabIndex={index === focusIndex ? 0 : -1}
             onClick={() => {
               onChange(opt.value);
+            }}
+            onKeyDown={(e) => {
+              const count = field.options.length;
+              let target = -1;
+              if (e.key === "ArrowRight" || e.key === "ArrowDown")
+                target = (index + 1) % count;
+              else if (e.key === "ArrowLeft" || e.key === "ArrowUp")
+                target = (index - 1 + count) % count;
+              else if (e.key === "Home") target = 0;
+              else if (e.key === "End") target = count - 1;
+              else return;
+              e.preventDefault();
+              const next = field.options[target];
+              if (next) onChange(next.value);
+              const buttons =
+                e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
+                  "button",
+                );
+              buttons?.[target]?.focus();
             }}
             style={{
               border: "none",
