@@ -379,15 +379,38 @@ function CategoryNav({
             }),
       }}
     >
-      {categories.map((name) => {
+      {categories.map((name, index) => {
         const isActive = name === activeName;
         return (
           <button
             key={name}
             type="button"
             aria-current={isActive}
+            // Roving tabindex: Tab lands on the selected category, then the
+            // arrow keys move along the list (vertical sidebar / horizontal
+            // bar), the way a macOS or Windows settings sidebar navigates.
+            tabIndex={isActive ? 0 : -1}
             onClick={() => {
               onSelect(name);
+            }}
+            onKeyDown={(e) => {
+              const nextKey = bar ? "ArrowRight" : "ArrowDown";
+              const prevKey = bar ? "ArrowLeft" : "ArrowUp";
+              let target = -1;
+              if (e.key === nextKey) target = (index + 1) % categories.length;
+              else if (e.key === prevKey)
+                target = (index - 1 + categories.length) % categories.length;
+              else if (e.key === "Home") target = 0;
+              else if (e.key === "End") target = categories.length - 1;
+              else return;
+              e.preventDefault();
+              const targetName = categories[target];
+              if (targetName !== undefined) onSelect(targetName);
+              const buttons =
+                e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
+                  "button",
+                );
+              buttons?.[target]?.focus();
             }}
             style={{
               appearance: "none",
