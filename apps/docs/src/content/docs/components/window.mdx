@@ -63,6 +63,8 @@ The focused window's accent top-edge highlight is drawn in every register.
 | Close    | Same as open, reversed              | Same                            |
 | Minimize | `theme.motion.genieDurationMs`      | `theme.motion.genieEasing`      |
 
+Open and close scale the window between full size and `theme.motion.windowOpenScale` (optional, default `0.92`, a subtle pop) while fading, pivoting on `theme.motion.windowOpenOrigin` (optional, default center). macOS and Windows grow a new window from its center; the Ubuntu theme sets the origin to its bottom edge so the window rises into place, the way GNOME maps a normal window (`set_pivot_point(0.5, 1.0)`). The origin is applied only while opening, so close and minimize keep their own pivots.
+
 The minimize animation reads the matching dock tile's `DOMRect` at gesture time, sets two CSS custom properties (`--genie-dx`, `--genie-dy`) on the window element, and plays a keyframe that scales it toward those coordinates. Each window flies to its own dock tile.
 
 ## Performance
