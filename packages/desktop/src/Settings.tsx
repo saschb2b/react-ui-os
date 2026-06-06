@@ -7,6 +7,7 @@ import type {
   ImagePickField,
   RangeField,
   SelectField,
+  SettingsPrefs,
   ToggleField,
 } from "@react-ui-os/core";
 import { getPath } from "@react-ui-os/core";
@@ -23,10 +24,11 @@ const NARROW_WIDTH = 480;
 /**
  * Settings system app body. Reads the active theme's `customizable` schema and
  * renders one editor per field. Layout follows modern settings apps (macOS
- * Ventura, Windows 11, GNOME): a category sidebar on the left and a content
- * pane of grouped rows on the right, each row a label and description on the
- * left with its control on the right. Edits write straight to the prefs store,
- * so the effective theme rebuilds live.
+ * Ventura, Windows 11, GNOME): a search field over a category sidebar and a
+ * content pane of grouped rows, each row a label and description beside its
+ * control. Search filters across every section at once; below a width threshold
+ * the sidebar folds into a top bar and wide controls stack under their labels.
+ * Edits write straight to the prefs store, so the effective theme rebuilds live.
  */
 export function Settings() {
   const theme = useTheme();
@@ -45,6 +47,7 @@ export function Settings() {
 
   const hasPrefs = Object.keys(prefs).length > 0;
   const [active, setActive] = useState<string>(() => grouped[0]?.[0] ?? "");
+  const [query, setQuery] = useState("");
 
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = useState(0);
@@ -87,87 +90,257 @@ export function Settings() {
   const [activeName, activeFields] = activeEntry;
   const categories = grouped.map(([name]) => name);
 
+  // Search filters across every section at once (matching a field's label,
+  // description, or its section name), the macOS / Windows reachability pattern:
+  // type and the setting surfaces wherever it lives.
+  const q = query.trim().toLowerCase();
+  const searching = q.length > 0;
+  const matches: Array<[string, Array<[string, CustomizableField]>]> = searching
+    ? grouped
+        .map(
+          ([name, fields]) =>
+            [
+              name,
+              fields.filter(
+                ([, field]) =>
+                  field.label.toLowerCase().includes(q) ||
+                  (field.description?.toLowerCase().includes(q) ?? false) ||
+                  name.toLowerCase().includes(q),
+              ),
+            ] as [string, Array<[string, CustomizableField]>],
+        )
+        .filter(([, fields]) => fields.length > 0)
+    : [];
+
   return (
     <div
       ref={rootRef}
       style={{
         display: "flex",
-        flexDirection: narrow ? "column" : "row",
-        gap: narrow ? 12 : 18,
+        flexDirection: "column",
+        gap: 14,
         color: theme.palette.textPrimary,
         minHeight: 300,
       }}
     >
-      <CategoryNav
-        categories={categories}
-        activeName={activeName}
-        onSelect={setActive}
-        layout={narrow ? "bar" : "sidebar"}
-      />
+      <SearchField value={query} onChange={setQuery} />
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <header
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            gap: 12,
-            margin: "0 0 12px",
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: 16 }}>{activeName}</h2>
-          {hasPrefs && (
-            <button
-              type="button"
-              onClick={resetAll}
-              style={{
-                border: 0,
-                background: "transparent",
-                color: theme.palette.textSecondary,
-                fontSize: 12,
-                padding: 0,
-                cursor: "pointer",
-                fontFamily: "inherit",
-                flexShrink: 0,
-              }}
-            >
-              Reset all
-            </button>
-          )}
-        </header>
+      {searching ? (
+        matches.length === 0 ? (
+          <p
+            style={{
+              fontSize: 13,
+              color: theme.palette.textSecondary,
+              margin: "4px 2px",
+            }}
+          >
+            No settings match {`"${query}"`}.
+          </p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            {matches.map(([name, fields]) => (
+              <section key={name}>
+                <h3
+                  style={{
+                    margin: "0 0 10px",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    letterSpacing: 0.3,
+                    textTransform: "uppercase",
+                    color: theme.palette.textSecondary,
+                  }}
+                >
+                  {name}
+                </h3>
+                <FieldCard
+                  fields={fields}
+                  prefs={prefs}
+                  narrow={narrow}
+                  onSet={setPref}
+                  onReset={resetPref}
+                />
+              </section>
+            ))}
+          </div>
+        )
+      ) : (
         <div
           style={{
-            border: `1px solid ${theme.palette.border}`,
-            borderRadius: theme.shape.small + 2,
-            background: theme.palette.background,
-            overflow: "hidden",
+            display: "flex",
+            flexDirection: narrow ? "column" : "row",
+            gap: narrow ? 12 : 18,
           }}
         >
-          {activeFields.map(([path, field], i) => {
-            const overridden = path in prefs;
-            // Fall back to the effective theme (not the bare base) so a field
-            // that the resolved appearance changes, like the wallpaper in dark
-            // mode, shows its actual current value rather than the light default.
-            const value = path in prefs ? prefs[path] : getPath(theme, path);
-            return (
-              <SettingRow
-                key={path}
-                field={field}
-                value={value}
-                overridden={overridden}
-                isLast={i === activeFields.length - 1}
-                narrow={narrow}
-                onChange={(v) => {
-                  setPref(path, v);
-                }}
-                onReset={() => {
-                  resetPref(path);
-                }}
-              />
-            );
-          })}
+          <CategoryNav
+            categories={categories}
+            activeName={activeName}
+            onSelect={setActive}
+            layout={narrow ? "bar" : "sidebar"}
+          />
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <header
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                gap: 12,
+                margin: "0 0 12px",
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 16 }}>{activeName}</h2>
+              {hasPrefs && (
+                <button
+                  type="button"
+                  onClick={resetAll}
+                  style={{
+                    border: 0,
+                    background: "transparent",
+                    color: theme.palette.textSecondary,
+                    fontSize: 12,
+                    padding: 0,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                    flexShrink: 0,
+                  }}
+                >
+                  Reset all
+                </button>
+              )}
+            </header>
+            <FieldCard
+              fields={activeFields}
+              prefs={prefs}
+              narrow={narrow}
+              onSet={setPref}
+              onReset={resetPref}
+            />
+          </div>
         </div>
-      </div>
+      )}
+    </div>
+  );
+}
+
+function SearchField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const theme = useTheme();
+  return (
+    <div style={{ position: "relative" }}>
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 16 16"
+        aria-hidden
+        style={{
+          position: "absolute",
+          left: 10,
+          top: "50%",
+          transform: "translateY(-50%)",
+          pointerEvents: "none",
+          color: theme.palette.textSecondary,
+        }}
+      >
+        <circle
+          cx="7"
+          cy="7"
+          r="4.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        />
+        <line
+          x1="10.5"
+          y1="10.5"
+          x2="14"
+          y2="14"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+      <input
+        type="search"
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+        }}
+        placeholder="Search settings"
+        aria-label="Search settings"
+        style={{
+          width: "100%",
+          boxSizing: "border-box",
+          padding: "8px 12px 8px 32px",
+          border: `1px solid ${theme.palette.border}`,
+          borderRadius: theme.shape.small,
+          background: `${theme.palette.textPrimary}0d`,
+          color: theme.palette.textPrimary,
+          fontFamily: "inherit",
+          fontSize: 13,
+          outline: "none",
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = theme.palette.accent;
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = theme.palette.border;
+        }}
+      />
+    </div>
+  );
+}
+
+function FieldCard({
+  fields,
+  prefs,
+  narrow,
+  onSet,
+  onReset,
+}: {
+  fields: Array<[string, CustomizableField]>;
+  prefs: SettingsPrefs;
+  narrow: boolean;
+  onSet: (path: string, value: unknown) => void;
+  onReset: (path: string) => void;
+}) {
+  const theme = useTheme();
+  return (
+    <div
+      style={{
+        border: `1px solid ${theme.palette.border}`,
+        borderRadius: theme.shape.small + 2,
+        background: theme.palette.background,
+        overflow: "hidden",
+      }}
+    >
+      {fields.map(([path, field], i) => {
+        const overridden = path in prefs;
+        // Fall back to the effective theme (not the bare base) so a field that
+        // the resolved appearance changes, like the wallpaper in dark mode,
+        // shows its actual current value rather than the light default.
+        const value = path in prefs ? prefs[path] : getPath(theme, path);
+        return (
+          <SettingRow
+            key={path}
+            field={field}
+            value={value}
+            overridden={overridden}
+            isLast={i === fields.length - 1}
+            narrow={narrow}
+            onChange={(v) => {
+              onSet(path, v);
+            }}
+            onReset={() => {
+              onReset(path);
+            }}
+          />
+        );
+      })}
     </div>
   );
 }
