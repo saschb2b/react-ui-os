@@ -22,3 +22,12 @@ export const NOTIFICATION_CENTER_TOGGLE_EVENT =
  * widget can open it without prop drilling.
  */
 export const QUICK_SETTINGS_TOGGLE_EVENT = "react-ui-os:quick-settings-toggle";
+
+/**
+ * Toggle Mission Control (the all-windows overview). The MissionControl
+ * component listens for this, so the single keyboard dispatcher owns the open
+ * chord (Ctrl+Up, F3) alongside every other global shortcut rather than running
+ * a second keydown listener that could clash. Any custom widget can open the
+ * overview by dispatching it.
+ */
+export const MISSION_CONTROL_TOGGLE_EVENT = "react-ui-os:mission-control-toggle";

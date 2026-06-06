@@ -11,6 +11,7 @@ import {
 } from "react";
 import { useWindowManager, type OpenWindow } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
+import { MISSION_CONTROL_TOGGLE_EVENT } from "./events";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { useReducedMotion } from "./util/use-reduced-motion";
 
@@ -79,7 +80,16 @@ export function MissionControl() {
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    const isShowing = () => phaseRef.current === "enter" || phaseRef.current === "open";
+    // The open chord (Ctrl+Up, F3) lives in the single keyboard dispatcher,
+    // which fires this toggle event, so Mission Control doesn't run a second
+    // global open-listener that could clash with the snap shortcuts.
+    const onToggle = () => {
+      setPhase(isShowing() ? "leave" : "enter");
+    };
+    // The keydown listener only navigates while the overview is open.
     const onKey = (e: KeyboardEvent) => {
+      if (!isShowing()) return;
       const t = e.target as HTMLElement | null;
       if (
         t &&
@@ -87,14 +97,6 @@ export function MissionControl() {
       ) {
         return;
       }
-      const showing = phaseRef.current === "enter" || phaseRef.current === "open";
-      // Ctrl + ArrowUp is the Mac convention for Mission Control on PCs.
-      if (e.key === "F3" || (e.ctrlKey && !e.metaKey && e.key === "ArrowUp")) {
-        e.preventDefault();
-        setPhase(showing ? "leave" : "enter");
-        return;
-      }
-      if (!showing) return;
       if (e.key === "Escape") {
         e.preventDefault();
         setPhase("leave");
@@ -118,8 +120,10 @@ export function MissionControl() {
       // card's own button (see the keyIndex focus effect), so there is no
       // window-level activation branch here.
     };
+    window.addEventListener(MISSION_CONTROL_TOGGLE_EVENT, onToggle);
     window.addEventListener("keydown", onKey);
     return () => {
+      window.removeEventListener(MISSION_CONTROL_TOGGLE_EVENT, onToggle);
       window.removeEventListener("keydown", onKey);
     };
   }, []);

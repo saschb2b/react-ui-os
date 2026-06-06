@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useWindowManager, windowIdOf } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
-import { SPOTLIGHT_OPEN_EVENT } from "./events";
+import { MISSION_CONTROL_TOGGLE_EVENT, SPOTLIGHT_OPEN_EVENT } from "./events";
 import { rectForZone, recordSnapRestore, type SnapZone } from "./snap";
 import { showHud } from "./hud";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
@@ -154,6 +154,18 @@ export function KeyboardShortcuts() {
           title: `Workspace ${String(nextIdx + 1)}`,
           sublabel: e.shiftKey ? "Window moved with you" : undefined,
         });
+        return;
+      }
+
+      // Mission Control (F3, or Ctrl+Up, the macOS convention). The overview
+      // owns its open/close state, so dispatch the toggle rather than reach in;
+      // routing it through this single dispatcher keeps Ctrl+Up to one owner.
+      if (
+        e.key === "F3" ||
+        (e.ctrlKey && !e.metaKey && !e.altKey && e.key === "ArrowUp")
+      ) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent(MISSION_CONTROL_TOGGLE_EVENT));
         return;
       }
 
