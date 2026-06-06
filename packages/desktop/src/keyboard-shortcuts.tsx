@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useWindowManager, windowIdOf } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { MISSION_CONTROL_TOGGLE_EVENT, SPOTLIGHT_OPEN_EVENT } from "./events";
+import { chordMatches } from "./keymap";
 import { rectForZone, recordSnapRestore, type SnapZone } from "./snap";
 import { showHud } from "./hud";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
@@ -60,18 +61,19 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      const mod = e.metaKey || e.ctrlKey;
-      const key = e.key.toLowerCase();
+      // Each branch gates on chordMatches(e, id) so the chords come from the
+      // keymap registry rather than being hardcoded here, and the conflict test
+      // therefore guards the combos this dispatcher actually uses.
 
-      // Cmd-K opens Spotlight via the shared event.
-      if (mod && key === "k") {
+      // Spotlight (Mod+K), via the shared event.
+      if (chordMatches(e, "app.spotlight")) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT));
         return;
       }
 
-      // Cmd-, opens Settings as a system window (macOS convention).
-      if (mod && e.key === ",") {
+      // Settings (Mod+,) as a system window, the macOS convention.
+      if (chordMatches(e, "app.settings")) {
         e.preventDefault();
         const payload = { kind: "system" as const, systemId: "settings" };
         openWindow(
@@ -81,8 +83,8 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      // Cmd-W closes the focused window.
-      if (mod && key === "w") {
+      // Close the focused window (Mod+W).
+      if (chordMatches(e, "window.close")) {
         if (focusedWindow) {
           e.preventDefault();
           closeWindow(focusedWindow.id);
@@ -90,8 +92,8 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      // Cmd-M minimizes the focused window.
-      if (mod && key === "m") {
+      // Minimize the focused window (Mod+M).
+      if (chordMatches(e, "window.minimize")) {
         if (focusedWindow) {
           e.preventDefault();
           minimizeWindow(focusedWindow.id);
@@ -99,10 +101,9 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      // Cmd-1..9 cycles through apps by registry index.
-      // First press opens; if already focused and visible, minimize;
-      // if open but unfocused or minimized, focus / restore.
-      if (mod && /^[1-9]$/.test(e.key)) {
+      // Mod+1..9 cycles app N by registry index: open, then focus, then
+      // minimize if already focused, restore if minimized.
+      if (chordMatches(e, "app.byIndex")) {
         const idx = Number(e.key) - 1;
         const app = apps[idx];
         if (!app) return;
@@ -129,84 +130,76 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      // Escape restores a maximized focused window.
-      if (e.key === "Escape" && focusedWindow?.state === "maximized") {
-        e.preventDefault();
-        toggleMaximize(focusedWindow.id);
+      // Restore a maximized window (Super/Win/Cmd+Down or Escape).
+      if (chordMatches(e, "window.unmaximize")) {
+        if (focusedWindow?.state === "maximized") {
+          e.preventDefault();
+          toggleMaximize(focusedWindow.id);
+          showHud({ title: "Restored" });
+        }
         return;
       }
 
-      // Ctrl + Alt + ←/→ switches workspaces.
-      // Ctrl + Alt + Shift + ←/→ moves the focused window with you.
-      if (e.ctrlKey && e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+      // Ctrl+Alt+Arrow switches workspace; +Shift brings the focused window.
+      if (
+        chordMatches(e, "space.prev") ||
+        chordMatches(e, "space.next") ||
+        chordMatches(e, "space.movePrev") ||
+        chordMatches(e, "space.moveNext")
+      ) {
         e.preventDefault();
         const idx = state.workspaces.indexOf(state.activeWorkspaceId);
         if (idx < 0) return;
-        const dir = e.key === "ArrowRight" ? 1 : -1;
+        const forward =
+          chordMatches(e, "space.next") || chordMatches(e, "space.moveNext");
+        const withWindow =
+          chordMatches(e, "space.movePrev") || chordMatches(e, "space.moveNext");
+        const dir = forward ? 1 : -1;
         const nextIdx = (idx + dir + state.workspaces.length) % state.workspaces.length;
         const nextId = state.workspaces[nextIdx];
         if (!nextId || nextId === state.activeWorkspaceId) return;
-        if (e.shiftKey && focusedWindow) {
+        if (withWindow && focusedWindow) {
           moveWindowToWorkspace(focusedWindow.id, nextId);
         }
         switchWorkspace(nextId);
         showHud({
           title: `Workspace ${String(nextIdx + 1)}`,
-          sublabel: e.shiftKey ? "Window moved with you" : undefined,
+          sublabel: withWindow ? "Window moved with you" : undefined,
         });
         return;
       }
 
-      // Mission Control (F3, or Ctrl+Up, the macOS convention). The overview
-      // owns its open/close state, so dispatch the toggle rather than reach in;
-      // routing it through this single dispatcher keeps Ctrl+Up to one owner.
-      if (
-        e.key === "F3" ||
-        (e.ctrlKey && !e.metaKey && !e.altKey && e.key === "ArrowUp")
-      ) {
+      // Mission Control (Ctrl+Up / F3). The overview owns its open state, so
+      // dispatch the toggle; routing it here keeps Ctrl+Up to a single owner.
+      if (chordMatches(e, "space.missionControl")) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent(MISSION_CONTROL_TOGGLE_EVENT));
         return;
       }
 
-      // Super/Win/Cmd (metaKey) + Arrow snaps the focused window to a zone,
-      // matching the Windows Win+Arrow and GNOME Super+Arrow snap chords. It is
-      // deliberately not the Cmd-or-Ctrl modifier the shortcuts above use:
-      // Ctrl+Arrow belongs to macOS (spaces, and Ctrl+Up is Mission Control),
-      // so binding snap to metaKey alone keeps the keymap clash-free. The full
-      // registry and its conflict test live in keymap.ts.
-      // Up = maximize, Down = restore, Left/Right = halves, Shift = quarters.
-      if (e.metaKey && focusedWindow && focusedWindow.state !== "maximized") {
-        const zone = arrowToZone(e.key, e.shiftKey);
-        if (zone) {
-          e.preventDefault();
-          // Same as a drag-snap: remember the pre-snap size so dragging the
-          // window off the zone later restores it.
-          recordSnapRestore(focusedWindow.id, {
-            w: focusedWindow.w,
-            h: focusedWindow.h,
-          });
-          const rect = rectForZone(zone, getWorkArea(theme));
-          setBounds(focusedWindow.id, rect.x, rect.y, rect.w, rect.h);
-          showHud({ title: snapZoneLabel(zone) });
-          return;
-        }
+      // Super/Win/Cmd+Arrow snaps the focused window to a zone, the Windows
+      // Win+Arrow / GNOME Super+Arrow chords (metaKey, never Ctrl, so it cannot
+      // collide with the macOS Ctrl+Arrow conventions). Like a drag-snap, it
+      // records the pre-snap size so a later drag off the zone restores it.
+      const zone = snapZoneFor(e);
+      if (zone && focusedWindow && focusedWindow.state !== "maximized") {
+        e.preventDefault();
+        recordSnapRestore(focusedWindow.id, {
+          w: focusedWindow.w,
+          h: focusedWindow.h,
+        });
+        const rect = rectForZone(zone, getWorkArea(theme));
+        setBounds(focusedWindow.id, rect.x, rect.y, rect.w, rect.h);
+        showHud({ title: snapZoneLabel(zone) });
+        return;
       }
-      // Super/Win/Cmd + Up maximizes; while maximized it's a no-op (Ctrl+Up is
-      // Mission Control, handled elsewhere). Super/Win/Cmd + Down restores.
-      if (e.metaKey && focusedWindow && e.key === "ArrowUp") {
-        if (focusedWindow.state !== "maximized") {
+
+      // Super/Win/Cmd+Up maximizes (a no-op while already maximized).
+      if (chordMatches(e, "window.maximize")) {
+        if (focusedWindow && focusedWindow.state !== "maximized") {
           e.preventDefault();
           toggleMaximize(focusedWindow.id);
           showHud({ title: "Maximized" });
-        }
-        return;
-      }
-      if (e.metaKey && focusedWindow && e.key === "ArrowDown") {
-        if (focusedWindow.state === "maximized") {
-          e.preventDefault();
-          toggleMaximize(focusedWindow.id);
-          showHud({ title: "Restored" });
         }
         return;
       }
@@ -255,15 +248,12 @@ function snapZoneLabel(zone: SnapZone): string {
   }
 }
 
-function arrowToZone(key: string, shift: boolean): SnapZone | null {
-  // Cmd/Ctrl + Shift + Arrow picks a quarter zone in the indicated corner.
-  if (shift) {
-    if (key === "ArrowLeft") return "top-left-quarter";
-    if (key === "ArrowRight") return "top-right-quarter";
-    // Down + Shift = bottom corners. Direction comes from the next key.
-    return null;
-  }
-  if (key === "ArrowLeft") return "left-half";
-  if (key === "ArrowRight") return "right-half";
+// Which snap zone the event's chord asks for, read from the registry's snap
+// shortcuts (Meta+Left/Right halves, Meta+Shift+Left/Right top quarters).
+function snapZoneFor(e: KeyboardEvent): SnapZone | null {
+  if (chordMatches(e, "window.snapLeft")) return "left-half";
+  if (chordMatches(e, "window.snapRight")) return "right-half";
+  if (chordMatches(e, "window.snapTopLeft")) return "top-left-quarter";
+  if (chordMatches(e, "window.snapTopRight")) return "top-right-quarter";
   return null;
 }

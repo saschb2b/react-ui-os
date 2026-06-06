@@ -285,3 +285,17 @@ export const SHORTCUTS: Shortcut[] = [
     scope: "spotlight",
   },
 ];
+
+const BY_ID = new Map(SHORTCUTS.map((s) => [s.id, s]));
+
+/**
+ * Whether a keydown matches the shortcut with this id. The dispatcher gates
+ * each branch on this instead of hardcoding modifiers, so the chords come from
+ * the registry above (and the conflict test therefore guards the real combos).
+ */
+export function chordMatches(e: ChordEvent, id: string): boolean {
+  const shortcut = BY_ID.get(id);
+  if (!shortcut) return false;
+  const chord = chordOf(e);
+  return shortcut.chords.some((spec) => expandChord(spec).includes(chord));
+}
