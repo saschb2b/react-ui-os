@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type {
   ColorFromPaletteField,
   CustomizableField,
@@ -12,6 +12,13 @@ import type {
 import { getPath } from "@react-ui-os/core";
 import { useSettings, useTheme } from "./desktop-context";
 import { Slider, Toggle } from "./primitives";
+import { useIsomorphicLayoutEffect } from "./util/use-isomorphic-layout-effect";
+
+// Below this content width the sidebar would crowd the panel, so the category
+// list folds up into a horizontal bar and the wide controls stack under their
+// labels. Measured on the panel itself, not the viewport, because the Settings
+// window resizes on its own.
+const NARROW_WIDTH = 480;
 
 /**
  * Settings system app body. Reads the active theme's `customizable` schema and
@@ -39,6 +46,28 @@ export function Settings() {
   const hasPrefs = Object.keys(prefs).length > 0;
   const [active, setActive] = useState<string>(() => grouped[0]?.[0] ?? "");
 
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [width, setWidth] = useState(0);
+  useIsomorphicLayoutEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    // Measure once before paint so the first frame already picks the right
+    // layout, then track resizes of the panel itself.
+    setWidth(el.getBoundingClientRect().width);
+    if (typeof window === "undefined" || typeof window.ResizeObserver === "undefined") {
+      return;
+    }
+    const observer = new window.ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width;
+      if (typeof w === "number") setWidth(w);
+    });
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+  const narrow = width > 0 && width < NARROW_WIDTH;
+
   if (grouped.length === 0) {
     return (
       <p
@@ -56,100 +85,56 @@ export function Settings() {
   const activeEntry = grouped.find(([name]) => name === active) ??
     grouped[0] ?? ["", []];
   const [activeName, activeFields] = activeEntry;
+  const categories = grouped.map(([name]) => name);
 
   return (
     <div
+      ref={rootRef}
       style={{
         display: "flex",
-        gap: 18,
+        flexDirection: narrow ? "column" : "row",
+        gap: narrow ? 12 : 18,
         color: theme.palette.textPrimary,
         minHeight: 300,
       }}
     >
-      <aside
-        aria-label="Settings categories"
-        style={{
-          width: 150,
-          flexShrink: 0,
-          borderRight: `1px solid ${theme.palette.border}`,
-          paddingRight: 12,
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 13,
-            fontWeight: 700,
-            letterSpacing: 0.2,
-            padding: "2px 10px 8px",
-          }}
-        >
-          Settings
-        </div>
-        {grouped.map(([name]) => {
-          const isActive = name === activeName;
-          return (
-            <button
-              key={name}
-              type="button"
-              aria-current={isActive}
-              onClick={() => {
-                setActive(name);
-              }}
-              style={{
-                appearance: "none",
-                border: 0,
-                textAlign: "left",
-                padding: "7px 10px",
-                borderRadius: theme.shape.small,
-                background: isActive ? `${theme.palette.accent}30` : "transparent",
-                color: isActive
-                  ? theme.palette.textPrimary
-                  : theme.palette.textSecondary,
-                fontWeight: isActive ? 600 : 500,
-                fontSize: 13,
-                fontFamily: "inherit",
-                cursor: "pointer",
-                transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive)
-                  e.currentTarget.style.background = `${theme.palette.textPrimary}12`;
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.background = "transparent";
-              }}
-            >
-              {name}
-            </button>
-          );
-        })}
-        <div style={{ flex: 1 }} />
-        {hasPrefs && (
-          <button
-            type="button"
-            onClick={resetAll}
-            style={{
-              border: 0,
-              background: "transparent",
-              textAlign: "left",
-              color: theme.palette.textSecondary,
-              fontSize: 12,
-              padding: "7px 10px",
-              cursor: "pointer",
-              fontFamily: "inherit",
-              borderRadius: theme.shape.small,
-            }}
-          >
-            Reset all
-          </button>
-        )}
-      </aside>
+      <CategoryNav
+        categories={categories}
+        activeName={activeName}
+        onSelect={setActive}
+        layout={narrow ? "bar" : "sidebar"}
+      />
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <h2 style={{ margin: "0 0 12px", fontSize: 16 }}>{activeName}</h2>
+        <header
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
+            gap: 12,
+            margin: "0 0 12px",
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: 16 }}>{activeName}</h2>
+          {hasPrefs && (
+            <button
+              type="button"
+              onClick={resetAll}
+              style={{
+                border: 0,
+                background: "transparent",
+                color: theme.palette.textSecondary,
+                fontSize: 12,
+                padding: 0,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                flexShrink: 0,
+              }}
+            >
+              Reset all
+            </button>
+          )}
+        </header>
         <div
           style={{
             border: `1px solid ${theme.palette.border}`,
@@ -171,6 +156,7 @@ export function Settings() {
                 value={value}
                 overridden={overridden}
                 isLast={i === activeFields.length - 1}
+                narrow={narrow}
                 onChange={(v) => {
                   setPref(path, v);
                 }}
@@ -186,11 +172,88 @@ export function Settings() {
   );
 }
 
+function CategoryNav({
+  categories,
+  activeName,
+  onSelect,
+  layout,
+}: {
+  categories: string[];
+  activeName: string;
+  onSelect: (name: string) => void;
+  layout: "sidebar" | "bar";
+}) {
+  const theme = useTheme();
+  const bar = layout === "bar";
+  return (
+    <nav
+      aria-label="Settings categories"
+      style={{
+        display: "flex",
+        flexShrink: 0,
+        flexDirection: bar ? "row" : "column",
+        gap: bar ? 6 : 2,
+        ...(bar
+          ? {
+              overflowX: "auto",
+              borderBottom: `1px solid ${theme.palette.border}`,
+              paddingBottom: 10,
+            }
+          : {
+              width: 150,
+              borderRight: `1px solid ${theme.palette.border}`,
+              paddingRight: 12,
+            }),
+      }}
+    >
+      {categories.map((name) => {
+        const isActive = name === activeName;
+        return (
+          <button
+            key={name}
+            type="button"
+            aria-current={isActive}
+            onClick={() => {
+              onSelect(name);
+            }}
+            style={{
+              appearance: "none",
+              border: 0,
+              textAlign: bar ? "center" : "left",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              padding: bar ? "6px 14px" : "7px 10px",
+              borderRadius: theme.shape.small,
+              background: isActive ? `${theme.palette.accent}30` : "transparent",
+              color: isActive ? theme.palette.textPrimary : theme.palette.textSecondary,
+              fontWeight: isActive ? 600 : 500,
+              fontSize: 13,
+              fontFamily: "inherit",
+              cursor: "pointer",
+              transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive)
+                e.currentTarget.style.background = `${theme.palette.textPrimary}12`;
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) e.currentTarget.style.background = "transparent";
+            }}
+          >
+            {name}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
 interface SettingRowProps {
   field: CustomizableField;
   value: unknown;
   overridden: boolean;
   isLast: boolean;
+  narrow: boolean;
   onChange: (value: unknown) => void;
   onReset: () => void;
 }
@@ -200,13 +263,15 @@ function SettingRow({
   value,
   overridden,
   isLast,
+  narrow,
   onChange,
   onReset,
 }: SettingRowProps) {
   const theme = useTheme();
-  // Wide controls read better stacked under the label; the rest sit inline on
-  // the right, the macOS / Windows / GNOME row pattern.
-  const stacked = field.kind === "image-pick";
+  // Wide controls read better stacked under the label, the macOS / Windows /
+  // GNOME row pattern. On a narrow panel everything but a toggle stacks too, so
+  // the description keeps its width instead of being squeezed beside the control.
+  const stacked = field.kind === "image-pick" || (narrow && field.kind !== "toggle");
   const control = <FieldControl field={field} value={value} onChange={onChange} />;
   const controlNode =
     field.kind === "range" ? <div style={{ width: 180 }}>{control}</div> : control;
