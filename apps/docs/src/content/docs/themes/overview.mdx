@@ -116,6 +116,14 @@ appearances: {
 
 Expose the switch to the end user by adding an `"appearance"` select to `customizable` (`Auto` / `Light` / `Dark`); the Settings window renders it like any other field. All three reference themes do this, defaulting to Auto. A theme that declares neither variant is single-look, and the overlay is a no-op.
 
+## Wallpaper
+
+The wallpaper is `wallpaper.src`. It can differ per appearance: the light-base themes take a `darkWallpaperSrc` (used in dark mode) and the dark-base Ubuntu takes a `lightWallpaperSrc`, each wired into the matching `appearances[mode].wallpaper.src`. Toggling light/dark then swaps the backdrop, not just the chrome.
+
+The desktop never pops the wallpaper in like a web image: each one is decoded off-screen first, then dissolves in over the theme's base color, and a change crossfades the new image over the old. The fade follows the GNOME model (which waits for the background to load before revealing it) and honors `prefers-reduced-motion` by skipping the dissolve.
+
+To let the end user choose a wallpaper, pass `wallpaperOptions` (a list of `{ src, label }`) to the theme factory; the theme then exposes an `image-pick` "Wallpaper" field in Settings > Appearance. A pick overrides the appearance default at `wallpaper.src` until the field is reset.
+
 ## Picking a theme
 
 ```tsx
