@@ -13,18 +13,22 @@ import { getWorkArea } from "./util/layout";
  * Global keyboard shortcut handler. Renders null. Mount once anywhere
  * inside `<DesktopProvider>` (the default `<Desktop>` mounts it for you).
  *
- *   Cmd/Ctrl+W       close focused window
- *   Cmd/Ctrl+M       minimize focused window
- *   Cmd/Ctrl+1..9    open / focus / cycle-minimize app N (1-indexed into
- *                    the apps registry, in declared order)
- *   Cmd/Ctrl+K       dispatches SPOTLIGHT_OPEN_EVENT
- *   Cmd/Ctrl+,       open Settings (macOS convention)
- *   Escape           restores the focused window if maximized
+ *   Cmd/Ctrl+W            close focused window
+ *   Cmd/Ctrl+M            minimize focused window
+ *   Cmd/Ctrl+1..9         open / focus / cycle-minimize app N (1-indexed into
+ *                         the apps registry, in declared order)
+ *   Cmd/Ctrl+K            dispatches SPOTLIGHT_OPEN_EVENT
+ *   Cmd/Ctrl+,            open Settings (macOS convention)
+ *   Super/Win/Cmd+Arrow   snap the focused window (Up maximize, Down restore,
+ *                         Left/Right halves, +Shift quarters), the Windows
+ *                         Win+Arrow / GNOME Super+Arrow chords
+ *   Ctrl+Alt+Arrow        switch workspace (+Shift brings the focused window)
+ *   Escape                restore the focused window if maximized
  *
- * Every binding bails when the event target is an `<input>`,
- * `<textarea>`, or contenteditable element, so typing in fields is never
- * hijacked. Spotlight handles its own Cmd-K toggle and its own Escape, so
- * those don't conflict.
+ * Every binding bails when the event target is an `<input>`, `<textarea>`, or
+ * contenteditable element, so typing in fields is never hijacked. The full
+ * shortcut registry, including Mission Control and the app switcher, and the
+ * test that proves no two chords clash, live in keymap.ts.
  */
 export function KeyboardShortcuts() {
   const apps = useApps();
@@ -153,11 +157,14 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      // Cmd/Ctrl + Arrow snaps the focused window to a viewport zone.
-      // Mirrors the Windows Snap chord (Win + Arrow) on a Mac-friendly
-      // modifier. Up = maximize, Down = restore (or center if not snapped),
-      // Left/Right = halves.
-      if (mod && focusedWindow && focusedWindow.state !== "maximized") {
+      // Super/Win/Cmd (metaKey) + Arrow snaps the focused window to a zone,
+      // matching the Windows Win+Arrow and GNOME Super+Arrow snap chords. It is
+      // deliberately not the Cmd-or-Ctrl modifier the shortcuts above use:
+      // Ctrl+Arrow belongs to macOS (spaces, and Ctrl+Up is Mission Control),
+      // so binding snap to metaKey alone keeps the keymap clash-free. The full
+      // registry and its conflict test live in keymap.ts.
+      // Up = maximize, Down = restore, Left/Right = halves, Shift = quarters.
+      if (e.metaKey && focusedWindow && focusedWindow.state !== "maximized") {
         const zone = arrowToZone(e.key, e.shiftKey);
         if (zone) {
           e.preventDefault();
@@ -173,9 +180,9 @@ export function KeyboardShortcuts() {
           return;
         }
       }
-      // Cmd/Ctrl + Up while maximized is a no-op; while not, it toggles
-      // maximize. Cmd/Ctrl + Down restores from maximize.
-      if (mod && focusedWindow && e.key === "ArrowUp") {
+      // Super/Win/Cmd + Up maximizes; while maximized it's a no-op (Ctrl+Up is
+      // Mission Control, handled elsewhere). Super/Win/Cmd + Down restores.
+      if (e.metaKey && focusedWindow && e.key === "ArrowUp") {
         if (focusedWindow.state !== "maximized") {
           e.preventDefault();
           toggleMaximize(focusedWindow.id);
@@ -183,7 +190,7 @@ export function KeyboardShortcuts() {
         }
         return;
       }
-      if (mod && focusedWindow && e.key === "ArrowDown") {
+      if (e.metaKey && focusedWindow && e.key === "ArrowDown") {
         if (focusedWindow.state === "maximized") {
           e.preventDefault();
           toggleMaximize(focusedWindow.id);
