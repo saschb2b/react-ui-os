@@ -418,6 +418,8 @@ function ImagePickControl({
             <img
               src={opt.src}
               alt={opt.label}
+              loading="lazy"
+              decoding="async"
               style={{
                 width: "100%",
                 aspectRatio: "16 / 10",
