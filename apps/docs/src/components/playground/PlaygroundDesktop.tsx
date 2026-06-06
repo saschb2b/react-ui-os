@@ -56,18 +56,31 @@ function assetBase(): string {
 
 function buildTheme(choice: ThemeChoice): OsTheme {
   const base = assetBase();
+  // The bundled wallpapers, offered as a gallery in Settings > Appearance.
+  const wallpaperOptions = [
+    { src: `${base}macos-wallpaper.jpg`, label: "Tahoe Day" },
+    { src: `${base}macos-wallpaper-dark.jpg`, label: "Tahoe Dark" },
+    { src: `${base}windows-wallpaper.jpg`, label: "Bloom Light" },
+    { src: `${base}windows-wallpaper-dark.jpg`, label: "Bloom Dark" },
+    { src: `${base}ubuntu-wallpaper.png`, label: "Yaru" },
+  ];
   if (choice === "windows") {
     return createWindowsTheme({
       wallpaperSrc: `${base}windows-wallpaper.jpg`,
       darkWallpaperSrc: `${base}windows-wallpaper-dark.jpg`,
+      wallpaperOptions,
     });
   }
   if (choice === "ubuntu") {
-    return createUbuntuTheme({ wallpaperSrc: `${base}ubuntu-wallpaper.png` });
+    return createUbuntuTheme({
+      wallpaperSrc: `${base}ubuntu-wallpaper.png`,
+      wallpaperOptions,
+    });
   }
   return createMacosTheme({
     wallpaperSrc: `${base}macos-wallpaper.jpg`,
     darkWallpaperSrc: `${base}macos-wallpaper-dark.jpg`,
+    wallpaperOptions,
   });
 }
 

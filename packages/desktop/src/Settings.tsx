@@ -10,7 +10,7 @@ import type {
   ToggleField,
 } from "@react-ui-os/core";
 import { getPath } from "@react-ui-os/core";
-import { useBaseTheme, useSettings, useTheme } from "./desktop-context";
+import { useSettings, useTheme } from "./desktop-context";
 import { Slider, Toggle } from "./primitives";
 
 /**
@@ -23,7 +23,6 @@ import { Slider, Toggle } from "./primitives";
  */
 export function Settings() {
   const theme = useTheme();
-  const baseTheme = useBaseTheme();
   const { schema, prefs, setPref, resetPref, resetAll } = useSettings();
 
   // Group the schema fields by section. The React Compiler memoizes the
@@ -161,7 +160,10 @@ export function Settings() {
         >
           {activeFields.map(([path, field], i) => {
             const overridden = path in prefs;
-            const value = path in prefs ? prefs[path] : getPath(baseTheme, path);
+            // Fall back to the effective theme (not the bare base) so a field
+            // that the resolved appearance changes, like the wallpaper in dark
+            // mode, shows its actual current value rather than the light default.
+            const value = path in prefs ? prefs[path] : getPath(theme, path);
             return (
               <SettingRow
                 key={path}

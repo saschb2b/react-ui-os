@@ -142,19 +142,34 @@ function persistThemeChoice(choice: ThemeChoice) {
   window.history.replaceState(null, "", `${window.location.pathname}?${params}`);
 }
 
+// The bundled wallpapers, offered as a gallery in Settings > Appearance so a
+// visitor can pick one (overriding the appearance default until reset).
+const WALLPAPERS = [
+  { src: "/macos-wallpaper.jpg", label: "Tahoe Day" },
+  { src: "/macos-wallpaper-dark.jpg", label: "Tahoe Dark" },
+  { src: "/windows-wallpaper.jpg", label: "Bloom Light" },
+  { src: "/windows-wallpaper-dark.jpg", label: "Bloom Dark" },
+  { src: "/ubuntu-wallpaper.png", label: "Yaru" },
+];
+
 function buildTheme(choice: ThemeChoice): OsTheme {
   if (choice === "windows") {
     return createWindowsTheme({
       wallpaperSrc: "/windows-wallpaper.jpg",
       darkWallpaperSrc: "/windows-wallpaper-dark.jpg",
+      wallpaperOptions: WALLPAPERS,
     });
   }
   if (choice === "ubuntu") {
-    return createUbuntuTheme({ wallpaperSrc: "/ubuntu-wallpaper.png" });
+    return createUbuntuTheme({
+      wallpaperSrc: "/ubuntu-wallpaper.png",
+      wallpaperOptions: WALLPAPERS,
+    });
   }
   return createMacosTheme({
     wallpaperSrc: "/macos-wallpaper.jpg",
     darkWallpaperSrc: "/macos-wallpaper-dark.jpg",
+    wallpaperOptions: WALLPAPERS,
   });
 }
 

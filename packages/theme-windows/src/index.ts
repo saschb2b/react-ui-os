@@ -18,6 +18,12 @@ export interface WindowsThemeOptions {
    * when omitted.
    */
   darkWallpaperSrc?: string;
+  /**
+   * Wallpapers to offer in Settings > Appearance. When provided, the theme
+   * exposes a `wallpaper.src` picker; choosing one overrides the appearance
+   * default until reset.
+   */
+  wallpaperOptions?: { src: string; label: string }[];
 }
 
 /**
@@ -128,6 +134,17 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
           { value: "dark", label: "Dark" },
         ],
       },
+      ...(options.wallpaperOptions
+        ? {
+            "wallpaper.src": {
+              kind: "image-pick" as const,
+              section: "Appearance",
+              label: "Wallpaper",
+              description: "Overrides the appearance default until reset.",
+              options: options.wallpaperOptions,
+            },
+          }
+        : {}),
       "palette.accent": {
         kind: "color-from-palette",
         section: "Appearance",
