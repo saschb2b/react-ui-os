@@ -120,13 +120,19 @@ interface ResizeState {
 }
 
 /**
- * Set the four custom properties the genie keyframe reads: `from` is the
+ * Set the five custom properties the genie keyframe reads: `from` is the
  * window's current top-left, `to` is the translate that lands the window's
- * center on its dock tile once the scale shrinks it. Minimize plays the
- * keyframe forward (window to tile); restore plays it reversed (tile to
- * window). Without a dock tile the window collapses in place.
+ * center on its dock tile, and `--genie-scale` is the tile's footprint relative
+ * to the window (GNOME's `geom.width / actor.width`), so the window shrinks to
+ * the tile's own size. Minimize plays the keyframe forward (window to tile);
+ * restore plays it reversed (tile to window). Without a dock tile the window
+ * collapses in place at the theme's `fallbackScale`.
  */
-function setGenieVars(el: HTMLDivElement, appId: string | undefined): void {
+function setGenieVars(
+  el: HTMLDivElement,
+  appId: string | undefined,
+  fallbackScale: number,
+): void {
   const winRect = el.getBoundingClientRect();
   const dockRect = appId ? getDockTileRect(appId) : null;
   const toCenterX = dockRect
@@ -135,6 +141,11 @@ function setGenieVars(el: HTMLDivElement, appId: string | undefined): void {
   const toCenterY = dockRect
     ? dockRect.top + dockRect.height / 2
     : winRect.top + winRect.height / 2;
+  // The scale pivots on the window center, so the translate above (center onto
+  // the tile center) holds whatever the scale is.
+  const scale =
+    dockRect && winRect.width > 0 ? dockRect.width / winRect.width : fallbackScale;
+  el.style.setProperty("--genie-scale", String(scale));
   el.style.setProperty("--genie-from-x", `${String(winRect.left)}px`);
   el.style.setProperty("--genie-from-y", `${String(winRect.top)}px`);
   el.style.setProperty("--genie-to-x", `${String(toCenterX - winRect.width / 2)}px`);
@@ -202,6 +213,7 @@ export function Window({ win, hidden = false }: WindowProps) {
   const { windowOpenDurationMs, genieDurationMs } = theme.motion;
   const openMs = reducedMotion ? 0 : windowOpenDurationMs;
   const genieMs = reducedMotion ? 0 : genieDurationMs;
+  const genieScale = theme.motion.genieScale ?? 0.08;
 
   // After the open animation finishes, drop the phase so subsequent re-renders
   // don't replay it. Tied to the theme's window-open duration.
@@ -233,24 +245,27 @@ export function Window({ win, hidden = false }: WindowProps) {
     };
   }, [win.id]);
 
-  // Un-minimize plays the genie in reverse: the window grows out of its dock
-  // tile back to where it sat. Detected here (not at the restore call site)
-  // because restore can come from the dock, Spotlight, the app switcher, or a
-  // shortcut. Runs before paint so the first frame is already at the tile,
-  // never a flash of the full-size window.
+  // Minimize and un-minimize both play the genie, detected here from the state
+  // change rather than at the call site, because either can come from the
+  // window's own button, the dock, the app switcher, Spotlight, or a shortcut.
+  // Running in a layout effect (before paint) keeps the first frame already
+  // mid-genie, never a flash of the full-size window.
   useLayoutEffect(() => {
     const prev = prevStateRef.current;
     prevStateRef.current = win.state;
-    if (prev !== "minimized" || win.state !== "normal") return;
-    if (elRef.current) setGenieVars(elRef.current, appPayload);
-    setPhase("restoring");
+    const minimizing = prev !== "minimized" && win.state === "minimized";
+    const restoring = prev === "minimized" && win.state === "normal";
+    if (!minimizing && !restoring) return undefined;
+    if (elRef.current) setGenieVars(elRef.current, appPayload, genieScale);
+    // Forward shrinks the window into its tile; reversed grows it back out.
+    setPhase(minimizing ? "minimizing" : "restoring");
     const id = window.setTimeout(() => {
       setPhase("idle");
     }, genieMs);
     return () => {
       window.clearTimeout(id);
     };
-  }, [win.state, appPayload, genieMs]);
+  }, [win.state, appPayload, genieMs, genieScale]);
 
   // Stagger this window in the cascade by how many windows on its workspace
   // opened before it (every existing window sits below the just-opened one in
@@ -288,16 +303,11 @@ export function Window({ win, hidden = false }: WindowProps) {
     };
   };
 
+  // Dispatch straight to the window manager; the state-change effect above
+  // plays the genie, so this button, the dock, and a shortcut all animate the
+  // same way.
   const handleMinimize = () => {
-    if (elRef.current) setGenieVars(elRef.current, appPayload);
-    setPhase("minimizing");
-    const t = window.setTimeout(() => {
-      minimizeWindow(win.id);
-      setPhase("idle");
-    }, genieMs);
-    return () => {
-      window.clearTimeout(t);
-    };
+    minimizeWindow(win.id);
   };
 
   const handleMaximize = () => {
@@ -578,7 +588,14 @@ export function Window({ win, hidden = false }: WindowProps) {
               }
             : {};
 
-  if (win.state === "minimized" && phase !== "minimizing") return null;
+  // Stay mounted on the frame the state first flips to minimized (the detection
+  // effect hasn't set the phase yet) so the genie has an element to animate;
+  // after it finishes (phase back to idle) the window drops out.
+  const justMinimized =
+    prevStateRef.current !== "minimized" && win.state === "minimized";
+  if (win.state === "minimized" && phase !== "minimizing" && !justMinimized) {
+    return null;
+  }
 
   return (
     <div

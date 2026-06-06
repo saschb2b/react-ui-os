@@ -68,6 +68,10 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       windowOpenEasing: "cubic-bezier(0.2, 0.85, 0.25, 1)",
       dockHoverDurationMs: 140,
       dockMagnification: 1.5,
+      // macOS's default minimize is the genie warp, which bends the window into
+      // the dock and needs a GL displacement mesh, out of reach for CSS. We
+      // render its other built-in option, the Scale Effect (a quick scale and
+      // fade toward the dock tile), which our translate-and-scale genie matches.
       genieDurationMs: 280,
       genieEasing: "cubic-bezier(0.4, 0.0, 0.2, 1)",
       missionControlDurationMs: 220,

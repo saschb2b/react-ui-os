@@ -91,6 +91,13 @@ export interface OsThemeMotion {
   genieDurationMs: number;
   genieEasing: string;
   /**
+   * Fallback scale a minimizing window shrinks to when no dock tile is found,
+   * so it collapses in place. Optional, defaults to 0.08. When a dock tile is
+   * present the window instead scales to the tile's own footprint, the way
+   * GNOME scales a window to its icon geometry (geom.width / actor.width).
+   */
+  genieScale?: number;
+  /**
    * Mission Control spread and collapse. Its own gesture, distinct from the
    * window open and genie pacing (the macOS expose zoom runs roughly 0.2 to
    * 0.25s).

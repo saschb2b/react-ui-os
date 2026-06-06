@@ -83,8 +83,13 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       dockHoverDurationMs: 120,
       // The Ubuntu dock does not magnify on hover; turn the fisheye off.
       dockMagnification: 1,
-      genieDurationMs: 220,
-      genieEasing: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      // GNOME minimizes a window onto its dash icon over
+      // MINIMIZE_WINDOW_ANIMATION_TIME = 400ms with EASE_OUT_EXPO (gnome-shell
+      // js/ui/windowManager.js _minimizeWindow): it scales the window to the
+      // icon's geometry and flies it there, the same shape as our genie toward
+      // the dock tile. cubic-bezier(0.16, 1, 0.3, 1) is the ease-out-expo curve.
+      genieDurationMs: 400,
+      genieEasing: "cubic-bezier(0.16, 1, 0.3, 1)",
       missionControlDurationMs: 250,
       missionControlEasing: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
     },

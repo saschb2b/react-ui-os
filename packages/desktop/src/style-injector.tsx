@@ -8,11 +8,12 @@ import { useEffect } from "react";
  * keyframe names are namespaced with `rui-` so they don't collide with
  * other libraries.
  *
- * The genie animation references CSS custom properties (`--genie-from-x/y`
- * and `--genie-to-x/y`) that the Window component sets before triggering the
- * minimize. `from` is the window's current top-left; `to` is the translate
- * that lands the window's center on its dock tile once scaled down, so each
- * window flies toward its own tile instead of a fixed point.
+ * The genie animation references CSS custom properties (`--genie-from-x/y`,
+ * `--genie-to-x/y`, and `--genie-scale`) that the Window component sets before
+ * triggering the minimize. `from` is the window's current top-left; `to` is the
+ * translate that lands the window's center on its dock tile, and `--genie-scale`
+ * is the tile's footprint relative to the window, so each window shrinks to its
+ * own tile's size and flies there instead of a fixed point and scale.
  *
  * Open and close use the individual `scale` property rather than baking a
  * transform into the keyframe. The window already carries its position in an
@@ -48,7 +49,7 @@ export function StyleInjector() {
         }
         to {
           opacity: 0;
-          transform: translate3d(var(--genie-to-x, 0px), var(--genie-to-y, 0px), 0) scale(0.08);
+          transform: translate3d(var(--genie-to-x, 0px), var(--genie-to-y, 0px), 0) scale(var(--genie-scale, 0.08));
         }
       }
       @keyframes rui-wallpaper-in {
