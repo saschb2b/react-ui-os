@@ -21,6 +21,36 @@ import { useIsomorphicLayoutEffect } from "./util/use-isomorphic-layout-effect";
 // window resizes on its own.
 const NARROW_WIDTH = 480;
 
+// Index math for a roving-tabindex group (the category list, a segmented
+// control, a swatch or wallpaper grid): given the pressed key and current
+// index, the next index to focus, or -1 when the key isn't a navigation key.
+// `orientation` selects which arrows are live; grids and segmented rows take
+// both axes, the sidebar/bar takes one.
+function rovingTarget(
+  key: string,
+  index: number,
+  count: number,
+  orientation: "horizontal" | "vertical" | "both",
+): number {
+  const forward =
+    (orientation !== "vertical" && key === "ArrowRight") ||
+    (orientation !== "horizontal" && key === "ArrowDown");
+  const back =
+    (orientation !== "vertical" && key === "ArrowLeft") ||
+    (orientation !== "horizontal" && key === "ArrowUp");
+  if (forward) return (index + 1) % count;
+  if (back) return (index - 1 + count) % count;
+  if (key === "Home") return 0;
+  if (key === "End") return count - 1;
+  return -1;
+}
+
+// Move focus to the i-th button within the same roving group.
+function focusSibling(from: HTMLElement, i: number): void {
+  const buttons = from.parentElement?.querySelectorAll<HTMLButtonElement>("button");
+  buttons?.[i]?.focus();
+}
+
 /**
  * Settings system app body. Reads the active theme's `customizable` schema and
  * renders one editor per field. Layout follows modern settings apps (macOS
@@ -403,23 +433,17 @@ function CategoryNav({
               onSelect(name);
             }}
             onKeyDown={(e) => {
-              const nextKey = bar ? "ArrowRight" : "ArrowDown";
-              const prevKey = bar ? "ArrowLeft" : "ArrowUp";
-              let target = -1;
-              if (e.key === nextKey) target = (index + 1) % categories.length;
-              else if (e.key === prevKey)
-                target = (index - 1 + categories.length) % categories.length;
-              else if (e.key === "Home") target = 0;
-              else if (e.key === "End") target = categories.length - 1;
-              else return;
+              const target = rovingTarget(
+                e.key,
+                index,
+                categories.length,
+                bar ? "horizontal" : "vertical",
+              );
+              if (target < 0) return;
               e.preventDefault();
               const targetName = categories[target];
               if (targetName !== undefined) onSelect(targetName);
-              const buttons =
-                e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
-                  "button",
-                );
-              buttons?.[target]?.focus();
+              focusSibling(e.currentTarget, target);
             }}
             style={{
               appearance: "none",
@@ -625,23 +649,35 @@ function ColorFromPaletteControl({
   onChange: (value: unknown) => void;
 }) {
   const theme = useTheme();
+  const selectedIndex = value ? field.options.indexOf(value) : -1;
+  const focusIndex = selectedIndex >= 0 ? selectedIndex : 0;
   return (
     <div
-      role="group"
+      role="radiogroup"
       aria-label={field.label}
       style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
     >
-      {field.options.map((color) => {
+      {field.options.map((color, index) => {
         const selected = value === color;
         return (
           <button
             key={color}
             type="button"
+            role="radio"
             onClick={() => {
               onChange(color);
             }}
             aria-label={color}
-            aria-pressed={selected}
+            aria-checked={selected}
+            tabIndex={index === focusIndex ? 0 : -1}
+            onKeyDown={(e) => {
+              const target = rovingTarget(e.key, index, field.options.length, "both");
+              if (target < 0) return;
+              e.preventDefault();
+              const next = field.options[target];
+              if (next !== undefined) onChange(next);
+              focusSibling(e.currentTarget, target);
+            }}
             style={{
               width: 28,
               height: 28,
@@ -671,9 +707,11 @@ function ImagePickControl({
   onChange: (value: unknown) => void;
 }) {
   const theme = useTheme();
+  const selectedIndex = value ? field.options.findIndex((o) => o.src === value) : -1;
+  const focusIndex = selectedIndex >= 0 ? selectedIndex : 0;
   return (
     <div
-      role="group"
+      role="radiogroup"
       aria-label={field.label}
       style={{
         display: "grid",
@@ -681,15 +719,26 @@ function ImagePickControl({
         gap: 8,
       }}
     >
-      {field.options.map((opt) => {
+      {field.options.map((opt, index) => {
         const selected = value === opt.src;
         return (
           <button
             key={opt.src}
             type="button"
-            aria-pressed={selected}
+            role="radio"
+            aria-label={opt.label}
+            aria-checked={selected}
+            tabIndex={index === focusIndex ? 0 : -1}
             onClick={() => {
               onChange(opt.src);
+            }}
+            onKeyDown={(e) => {
+              const target = rovingTarget(e.key, index, field.options.length, "both");
+              if (target < 0) return;
+              e.preventDefault();
+              const next = field.options[target];
+              if (next) onChange(next.src);
+              focusSibling(e.currentTarget, target);
             }}
             style={{
               padding: 4,
@@ -793,23 +842,12 @@ function SelectControl({
               onChange(opt.value);
             }}
             onKeyDown={(e) => {
-              const count = field.options.length;
-              let target = -1;
-              if (e.key === "ArrowRight" || e.key === "ArrowDown")
-                target = (index + 1) % count;
-              else if (e.key === "ArrowLeft" || e.key === "ArrowUp")
-                target = (index - 1 + count) % count;
-              else if (e.key === "Home") target = 0;
-              else if (e.key === "End") target = count - 1;
-              else return;
+              const target = rovingTarget(e.key, index, field.options.length, "both");
+              if (target < 0) return;
               e.preventDefault();
               const next = field.options[target];
               if (next) onChange(next.value);
-              const buttons =
-                e.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
-                  "button",
-                );
-              buttons?.[target]?.focus();
+              focusSibling(e.currentTarget, target);
             }}
             style={{
               border: "none",
