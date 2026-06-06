@@ -8,11 +8,16 @@ export interface WindowsThemeOptions {
    */
   accent?: string;
   /**
-   * URL of the wallpaper image. Themes do not bundle assets; the consumer
-   * supplies the path. When omitted, the desktop falls back to the light
-   * palette background.
+   * Wallpaper image url for the light appearance. Themes do not bundle assets;
+   * the consumer supplies the path. When omitted, the desktop falls back to the
+   * light palette background.
    */
   wallpaperSrc?: string;
+  /**
+   * Wallpaper image url for the dark appearance. Defaults to `wallpaperSrc`
+   * when omitted.
+   */
+  darkWallpaperSrc?: string;
 }
 
 /**
@@ -106,6 +111,9 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
             "0 10px 28px -10px rgba(0,0,0,0.55), 0 3px 8px -3px rgba(0,0,0,0.4)",
           windowUnfocused: "0 6px 16px -10px rgba(0,0,0,0.45)",
         },
+        ...(options.darkWallpaperSrc
+          ? { wallpaper: { src: options.darkWallpaperSrc } }
+          : {}),
       },
     },
     customizable: {

@@ -144,12 +144,18 @@ function persistThemeChoice(choice: ThemeChoice) {
 
 function buildTheme(choice: ThemeChoice): OsTheme {
   if (choice === "windows") {
-    return createWindowsTheme({ wallpaperSrc: "/windows-wallpaper.jpg" });
+    return createWindowsTheme({
+      wallpaperSrc: "/windows-wallpaper.jpg",
+      darkWallpaperSrc: "/windows-wallpaper-dark.jpg",
+    });
   }
   if (choice === "ubuntu") {
     return createUbuntuTheme({ wallpaperSrc: "/ubuntu-wallpaper.png" });
   }
-  return createMacosTheme({ wallpaperSrc: "/macos-wallpaper.jpg" });
+  return createMacosTheme({
+    wallpaperSrc: "/macos-wallpaper.jpg",
+    darkWallpaperSrc: "/macos-wallpaper-dark.jpg",
+  });
 }
 
 export default function App() {

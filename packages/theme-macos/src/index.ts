@@ -2,16 +2,22 @@ import type { OsTheme } from "@react-ui-os/core";
 
 export interface MacosThemeOptions {
   /**
-   * Accent override. Defaults to the macOS-style blue (#6b8afd). Used as the
-   * system-wide accent fallback when no per-app accent is set.
+   * Accent override. Defaults to the macOS "Blue" control accent (#0a84ff).
+   * Used as the system-wide accent fallback when no per-app accent is set.
    */
   accent?: string;
   /**
-   * Wallpaper image url. Themes do not bundle assets; the consumer supplies
-   * the path. When omitted, the palette background fills the desktop and the
-   * theme reads as the bare skeleton.
+   * Wallpaper image url for the light appearance. Themes do not bundle assets;
+   * the consumer supplies the path. When omitted, the palette background fills
+   * the desktop and the theme reads as the bare skeleton.
    */
   wallpaperSrc?: string;
+  /**
+   * Wallpaper image url for the dark appearance. Defaults to `wallpaperSrc`
+   * when omitted, so dark mode keeps the light wallpaper unless a darker one
+   * is supplied.
+   */
+  darkWallpaperSrc?: string;
 }
 
 /**
@@ -103,6 +109,9 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
             "0 24px 54px -16px rgba(0,0,0,0.6), 0 8px 20px -8px rgba(0,0,0,0.4)",
           windowUnfocused: "0 12px 30px -16px rgba(0,0,0,0.5)",
         },
+        ...(options.darkWallpaperSrc
+          ? { wallpaper: { src: options.darkWallpaperSrc } }
+          : {}),
       },
     },
     customizable: {

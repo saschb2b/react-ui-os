@@ -57,12 +57,18 @@ function assetBase(): string {
 function buildTheme(choice: ThemeChoice): OsTheme {
   const base = assetBase();
   if (choice === "windows") {
-    return createWindowsTheme({ wallpaperSrc: `${base}windows-wallpaper.jpg` });
+    return createWindowsTheme({
+      wallpaperSrc: `${base}windows-wallpaper.jpg`,
+      darkWallpaperSrc: `${base}windows-wallpaper-dark.jpg`,
+    });
   }
   if (choice === "ubuntu") {
     return createUbuntuTheme({ wallpaperSrc: `${base}ubuntu-wallpaper.png` });
   }
-  return createMacosTheme({ wallpaperSrc: `${base}macos-wallpaper.jpg` });
+  return createMacosTheme({
+    wallpaperSrc: `${base}macos-wallpaper.jpg`,
+    darkWallpaperSrc: `${base}macos-wallpaper-dark.jpg`,
+  });
 }
 
 /**

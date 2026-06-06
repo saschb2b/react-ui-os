@@ -7,10 +7,17 @@ export interface UbuntuThemeOptions {
    */
   accent?: string;
   /**
-   * Wallpaper image url. Themes do not bundle assets; the consumer supplies
-   * the path. When omitted, the dark Yaru background fills the desktop.
+   * Wallpaper image url for the dark appearance (Ubuntu's base look). Themes do
+   * not bundle assets; the consumer supplies the path. When omitted, the dark
+   * Yaru background fills the desktop.
    */
   wallpaperSrc?: string;
+  /**
+   * Wallpaper image url for the light appearance. Defaults to `wallpaperSrc`
+   * when omitted, so light mode keeps the dark wallpaper unless a lighter one
+   * is supplied.
+   */
+  lightWallpaperSrc?: string;
 }
 
 /**
@@ -119,6 +126,9 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
             "0 16px 40px -16px rgba(0,0,0,0.25), 0 4px 12px -6px rgba(0,0,0,0.15)",
           windowUnfocused: "0 8px 24px -14px rgba(0,0,0,0.16)",
         },
+        ...(options.lightWallpaperSrc
+          ? { wallpaper: { src: options.lightWallpaperSrc } }
+          : {}),
       },
     },
     customizable: {
