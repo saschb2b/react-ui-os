@@ -12,6 +12,7 @@ import {
 import { useWindowManager, type OpenWindow } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
+import { useReducedMotion } from "./util/use-reduced-motion";
 
 type Phase = "closed" | "enter" | "open" | "leave";
 
@@ -58,11 +59,8 @@ export function MissionControl() {
   const [keyIndex, setKeyIndex] = useState(-1);
 
   const easing = theme.motion.missionControlEasing;
-  const reduceMotion =
-    typeof window !== "undefined" &&
-    typeof window.matchMedia === "function" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   // Honor the OS reduced-motion setting: collapse the spread to an instant cut.
+  const reduceMotion = useReducedMotion();
   const duration = reduceMotion ? 0 : theme.motion.missionControlDurationMs;
 
   // Show the current space only, minus minimized windows (those live in the

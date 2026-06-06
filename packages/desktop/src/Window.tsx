@@ -47,6 +47,7 @@ function snapZoneLabel(zone: SnapZone): string {
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { getChromeMetrics, getWorkArea } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
+import { useReducedMotion } from "./util/use-reduced-motion";
 
 interface WindowProps {
   win: OpenWindow;
@@ -197,21 +198,7 @@ export function Window({ win, hidden = false }: WindowProps) {
   // timeout read the same derived duration, so they stay in step (a 0 ms
   // animation still fires animationend, and a 0 ms timeout dispatches on the
   // next tick).
-  const [reducedMotion, setReducedMotion] = useState(false);
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return;
-    }
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => {
-      setReducedMotion(mq.matches);
-    };
-    update();
-    mq.addEventListener("change", update);
-    return () => {
-      mq.removeEventListener("change", update);
-    };
-  }, []);
+  const reducedMotion = useReducedMotion();
   const { windowOpenDurationMs, genieDurationMs } = theme.motion;
   const openMs = reducedMotion ? 0 : windowOpenDurationMs;
   const genieMs = reducedMotion ? 0 : genieDurationMs;

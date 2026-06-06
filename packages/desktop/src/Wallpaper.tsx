@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "./desktop-context";
+import { useReducedMotion } from "./util/use-reduced-motion";
 
 // How long a wallpaper dissolves in. A real OS never pops the desktop picture
 // in: it composites the wallpaper before showing the desktop, and crossfades on
@@ -85,22 +86,7 @@ export function Wallpaper() {
 
   // Honor reduced motion: skip the dissolve and show the wallpaper at once.
   // (A zero-length animation still fires animationend, so pruning is unchanged.)
-  const [reducedMotion, setReducedMotion] = useState(false);
-  useEffect(() => {
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
-      return;
-    }
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => {
-      setReducedMotion(mq.matches);
-    };
-    update();
-    mq.addEventListener("change", update);
-    return () => {
-      mq.removeEventListener("change", update);
-    };
-  }, []);
-  const fadeMs = reducedMotion ? 0 : WALLPAPER_FADE_MS;
+  const fadeMs = useReducedMotion() ? 0 : WALLPAPER_FADE_MS;
 
   // Cursor-driven parallax. Subscribes only when the theme asks for it and
   // the user has not opted into reduced motion.
