@@ -14,36 +14,13 @@ import { getPath } from "@react-ui-os/core";
 import { useSettings, useTheme } from "./desktop-context";
 import { Slider, Toggle } from "./primitives";
 import { useIsomorphicLayoutEffect } from "./util/use-isomorphic-layout-effect";
+import { rovingTarget } from "./util/roving";
 
 // Below this content width the sidebar would crowd the panel, so the category
 // list folds up into a horizontal bar and the wide controls stack under their
 // labels. Measured on the panel itself, not the viewport, because the Settings
 // window resizes on its own.
 const NARROW_WIDTH = 480;
-
-// Index math for a roving-tabindex group (the category list, a segmented
-// control, a swatch or wallpaper grid): given the pressed key and current
-// index, the next index to focus, or -1 when the key isn't a navigation key.
-// `orientation` selects which arrows are live; grids and segmented rows take
-// both axes, the sidebar/bar takes one.
-function rovingTarget(
-  key: string,
-  index: number,
-  count: number,
-  orientation: "horizontal" | "vertical" | "both",
-): number {
-  const forward =
-    (orientation !== "vertical" && key === "ArrowRight") ||
-    (orientation !== "horizontal" && key === "ArrowDown");
-  const back =
-    (orientation !== "vertical" && key === "ArrowLeft") ||
-    (orientation !== "horizontal" && key === "ArrowUp");
-  if (forward) return (index + 1) % count;
-  if (back) return (index - 1 + count) % count;
-  if (key === "Home") return 0;
-  if (key === "End") return count - 1;
-  return -1;
-}
 
 // Move focus to the i-th button within the same roving group.
 function focusSibling(from: HTMLElement, i: number): void {
