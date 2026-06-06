@@ -47,6 +47,10 @@ export function StyleInjector() {
           transform: translate3d(var(--genie-to-x, 0px), var(--genie-to-y, 0px), 0) scale(0.08);
         }
       }
+      @keyframes rui-wallpaper-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
     `;
     document.head.appendChild(style);
   }, []);

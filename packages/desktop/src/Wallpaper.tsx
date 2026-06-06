@@ -1,7 +1,16 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "./desktop-context";
+
+// How long a wallpaper dissolves in. A real OS never pops the desktop picture
+// in: it composites the wallpaper before showing the desktop, and crossfades on
+// change. GNOME waits for the image to load, then fades over
+// FADE_ANIMATION_TIME = 1000 ms (gnome-shell js/ui/background.js); macOS
+// dissolves a desktop-picture change faster. We split the difference at 700 ms,
+// a touch snappier than GNOME because here the fade follows a network fetch,
+// while keeping the dissolve smooth rather than a hard cut.
+const WALLPAPER_FADE_MS = 700;
 
 // How far the wallpaper drifts from center to edge, in CSS px. Deliberately
 // tiny: this is a depth cue, not a moving wallpaper. Apple's parallax is
@@ -34,7 +43,45 @@ const MAX_STEP_S = 1 / 30;
 export function Wallpaper() {
   const theme = useTheme();
   const { wallpaper, palette } = theme;
-  const imageRef = useRef<HTMLDivElement | null>(null);
+  const src = wallpaper.src;
+  const stackRef = useRef<HTMLDivElement | null>(null);
+
+  // Crossfade stack. A new wallpaper is decoded off-screen first, then pushed
+  // so it dissolves in over the previous one (the macOS / GNOME behavior);
+  // once its fade ends the layers beneath are pruned. Decoding before showing
+  // is what stops the abrupt "pop" when the image finishes loading.
+  const [layers, setLayers] = useState<{ src: string; id: number }[]>([]);
+  const idRef = useRef(0);
+
+  useEffect(() => {
+    if (!src) {
+      setLayers([]);
+      return;
+    }
+    let cancelled = false;
+    const reveal = () => {
+      if (cancelled) return;
+      setLayers((prev) =>
+        prev.length > 0 && prev[prev.length - 1]?.src === src
+          ? prev
+          : [...prev, { src, id: ++idRef.current }],
+      );
+    };
+    const img = document.createElement("img");
+    // Hint the browser to fetch the wallpaper ahead of less important assets.
+    img.setAttribute("fetchpriority", "high");
+    img.src = src;
+    // decode() resolves once the image can paint without jank; fall back to
+    // revealing anyway if it rejects (e.g. a load error leaves the base color).
+    img.decode().then(reveal, reveal);
+    return () => {
+      cancelled = true;
+    };
+  }, [src]);
+
+  const handleFadeEnd = () => {
+    setLayers((prev) => (prev.length > 1 ? prev.slice(-1) : prev));
+  };
 
   // Cursor-driven parallax. Subscribes only when the theme asks for it and
   // the user has not opted into reduced motion.
@@ -47,7 +94,7 @@ export function Wallpaper() {
       return;
     }
 
-    const el = imageRef.current;
+    const el = stackRef.current;
     if (!el) return;
 
     let raf = 0;
@@ -145,22 +192,39 @@ export function Wallpaper() {
         overflow: "hidden",
       }}
     >
-      {wallpaper.src && (
-        <div
-          ref={imageRef}
-          style={{
-            position: "absolute",
-            inset: 0,
-            // Slightly oversized so parallax shifts don't reveal a hard edge.
-            transform: wallpaper.parallax ? `scale(${String(BASE_SCALE)})` : "none",
-            backgroundImage: `url(${wallpaper.src})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            willChange: wallpaper.parallax ? "transform" : undefined,
-          }}
-        />
-      )}
+      <div
+        ref={stackRef}
+        style={{
+          position: "absolute",
+          inset: 0,
+          // Slightly oversized so parallax shifts don't reveal a hard edge.
+          transform: wallpaper.parallax ? `scale(${String(BASE_SCALE)})` : "none",
+          willChange: wallpaper.parallax ? "transform" : undefined,
+        }}
+      >
+        {layers.map((layer, i) => {
+          const top = i === layers.length - 1;
+          return (
+            <div
+              key={layer.id}
+              onAnimationEnd={top ? handleFadeEnd : undefined}
+              style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage: `url(${layer.src})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                // The newest layer dissolves in over the previous ones, which
+                // stay opaque underneath until the fade ends and they're pruned.
+                animation: top
+                  ? `rui-wallpaper-in ${String(WALLPAPER_FADE_MS)}ms ease both`
+                  : undefined,
+              }}
+            />
+          );
+        })}
+      </div>
       {wallpaper.vignette && (
         <div
           style={{
