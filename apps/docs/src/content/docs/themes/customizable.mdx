@@ -61,7 +61,12 @@ Every kind also accepts `label: string`, `description?: string`, and `section?: 
 "chrome.dockPosition":   { section: "Layout", … },
 ```
 
-Fields sharing a `section` value render together with the section name as a small uppercase heading.
+Each `section` becomes a category in the Settings panel: a sidebar that the
+user clicks or arrow-keys through, folding into a horizontal bar when the window
+is narrow. A search field above the categories filters across every section at
+once (matching a field's label, description, or section name), so a setting is
+reachable no matter which category it lives in. A field with no `section`
+falls under "General".
 
 ## Effective tokens
 
