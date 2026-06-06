@@ -192,16 +192,40 @@ export function Window({ win, hidden = false }: WindowProps) {
   const [gesturing, setGesturing] = useState(false);
   const prevStateRef = useRef(win.state);
 
+  // Honor reduced motion: open / close / minimize and the maximize/snap glide
+  // collapse to instant. Each animation string and its matching dispatch
+  // timeout read the same derived duration, so they stay in step (a 0 ms
+  // animation still fires animationend, and a 0 ms timeout dispatches on the
+  // next tick).
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => {
+      setReducedMotion(mq.matches);
+    };
+    update();
+    mq.addEventListener("change", update);
+    return () => {
+      mq.removeEventListener("change", update);
+    };
+  }, []);
+  const { windowOpenDurationMs, genieDurationMs } = theme.motion;
+  const openMs = reducedMotion ? 0 : windowOpenDurationMs;
+  const genieMs = reducedMotion ? 0 : genieDurationMs;
+
   // After the open animation finishes, drop the phase so subsequent re-renders
   // don't replay it. Tied to the theme's window-open duration.
   useEffect(() => {
     const id = window.setTimeout(() => {
       setPhase("idle");
-    }, theme.motion.windowOpenDurationMs + 40);
+    }, openMs + 40);
     return () => {
       window.clearTimeout(id);
     };
-  }, [theme.motion.windowOpenDurationMs]);
+  }, [openMs]);
 
   // Forget this window's pre-snap size when it closes. Ids are reused
   // (`app:notes` survives close + reopen), so a stale record would make a
@@ -225,11 +249,11 @@ export function Window({ win, hidden = false }: WindowProps) {
     setPhase("restoring");
     const id = window.setTimeout(() => {
       setPhase("idle");
-    }, theme.motion.genieDurationMs);
+    }, genieMs);
     return () => {
       window.clearTimeout(id);
     };
-  }, [win.state, appPayload, theme.motion.genieDurationMs]);
+  }, [win.state, appPayload, genieMs]);
 
   // Stagger this window in the cascade by how many windows on its workspace
   // opened before it (every existing window sits below the just-opened one in
@@ -261,7 +285,7 @@ export function Window({ win, hidden = false }: WindowProps) {
     setPhase("closing");
     const t = window.setTimeout(() => {
       closeWindow(win.id);
-    }, theme.motion.windowOpenDurationMs);
+    }, openMs);
     return () => {
       window.clearTimeout(t);
     };
@@ -273,7 +297,7 @@ export function Window({ win, hidden = false }: WindowProps) {
     const t = window.setTimeout(() => {
       minimizeWindow(win.id);
       setPhase("idle");
-    }, theme.motion.genieDurationMs);
+    }, genieMs);
     return () => {
       window.clearTimeout(t);
     };
@@ -541,19 +565,19 @@ export function Window({ win, hidden = false }: WindowProps) {
   const animationStyle =
     phase === "opening"
       ? {
-          animation: `rui-window-open ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
+          animation: `rui-window-open ${String(openMs)}ms ${theme.motion.windowOpenEasing} both`,
         }
       : phase === "closing"
         ? {
-            animation: `rui-window-close ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
+            animation: `rui-window-close ${String(openMs)}ms ${theme.motion.windowOpenEasing} both`,
           }
         : phase === "minimizing"
           ? {
-              animation: `rui-window-genie ${String(theme.motion.genieDurationMs)}ms ${theme.motion.genieEasing} both`,
+              animation: `rui-window-genie ${String(genieMs)}ms ${theme.motion.genieEasing} both`,
             }
           : phase === "restoring"
             ? {
-                animation: `rui-window-genie ${String(theme.motion.genieDurationMs)}ms ${theme.motion.genieEasing} reverse both`,
+                animation: `rui-window-genie ${String(genieMs)}ms ${theme.motion.genieEasing} reverse both`,
               }
             : {};
 
@@ -581,7 +605,7 @@ export function Window({ win, hidden = false }: WindowProps) {
         transition:
           gesturing || phase !== "idle"
             ? undefined
-            : `transform ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}, width ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}, height ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}`,
+            : `transform ${String(openMs)}ms ${theme.motion.windowOpenEasing}, width ${String(openMs)}ms ${theme.motion.windowOpenEasing}, height ${String(openMs)}ms ${theme.motion.windowOpenEasing}`,
         backgroundColor: theme.palette.surface,
         backdropFilter: theme.blur.surface,
         WebkitBackdropFilter: theme.blur.surface,
