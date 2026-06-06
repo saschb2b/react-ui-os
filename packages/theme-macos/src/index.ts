@@ -83,7 +83,40 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       dockPosition: "bottom",
       menuBar: "top",
     },
+    // Follow the OS color scheme by default; the user can force Light or Dark
+    // from Settings > Appearance.
+    appearance: "auto",
+    appearances: {
+      // Dark appearance: Apple's dark vibrancy. A near-black desktop, dark
+      // translucent chrome, white label text, and the deeper shadow a dark
+      // surface carries. The system-blue accent is inherited unchanged.
+      dark: {
+        palette: {
+          background: "#1e2129",
+          surface: "rgba(28, 30, 38, 0.78)",
+          textPrimary: "#f1f3f8",
+          textSecondary: "rgba(241, 243, 248, 0.62)",
+          border: "rgba(255, 255, 255, 0.1)",
+        },
+        elevation: {
+          windowFocused:
+            "0 24px 54px -16px rgba(0,0,0,0.6), 0 8px 20px -8px rgba(0,0,0,0.4)",
+          windowUnfocused: "0 12px 30px -16px rgba(0,0,0,0.5)",
+        },
+      },
+    },
     customizable: {
+      appearance: {
+        kind: "select",
+        section: "Appearance",
+        label: "Appearance",
+        description: "Light, Dark, or follow the system setting.",
+        options: [
+          { value: "auto", label: "Auto" },
+          { value: "light", label: "Light" },
+          { value: "dark", label: "Dark" },
+        ],
+      },
       "palette.accent": {
         kind: "color-from-palette",
         section: "Appearance",

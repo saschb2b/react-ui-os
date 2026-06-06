@@ -1,1 +1,1 @@
-export { applyPrefs, getPath, setPath } from "./apply";
+export { applyAppearance, applyPrefs, getPath, setPath } from "./apply";

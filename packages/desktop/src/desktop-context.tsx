@@ -9,8 +9,28 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { App, OsTheme, SettingsPrefs, StorageAdapter } from "@react-ui-os/core";
-import { applyPrefs, createLocalStorageAdapter } from "@react-ui-os/core";
+import type {
+  App,
+  OsTheme,
+  ResolvedAppearance,
+  SettingsPrefs,
+  StorageAdapter,
+  ThemeAppearance,
+} from "@react-ui-os/core";
+import {
+  applyAppearance,
+  applyPrefs,
+  createLocalStorageAdapter,
+} from "@react-ui-os/core";
+
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
+function readSystemScheme(): ResolvedAppearance {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return "light";
+  }
+  return window.matchMedia(DARK_QUERY).matches ? "dark" : "light";
+}
 
 interface DesktopContextValue {
   apps: App[];
@@ -105,10 +125,34 @@ export function DesktopContextProvider({
     writePrefs({});
   }, [writePrefs]);
 
-  const theme = useMemo<OsTheme>(
-    () => applyPrefs(baseTheme, prefs),
-    [baseTheme, prefs],
-  );
+  // Track the OS color scheme so an "auto" appearance follows it live. Themes
+  // without a dark variant ignore this (applyAppearance is a no-op for them).
+  const [systemScheme, setSystemScheme] =
+    useState<ResolvedAppearance>(readSystemScheme);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+    const mq = window.matchMedia(DARK_QUERY);
+    const onChange = () => {
+      setSystemScheme(mq.matches ? "dark" : "light");
+    };
+    mq.addEventListener("change", onChange);
+    return () => {
+      mq.removeEventListener("change", onChange);
+    };
+  }, []);
+
+  const theme = useMemo<OsTheme>(() => {
+    // Pick the appearance variant first (default "auto" follows the OS scheme),
+    // then layer the user's other prefs on top of the resolved light/dark base.
+    const choice =
+      (prefs.appearance as ThemeAppearance | undefined) ??
+      baseTheme.appearance ??
+      "auto";
+    const mode: ResolvedAppearance = choice === "auto" ? systemScheme : choice;
+    return applyPrefs(applyAppearance(baseTheme, mode), prefs);
+  }, [baseTheme, prefs, systemScheme]);
 
   const value = useMemo<DesktopContextValue>(() => {
     const appsById = new Map<string, App>();

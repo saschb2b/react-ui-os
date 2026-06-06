@@ -1,4 +1,4 @@
-import type { OsTheme, SettingsPrefs } from "../types";
+import type { OsTheme, ResolvedAppearance, SettingsPrefs } from "../types";
 
 /**
  * Read a dotted-path value from an object. Returns `undefined` when any
@@ -64,4 +64,23 @@ export function applyPrefs(theme: OsTheme, prefs: SettingsPrefs): OsTheme {
     result = setPath(result, path, value);
   }
   return result;
+}
+
+/**
+ * Overlay a theme's `appearances.dark` tokens when the resolved appearance is
+ * dark, giving one theme object a light and a dark look. A no-op for light, or
+ * when the theme declares no dark variant. The "auto" resolution to a concrete
+ * light/dark mode is the caller's job (it needs the OS color scheme).
+ */
+export function applyAppearance(theme: OsTheme, mode: ResolvedAppearance): OsTheme {
+  if (mode !== "dark") return theme;
+  const dark = theme.appearances?.dark;
+  if (!dark) return theme;
+  return {
+    ...theme,
+    palette: { ...theme.palette, ...dark.palette },
+    elevation: dark.elevation ?? theme.elevation,
+    blur: { ...theme.blur, ...dark.blur },
+    wallpaper: { ...theme.wallpaper, ...dark.wallpaper },
+  };
 }

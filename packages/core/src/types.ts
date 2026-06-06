@@ -176,6 +176,25 @@ export interface OsThemeChrome {
   quickSettings?: boolean;
 }
 
+/** A resolved appearance (after "auto" is mapped to the system scheme). */
+export type ResolvedAppearance = "light" | "dark";
+
+/** The appearance a theme prefers. "auto" follows the OS color scheme. */
+export type ThemeAppearance = ResolvedAppearance | "auto";
+
+/**
+ * Token overrides for an appearance variant. Only the visual tokens that
+ * differ between light and dark are listed; everything else is inherited from
+ * the base (light) theme. The desktop overlays these when the resolved
+ * appearance calls for them.
+ */
+export interface OsThemeAppearance {
+  palette?: Partial<OsThemePalette>;
+  elevation?: OsThemeElevation;
+  blur?: Partial<OsThemeBlur>;
+  wallpaper?: Partial<OsThemeWallpaper>;
+}
+
 export interface OsTheme {
   /** Theme id for storage namespacing. */
   id: string;
@@ -193,6 +212,20 @@ export interface OsTheme {
   elevation?: OsThemeElevation;
   wallpaper: OsThemeWallpaper;
   chrome: OsThemeChrome;
+  /**
+   * Preferred appearance. "auto" (the recommended default) follows the OS
+   * color scheme via `prefers-color-scheme`; "light"/"dark" force one. The
+   * desktop resolves this and, when the result is dark, overlays
+   * `appearances.dark`. Omitted means the theme has a single (light) look.
+   */
+  appearance?: ThemeAppearance;
+  /**
+   * Optional appearance variants. When the resolved appearance is dark and
+   * `appearances.dark` is present, its tokens overlay the base ones, giving a
+   * theme a light and a dark look from one object. Expose `"appearance"` as a
+   * `customizable` select to let the end user switch between them.
+   */
+  appearances?: { dark?: OsThemeAppearance };
   /**
    * End-user tweakable subset of the theme. Keys are dotted paths into the
    * theme object (e.g. `"palette.accent"`, `"shape.dockTileRadius"`). The

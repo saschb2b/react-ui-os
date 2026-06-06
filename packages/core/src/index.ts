@@ -8,13 +8,16 @@ export type {
   OsThemeBlur,
   OsThemeChrome,
   OsThemeElevation,
+  OsThemeAppearance,
   OsThemeMotion,
   OsThemePalette,
   OsThemeShape,
   OsThemeWallpaper,
   RangeField,
+  ResolvedAppearance,
   SelectField,
   SettingsPrefs,
+  ThemeAppearance,
   ToggleField,
 } from "./types";
 

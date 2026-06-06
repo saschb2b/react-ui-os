@@ -131,6 +131,18 @@
           "optional": false
         },
         {
+          "name": "appearance",
+          "type": "ThemeAppearance",
+          "optional": true,
+          "description": "Preferred appearance. \"auto\" (the recommended default) follows the OS\ncolor scheme via `prefers-color-scheme`; \"light\"/\"dark\" force one. The\ndesktop resolves this and, when the result is dark, overlays\n`appearances.dark`. Omitted means the theme has a single (light) look."
+        },
+        {
+          "name": "appearances",
+          "type": "{ dark?: OsThemeAppearance }",
+          "optional": true,
+          "description": "Optional appearance variants. When the resolved appearance is dark and\n`appearances.dark` is present, its tokens overlay the base ones, giving a\ntheme a light and a dark look from one object. Expose `\"appearance\"` as a\n`customizable` select to let the end user switch between them."
+        },
+        {
           "name": "customizable",
           "type": "Record<string, CustomizableField>",
           "optional": true,

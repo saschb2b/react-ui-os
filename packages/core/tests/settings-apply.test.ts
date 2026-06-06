@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyPrefs, getPath, setPath } from "../src/settings/apply";
+import { applyAppearance, applyPrefs, getPath, setPath } from "../src/settings/apply";
 import type { OsTheme } from "../src/types";
 
 describe("getPath", () => {
@@ -119,5 +119,35 @@ describe("applyPrefs", () => {
   it("ignores undefined values (treats them as reset)", () => {
     const next = applyPrefs(baseTheme, { "palette.accent": undefined });
     expect(next.palette.accent).toBe("#0080ff");
+  });
+});
+
+const dualTheme: OsTheme = {
+  ...baseTheme,
+  appearances: {
+    dark: {
+      palette: { background: "#1e1e1e", surface: "#262626", textPrimary: "#eee" },
+      elevation: { windowFocused: "0 1px dark", windowUnfocused: "0 1px dark" },
+    },
+  },
+};
+
+describe("applyAppearance", () => {
+  it("returns the theme unchanged for light", () => {
+    expect(applyAppearance(dualTheme, "light")).toBe(dualTheme);
+  });
+
+  it("overlays the dark palette and elevation for dark, keeping the accent", () => {
+    const next = applyAppearance(dualTheme, "dark");
+    expect(next.palette.background).toBe("#1e1e1e");
+    expect(next.palette.textPrimary).toBe("#eee");
+    // Tokens not in the dark variant are inherited from the base.
+    expect(next.palette.accent).toBe("#0080ff");
+    expect(next.palette.border).toBe("#222");
+    expect(next.elevation?.windowFocused).toBe("0 1px dark");
+  });
+
+  it("is a no-op for dark when the theme has no dark variant", () => {
+    expect(applyAppearance(baseTheme, "dark")).toBe(baseTheme);
   });
 });
