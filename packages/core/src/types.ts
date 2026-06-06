@@ -67,6 +67,20 @@ export interface OsThemeShape {
 export interface OsThemeMotion {
   windowOpenDurationMs: number;
   windowOpenEasing: string;
+  /**
+   * Scale a window grows from as it opens (and shrinks to as it closes).
+   * Optional, defaults to 0.92 (a subtle macOS-like pop). A theme that imitates
+   * GNOME, where a window rises from a near-flat sliver, sets a smaller value.
+   */
+  windowOpenScale?: number;
+  /**
+   * `transform-origin` the open scale pivots on. Optional, defaults to center,
+   * the point a new macOS or Windows window grows from. GNOME maps a normal
+   * window from its bottom edge (pivot 0.5, 1.0), so the Ubuntu theme sets
+   * "50% 100%" to rise from the bottom. Applied only during the open phase, so
+   * close and minimize keep their own pivots.
+   */
+  windowOpenOrigin?: string;
   dockHoverDurationMs: number;
   /**
    * Peak scale of the hovered dock tile (the macOS fisheye magnification).

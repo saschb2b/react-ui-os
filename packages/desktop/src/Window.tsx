@@ -214,6 +214,16 @@ export function Window({ win, hidden = false }: WindowProps) {
     };
   }, [openMs]);
 
+  // Feed the theme's open start-scale to the keyframe's `--rui-open-scale`.
+  // Set imperatively (CSSProperties doesn't model a custom property here) and
+  // in a layout effect so it lands before the open animation's first paint.
+  useLayoutEffect(() => {
+    elRef.current?.style.setProperty(
+      "--rui-open-scale",
+      String(theme.motion.windowOpenScale ?? 0.92),
+    );
+  }, [theme.motion.windowOpenScale]);
+
   // Forget this window's pre-snap size when it closes. Ids are reused
   // (`app:notes` survives close + reopen), so a stale record would make a
   // reopened window restore to the wrong size on its first drag.
@@ -586,6 +596,11 @@ export function Window({ win, hidden = false }: WindowProps) {
         width: maximized ? work.width : win.w,
         height: maximized ? work.height : win.h,
         transform: baseTransform,
+        // The open scale pivots here. Only while opening, so close and the
+        // genie keep scaling about the center; a theme that grows from another
+        // edge (Ubuntu rises from the bottom) sets motion.windowOpenOrigin.
+        transformOrigin:
+          phase === "opening" ? theme.motion.windowOpenOrigin : undefined,
         // Glide programmatic geometry changes (maximize, restore, snap). Off
         // while a drag or resize writes the transform per frame, and during the
         // open / close / genie phases, which run their own keyframes.

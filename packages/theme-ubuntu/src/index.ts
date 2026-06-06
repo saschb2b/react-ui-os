@@ -70,10 +70,16 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       small: 8,
     },
     motion: {
-      // GNOME Shell window open is a brief ease-out; the overview runs ~250ms.
-      // ease-out-quad approximated as a cubic-bezier.
-      windowOpenDurationMs: 200,
+      // GNOME maps a normal window from its bottom edge: pivot (0.5, 1.0), a
+      // near-flat start scale, over SHOW_WINDOW_ANIMATION_TIME = 150ms (gnome-
+      // shell js/ui/windowManager.js _mapWindow). We rise from the bottom with
+      // a tasteful 0.85 start rather than GNOME's ~0, which would squish a
+      // blurred surface. The curve is GNOME's EASE_OUT_QUAD (kept across open,
+      // close, and the maximize glide; the normal map alone uses EASE_OUT_EXPO).
+      windowOpenDurationMs: 150,
       windowOpenEasing: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      windowOpenScale: 0.85,
+      windowOpenOrigin: "50% 100%",
       dockHoverDurationMs: 120,
       // The Ubuntu dock does not magnify on hover; turn the fisheye off.
       dockMagnification: 1,
