@@ -7,6 +7,7 @@ import { Slider } from "./primitives";
 import { Tooltip } from "./tooltip";
 import { getChromeMetrics } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
+import { useReducedMotion } from "./util/use-reduced-motion";
 import {
   listQuickSettings,
   subscribeQuickSettings,
@@ -28,6 +29,7 @@ import {
  */
 export function QuickSettings() {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
   const items = useSyncExternalStore(
@@ -99,7 +101,10 @@ export function QuickSettings() {
     transform: open ? "scale(1)" : "scale(0.96)",
     pointerEvents: open ? "auto" : "none",
     visibility: open ? "visible" : "hidden",
-    transition: `opacity ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}, transform ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}`,
+    // Under reduced motion the popover appears without the scale/fade.
+    transition: reducedMotion
+      ? "none"
+      : `opacity ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}, transform ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}`,
   };
 
   return (

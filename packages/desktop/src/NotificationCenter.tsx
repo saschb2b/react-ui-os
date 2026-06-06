@@ -12,6 +12,7 @@ import { useApps, useTheme } from "./desktop-context";
 import { NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
 import { getChromeMetrics } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
+import { useReducedMotion } from "./util/use-reduced-motion";
 
 /**
  * Right-edge slide-in panel showing the full notification history.
@@ -24,6 +25,7 @@ import { useViewportMode } from "./util/viewport-mode";
  */
 export function NotificationCenter() {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const apps = useApps();
   const { items, unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
@@ -80,7 +82,10 @@ export function NotificationCenter() {
     boxShadow: "-20px 0 50px -20px rgba(0,0,0,0.55)",
     zIndex: 1200,
     transform: open ? "translateX(0)" : "translateX(100%)",
-    transition: `transform ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}`,
+    // Under reduced motion the sheet appears and dismisses without sliding.
+    transition: reducedMotion
+      ? "none"
+      : `transform ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}`,
     display: "flex",
     flexDirection: "column",
     fontFamily: "inherit",

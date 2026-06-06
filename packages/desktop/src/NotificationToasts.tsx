@@ -10,6 +10,7 @@ import {
 } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { getChromeMetrics } from "./util/layout";
+import { useReducedMotion } from "./util/use-reduced-motion";
 import { useViewportMode } from "./util/viewport-mode";
 
 /**
@@ -84,6 +85,7 @@ function Toast({
   indexFromTop: number;
 }) {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const [phase, setPhase] = useState<"enter" | "ready">("enter");
   const enterDelay = Math.min(indexFromTop, 4) * 40;
 
@@ -112,8 +114,13 @@ function Toast({
     };
   }, [item.id, item.level, item.read]);
 
-  const baseTransform =
-    phase === "enter" ? "translateX(120%) scale(0.96)" : "translateX(0) scale(1)";
+  // Under reduced motion the toast appears in place (no slide-in) and the
+  // transition below is dropped, so it never travels across the screen.
+  const baseTransform = reducedMotion
+    ? "none"
+    : phase === "enter"
+      ? "translateX(120%) scale(0.96)"
+      : "translateX(0) scale(1)";
   const baseOpacity = phase === "enter" ? 0 : 1;
 
   const card: CSSProperties = {
@@ -130,7 +137,9 @@ function Toast({
     overflow: "hidden",
     transform: baseTransform,
     opacity: baseOpacity,
-    transition: `transform ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}, opacity ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}`,
+    transition: reducedMotion
+      ? "none"
+      : `transform ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}, opacity ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing}`,
   };
 
   const accentBar: CSSProperties = {

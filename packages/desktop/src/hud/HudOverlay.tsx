@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useSyncExternalStore, type CSSProperties } from "react";
 import { useTheme } from "../desktop-context";
+import { useReducedMotion } from "../util/use-reduced-motion";
 import { getHud, subscribeHud, type ActiveHud } from "./hud-store";
 
 /**
@@ -12,6 +13,7 @@ import { getHud, subscribeHud, type ActiveHud } from "./hud-store";
  */
 export function HudOverlay() {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const active = useSyncExternalStore(subscribeHud, getHud, () => null);
   const [phase, setPhase] = useState<"enter" | "ready" | "leave">("enter");
 
@@ -47,7 +49,15 @@ export function HudOverlay() {
 
   const visible = active !== null && phase !== "leave";
   const opacity = visible && phase === "ready" ? 1 : 0;
-  const scale = phase === "enter" ? 0.9 : phase === "ready" ? 1 : 0.94;
+  // Under reduced motion the HUD holds full size (no scale pop) and the
+  // transition below is dropped, so it appears and clears without motion.
+  const scale = reducedMotion
+    ? 1
+    : phase === "enter"
+      ? 0.9
+      : phase === "ready"
+        ? 1
+        : 0.94;
   const accent = lastShown.accent ?? theme.palette.accent;
   const hasProgress = typeof lastShown.progress === "number";
 
@@ -69,7 +79,9 @@ export function HudOverlay() {
     zIndex: 1600,
     opacity,
     pointerEvents: "none",
-    transition: "opacity 160ms ease, transform 200ms cubic-bezier(0.2, 0.85, 0.25, 1)",
+    transition: reducedMotion
+      ? "none"
+      : "opacity 160ms ease, transform 200ms cubic-bezier(0.2, 0.85, 0.25, 1)",
     textAlign: "center",
   };
 

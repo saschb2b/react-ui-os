@@ -8,6 +8,7 @@ import {
 } from "react";
 import { useTheme } from "../desktop-context";
 import { getDockReservation } from "../util/layout";
+import { useReducedMotion } from "../util/use-reduced-motion";
 import { useLauncher, type LauncherResult, type LauncherState } from "./use-launcher";
 
 /**
@@ -50,6 +51,7 @@ function spotlightOptionId(index: number): string {
 
 function SpotlightView({ launcher }: { launcher: LauncherState }) {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
   const { moveSelection, activate, activateSelected, close } = launcher;
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -126,7 +128,7 @@ function SpotlightView({ launcher }: { launcher: LauncherState }) {
         justifyContent: "center",
         alignItems: "flex-start",
         paddingTop: "14vh",
-        animation: `rui-window-open ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
+        animation: `rui-window-open ${String(reducedMotion ? 0 : theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
       }}
     >
       <div
@@ -255,6 +257,7 @@ function gridOptionId(index: number): string {
  */
 function GridView({ launcher }: { launcher: LauncherState }) {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
   const { moveSelection, activate, activateSelected, close } = launcher;
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -318,7 +321,7 @@ function GridView({ launcher }: { launcher: LauncherState }) {
         alignItems: "center",
         paddingTop: "11vh",
         gap: 40,
-        animation: `rui-window-open ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
+        animation: `rui-window-open ${String(reducedMotion ? 0 : theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
       }}
     >
       <input
@@ -505,6 +508,7 @@ function menuOptionId(index: number): string {
  */
 function MenuView({ launcher }: { launcher: LauncherState }) {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
   const { moveSelection, activate, activateSelected, close } = launcher;
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -589,7 +593,7 @@ function MenuView({ launcher }: { launcher: LauncherState }) {
           padding: 16,
           gap: 14,
           transformOrigin: "bottom left",
-          animation: `rui-window-open ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
+          animation: `rui-window-open ${String(reducedMotion ? 0 : theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
         }}
       >
         <input
