@@ -220,12 +220,14 @@ export interface OsTheme {
    */
   appearance?: ThemeAppearance;
   /**
-   * Optional appearance variants. When the resolved appearance is dark and
-   * `appearances.dark` is present, its tokens overlay the base ones, giving a
-   * theme a light and a dark look from one object. Expose `"appearance"` as a
-   * `customizable` select to let the end user switch between them.
+   * Optional appearance variants. A theme authors its base palette in whichever
+   * mode is natural (macOS and Windows are light, Ubuntu is dark) and supplies
+   * the opposite mode here. When the resolved appearance matches a key present,
+   * its tokens overlay the base ones, so one object carries a light and a dark
+   * look. Expose `"appearance"` as a `customizable` select to let the end user
+   * switch between them.
    */
-  appearances?: { dark?: OsThemeAppearance };
+  appearances?: { light?: OsThemeAppearance; dark?: OsThemeAppearance };
   /**
    * End-user tweakable subset of the theme. Keys are dotted paths into the
    * theme object (e.g. `"palette.accent"`, `"shape.dockTileRadius"`). The

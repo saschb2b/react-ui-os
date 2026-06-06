@@ -138,9 +138,9 @@
         },
         {
           "name": "appearances",
-          "type": "{ dark?: OsThemeAppearance }",
+          "type": "{ light?: OsThemeAppearance; dark?: OsThemeAppearance }",
           "optional": true,
-          "description": "Optional appearance variants. When the resolved appearance is dark and\n`appearances.dark` is present, its tokens overlay the base ones, giving a\ntheme a light and a dark look from one object. Expose `\"appearance\"` as a\n`customizable` select to let the end user switch between them."
+          "description": "Optional appearance variants. A theme authors its base palette in whichever\nmode is natural (macOS and Windows are light, Ubuntu is dark) and supplies\nthe opposite mode here. When the resolved appearance matches a key present,\nits tokens overlay the base ones, so one object carries a light and a dark\nlook. Expose `\"appearance\"` as a `customizable` select to let the end user\nswitch between them."
         },
         {
           "name": "customizable",

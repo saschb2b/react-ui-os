@@ -150,4 +150,19 @@ describe("applyAppearance", () => {
   it("is a no-op for dark when the theme has no dark variant", () => {
     expect(applyAppearance(baseTheme, "dark")).toBe(baseTheme);
   });
+
+  it("overlays a light variant for a dark-base theme", () => {
+    const darkBase: OsTheme = {
+      ...baseTheme,
+      appearances: {
+        light: { palette: { background: "#ffffff", textPrimary: "#111" } },
+      },
+    };
+    const light = applyAppearance(darkBase, "light");
+    expect(light.palette.background).toBe("#ffffff");
+    expect(light.palette.textPrimary).toBe("#111");
+    expect(light.palette.accent).toBe("#0080ff");
+    // Dark is this theme's base, so the dark resolution is a no-op.
+    expect(applyAppearance(darkBase, "dark")).toBe(darkBase);
+  });
 });

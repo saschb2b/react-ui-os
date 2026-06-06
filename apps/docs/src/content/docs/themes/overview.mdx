@@ -55,11 +55,11 @@ A few more `chrome` tokens dress the top bar. `menuBarClock` places the clock `"
 
 ## Themes that ship
 
-| Package                      | Stance                                                                                                                                                                                                                                                                  |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@react-ui-os/theme-macos`   | macOS clone. Traffic lights, a floating dock with a fisheye, a translucent top menu bar, the Tahoe wallpaper. Light and dark appearance, following the system by default. With no wallpaper it doubles as the bare skeleton. Call `createMacosTheme({ wallpaperSrc })`. |
-| `@react-ui-os/theme-windows` | Windows clone. Caption-button window controls, a bottom taskbar that does not magnify, a Start launcher, no menu bar, lighter shadows. Exercises `chrome.windowControls: "windows"` and `motion.dockMagnification: 1`.                                                  |
-| `@react-ui-os/theme-ubuntu`  | Ubuntu (GNOME) clone. Yaru dark palette, Ubuntu orange, a left bar dock, round symbolic window controls, a centered clock, and a Quick Settings popover. The only theme that pairs a top menu bar with a left dock.                                                     |
+| Package                      | Stance                                                                                                                                                                                                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `@react-ui-os/theme-macos`   | macOS clone. Traffic lights, a floating dock with a fisheye, a translucent top menu bar, the Tahoe wallpaper. Light and dark appearance, following the system by default. With no wallpaper it doubles as the bare skeleton. Call `createMacosTheme({ wallpaperSrc })`.  |
+| `@react-ui-os/theme-windows` | Windows clone. Caption-button window controls, a bottom taskbar that does not magnify, a Start launcher, no menu bar. Light and dark (Mica) appearance, following the system by default. Exercises `chrome.windowControls: "windows"` and `motion.dockMagnification: 1`. |
+| `@react-ui-os/theme-ubuntu`  | Ubuntu (GNOME) clone. Yaru palette (light and dark, following the system by default), Ubuntu orange, a left bar dock, round symbolic window controls, a centered clock, and a Quick Settings popover. The only theme that pairs a top menu bar with a left dock.         |
 
 The same components, in the macOS stance: traffic-light windows, a floating dock with a fisheye, a translucent menu bar, on the Tahoe wallpaper.
 
@@ -102,18 +102,19 @@ And in the Ubuntu stance: a top bar with a centered clock, a left bar dock, roun
 
 ## Light and dark appearance
 
-A theme can ship both a light and a dark look from one object. Put the tokens that differ in `appearances.dark` (typically `palette` and `elevation`); everything else, including the accent, is inherited from the base. Set `appearance` to `"auto"` to follow the OS color scheme (`prefers-color-scheme`), or `"light"` / `"dark"` to force one. The desktop resolves it live, so an "auto" theme tracks the system as it flips.
+A theme ships both a light and a dark look from one object. Author the base palette in whichever mode is natural, then supply the opposite under `appearances` (typically `palette` and `elevation`); everything else, including the accent, is inherited from the base. macOS and Windows are light with a `dark` variant; Ubuntu is dark with a `light` variant. Set `appearance` to `"auto"` to follow the OS color scheme (`prefers-color-scheme`), or `"light"` / `"dark"` to force one. The desktop resolves it live, so an "auto" theme tracks the system as it flips.
 
 ```ts
 appearance: "auto",
 appearances: {
+  // A light-base theme supplies its dark variant (Ubuntu supplies `light`).
   dark: {
     palette: { background: "#1e2129", surface: "rgba(28,30,38,0.78)", textPrimary: "#f1f3f8" },
   },
 },
 ```
 
-Expose the switch to the end user by adding an `"appearance"` select to `customizable` (`Auto` / `Light` / `Dark`); the Settings window renders it like any other field. The macOS theme does exactly this, defaulting to Auto. A theme that declares no `appearances.dark` is single-look, and the overlay is a no-op.
+Expose the switch to the end user by adding an `"appearance"` select to `customizable` (`Auto` / `Light` / `Dark`); the Settings window renders it like any other field. All three reference themes do this, defaulting to Auto. A theme that declares neither variant is single-look, and the overlay is a no-op.
 
 ## Picking a theme
 

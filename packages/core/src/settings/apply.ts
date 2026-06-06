@@ -67,20 +67,21 @@ export function applyPrefs(theme: OsTheme, prefs: SettingsPrefs): OsTheme {
 }
 
 /**
- * Overlay a theme's `appearances.dark` tokens when the resolved appearance is
- * dark, giving one theme object a light and a dark look. A no-op for light, or
- * when the theme declares no dark variant. The "auto" resolution to a concrete
- * light/dark mode is the caller's job (it needs the OS color scheme).
+ * Overlay a theme's variant tokens for the resolved appearance, giving one
+ * theme object a light and a dark look. The theme's base palette stands for
+ * whichever mode it was authored in; `appearances[mode]` supplies the other.
+ * A no-op when the requested mode is the base (no matching variant). The "auto"
+ * resolution to a concrete light/dark mode is the caller's job (it needs the OS
+ * color scheme).
  */
 export function applyAppearance(theme: OsTheme, mode: ResolvedAppearance): OsTheme {
-  if (mode !== "dark") return theme;
-  const dark = theme.appearances?.dark;
-  if (!dark) return theme;
+  const variant = theme.appearances?.[mode];
+  if (!variant) return theme;
   return {
     ...theme,
-    palette: { ...theme.palette, ...dark.palette },
-    elevation: dark.elevation ?? theme.elevation,
-    blur: { ...theme.blur, ...dark.blur },
-    wallpaper: { ...theme.wallpaper, ...dark.wallpaper },
+    palette: { ...theme.palette, ...variant.palette },
+    elevation: variant.elevation ?? theme.elevation,
+    blur: { ...theme.blur, ...variant.blur },
+    wallpaper: { ...theme.wallpaper, ...variant.wallpaper },
   };
 }

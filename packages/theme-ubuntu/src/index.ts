@@ -100,7 +100,39 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       menuBarBrand: false,
       quickSettings: true,
     },
+    // Yaru ships light and dark; the base here is Yaru dark, so the light
+    // variant is the override. "auto" follows the OS scheme by default.
+    appearance: "auto",
+    appearances: {
+      // Yaru light: light surfaces, dark text, softer shadows. The Yaru accent
+      // is inherited unchanged.
+      light: {
+        palette: {
+          background: "#fafafa",
+          surface: "rgba(250, 250, 250, 0.9)",
+          textPrimary: "#2e2e2e",
+          textSecondary: "rgba(0, 0, 0, 0.55)",
+          border: "rgba(0, 0, 0, 0.12)",
+        },
+        elevation: {
+          windowFocused:
+            "0 16px 40px -16px rgba(0,0,0,0.25), 0 4px 12px -6px rgba(0,0,0,0.15)",
+          windowUnfocused: "0 8px 24px -14px rgba(0,0,0,0.16)",
+        },
+      },
+    },
     customizable: {
+      appearance: {
+        kind: "select",
+        section: "Appearance",
+        label: "Appearance",
+        description: "Light, Dark, or follow the system setting.",
+        options: [
+          { value: "auto", label: "Auto" },
+          { value: "light", label: "Light" },
+          { value: "dark", label: "Dark" },
+        ],
+      },
       "palette.accent": {
         kind: "color-from-palette",
         section: "Appearance",

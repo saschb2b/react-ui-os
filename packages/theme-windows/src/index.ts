@@ -88,7 +88,38 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       // The Windows Start menu, raised from the taskbar launcher.
       launcher: "menu",
     },
+    // Follow the OS color scheme by default; switch in Settings > Appearance.
+    appearance: "auto",
+    appearances: {
+      // Windows 11 dark Mica: near-black surfaces, white text, deeper shadows.
+      // The #0078d4 accent is inherited unchanged.
+      dark: {
+        palette: {
+          background: "#202020",
+          surface: "rgba(43, 43, 43, 0.85)",
+          textPrimary: "#ffffff",
+          textSecondary: "rgba(255, 255, 255, 0.6)",
+          border: "rgba(255, 255, 255, 0.09)",
+        },
+        elevation: {
+          windowFocused:
+            "0 10px 28px -10px rgba(0,0,0,0.55), 0 3px 8px -3px rgba(0,0,0,0.4)",
+          windowUnfocused: "0 6px 16px -10px rgba(0,0,0,0.45)",
+        },
+      },
+    },
     customizable: {
+      appearance: {
+        kind: "select",
+        section: "Appearance",
+        label: "Appearance",
+        description: "Light, Dark, or follow the system setting.",
+        options: [
+          { value: "auto", label: "Auto" },
+          { value: "light", label: "Light" },
+          { value: "dark", label: "Dark" },
+        ],
+      },
       "palette.accent": {
         kind: "color-from-palette",
         section: "Appearance",
