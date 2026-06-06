@@ -83,6 +83,25 @@ export function Wallpaper() {
     setLayers((prev) => (prev.length > 1 ? prev.slice(-1) : prev));
   };
 
+  // Honor reduced motion: skip the dissolve and show the wallpaper at once.
+  // (A zero-length animation still fires animationend, so pruning is unchanged.)
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => {
+      setReducedMotion(mq.matches);
+    };
+    update();
+    mq.addEventListener("change", update);
+    return () => {
+      mq.removeEventListener("change", update);
+    };
+  }, []);
+  const fadeMs = reducedMotion ? 0 : WALLPAPER_FADE_MS;
+
   // Cursor-driven parallax. Subscribes only when the theme asks for it and
   // the user has not opted into reduced motion.
   useEffect(() => {
@@ -218,7 +237,7 @@ export function Wallpaper() {
                 // The newest layer dissolves in over the previous ones, which
                 // stay opaque underneath until the fade ends and they're pruned.
                 animation: top
-                  ? `rui-wallpaper-in ${String(WALLPAPER_FADE_MS)}ms ease both`
+                  ? `rui-wallpaper-in ${String(fadeMs)}ms ease both`
                   : undefined,
               }}
             />
