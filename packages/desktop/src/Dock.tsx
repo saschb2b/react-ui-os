@@ -23,6 +23,7 @@ import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { getChromeMetrics } from "./util/layout";
 import { useIsomorphicLayoutEffect } from "./util/use-isomorphic-layout-effect";
+import { useReducedMotion } from "./util/use-reduced-motion";
 import { useViewportMode } from "./util/viewport-mode";
 
 export { DOCK_HEIGHT, DOCK_WIDTH } from "./util/layout";
@@ -603,6 +604,7 @@ function DockTile({
   base: number;
 }) {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const apps = useApps();
   const {
     state,
@@ -689,7 +691,8 @@ function DockTile({
         ),
       );
       // Windows taskbar buttons do not bounce on launch; the macOS dock does.
-      if (!bar) bounce(buttonRef.current, position === "left");
+      // macOS itself drops the bounce under reduced motion, so we do too.
+      if (!bar && !reducedMotion) bounce(buttonRef.current, position === "left");
       return;
     }
     if (isMinimized) {
