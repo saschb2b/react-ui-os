@@ -270,6 +270,15 @@ function SearchField({
         onChange={(e) => {
           onChange(e.target.value);
         }}
+        onKeyDown={(e) => {
+          // Escape clears the query (the search-field convention). Swallow it
+          // while there's text so it doesn't reach the window's Escape handler
+          // and close or un-maximize the window instead.
+          if (e.key === "Escape" && value) {
+            e.stopPropagation();
+            onChange("");
+          }
+        }}
         placeholder="Search settings"
         aria-label="Search settings"
         style={{
