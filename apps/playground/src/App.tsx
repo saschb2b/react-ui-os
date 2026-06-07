@@ -9,7 +9,7 @@ import {
 import { createMacosTheme } from "@react-ui-os/theme-macos";
 import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
 import { createWindowsTheme } from "@react-ui-os/theme-windows";
-import { exampleApps } from "@react-ui-os/example-apps";
+import { exampleApps, HelloFluentIcon } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
 import { ThemeSwitcher, type ThemeChoice } from "./ThemeSwitcher";
@@ -109,6 +109,7 @@ const apps: OsApp[] = [
     name: "Hello",
     tagline: "Start here",
     accent: "#6b8afd",
+    icons: { fluent: HelloFluentIcon },
     content: HelloContent,
     defaultBounds: { w: 580, h: 460 },
   },

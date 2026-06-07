@@ -4,6 +4,7 @@ import { useRef, useState, type CSSProperties, type KeyboardEvent } from "react"
 import type { App } from "@react-ui-os/core";
 import { useTheme } from "@react-ui-os/desktop";
 import { ClockIcon } from "./icon";
+import { ClockFluentIcon } from "../fluent-icons";
 import { WorldClock } from "./WorldClock";
 import { Stopwatch } from "./Stopwatch";
 import { Timer } from "./Timer";
@@ -124,6 +125,7 @@ export const clockApp: App = {
   tagline: "World clock, stopwatch, timer",
   accent: ACCENT,
   icon: ClockIcon,
+  icons: { fluent: ClockFluentIcon },
   defaultBounds: { w: 380, h: 520 },
   content: ClockContent,
 };

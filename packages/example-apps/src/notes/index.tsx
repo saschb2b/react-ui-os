@@ -5,6 +5,7 @@ import type { ComponentRef, CSSProperties, KeyboardEvent } from "react";
 import type { App } from "@react-ui-os/core";
 import { useApp, useDesktopContext, useTheme } from "@react-ui-os/desktop";
 import { NotesIcon } from "./icon";
+import { NotesFluentIcon } from "../fluent-icons";
 import {
   createNote,
   deleteNote,
@@ -452,6 +453,7 @@ export const notesApp: App = {
   tagline: "Plain-text scratchpad",
   accent: "#f59e0b",
   icon: NotesIcon,
+  icons: { fluent: NotesFluentIcon },
   defaultBounds: { w: 680, h: 460 },
   content: NotesContent,
 };

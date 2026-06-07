@@ -1,5 +1,6 @@
 import type { App, AppContentProps } from "@react-ui-os/core";
 import { RemindersIcon } from "./icon";
+import { RemindersFluentIcon } from "../fluent-icons";
 import { RemindersContent } from "./RemindersContent";
 
 function Content({ appId }: AppContentProps) {
@@ -12,6 +13,7 @@ export const remindersApp: App = {
   tagline: "Track what's left to do",
   accent: "#fb7185",
   icon: RemindersIcon,
+  icons: { fluent: RemindersFluentIcon },
   defaultBounds: { w: 520, h: 560 },
   content: Content,
 };
