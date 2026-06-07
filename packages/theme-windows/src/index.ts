@@ -107,6 +107,8 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       showDesktopButton: true,
       // The Task View button beside Start, opening the windows overview.
       taskViewButton: true,
+      // Right-click the empty taskbar for "Taskbar settings".
+      taskbarContextMenu: true,
     },
     // Follow the OS color scheme by default; switch in Settings > Appearance.
     appearance: "auto",

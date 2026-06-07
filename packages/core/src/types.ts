@@ -233,6 +233,14 @@ export interface OsThemeChrome {
    * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
    */
   taskViewButton?: boolean;
+  /**
+   * When true, right-clicking an empty part of a `"bar"` dock opens a
+   * context menu with a "Taskbar settings" entry that opens the Settings
+   * window, the Windows 11 entry point to taskbar customization. Optional,
+   * defaults to false. Right-clicking an app tile keeps its own menu.
+   * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
+   */
+  taskbarContextMenu?: boolean;
 }
 
 /** A resolved appearance (after "auto" is mapped to the system scheme). */

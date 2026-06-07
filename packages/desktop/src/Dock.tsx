@@ -69,6 +69,7 @@ const SHOW_DESKTOP_WIDTH = 12;
 export function Dock() {
   const theme = useTheme();
   const apps = useApps();
+  const { state, openWindow } = useWindowManager();
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
   const position = theme.chrome.dockPosition;
@@ -185,6 +186,7 @@ export function Dock() {
   // only applies to a horizontal bar with the launcher at the leading edge.
   const taskView =
     isBar && !isLeft && !launcherTrailing && (theme.chrome.taskViewButton ?? false);
+  const taskbarMenu = isBar && (theme.chrome.taskbarContextMenu ?? false);
 
   // Bar-dock icon alignment along the long axis. macOS / Windows 11 center;
   // GNOME / Ubuntu and Windows 10 pack from the start. When not centered, the
@@ -221,6 +223,31 @@ export function Dock() {
   const handleLeave = () => {
     cursorRef.current = null;
     startLoop();
+  };
+
+  // Right-click on the empty bar opens "Taskbar settings", the Windows 11 entry
+  // point to taskbar customization. App tiles and the tray/launcher buttons
+  // keep their own menus, so bail when the click landed on a button.
+  const handleBarContextMenu = (e: React.MouseEvent) => {
+    if (!taskbarMenu) return;
+    if ((e.target as HTMLElement).closest("button")) return;
+    e.preventDefault();
+    const payload = { kind: "system" as const, systemId: "settings" };
+    openContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      ariaLabel: "Taskbar",
+      items: [
+        {
+          label: "Taskbar settings",
+          onSelect: () =>
+            openWindow(
+              payload,
+              pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+            ),
+        },
+      ],
+    });
   };
 
   // Name label above the icon under the cursor, like macOS. Computed from the
@@ -326,6 +353,7 @@ export function Dock() {
       data-rui-dock=""
       onPointerMove={handleMove}
       onPointerLeave={handleLeave}
+      onContextMenu={taskbarMenu ? handleBarContextMenu : undefined}
       style={navStyle}
     >
       {apps.map((app, i) => (

@@ -422,6 +422,12 @@
           "type": "boolean",
           "optional": true,
           "description": "When true, a Task View button sits in the leading cluster of a bottom\n`\"bar\"` dock, beside the launcher. It opens the all-windows overview\n(Mission Control), the Windows 11 \"Task View\" taskbar button (Win+Tab).\nOptional, defaults to false. Ignored by the floating dock and the\nvertical (left) bar.\nSource: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07"
+        },
+        {
+          "name": "taskbarContextMenu",
+          "type": "boolean",
+          "optional": true,
+          "description": "When true, right-clicking an empty part of a `\"bar\"` dock opens a\ncontext menu with a \"Taskbar settings\" entry that opens the Settings\nwindow, the Windows 11 entry point to taskbar customization. Optional,\ndefaults to false. Right-clicking an app tile keeps its own menu.\nSource: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07"
         }
       ]
     },
