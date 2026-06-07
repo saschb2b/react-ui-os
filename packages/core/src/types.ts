@@ -241,6 +241,15 @@ export interface OsThemeChrome {
    * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
    */
   taskbarContextMenu?: boolean;
+  /**
+   * When true, a `"bar"` dock hides itself off the edge and slides back in
+   * only while the pointer is at that edge or over the bar, the Windows
+   * "Automatically hide the taskbar" behavior. While hidden it reserves no
+   * work area, so windows fill the space and the bar overlays them on reveal.
+   * Optional, defaults to false. Ignored by the floating dock.
+   * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
+   */
+  dockAutoHide?: boolean;
 }
 
 /** A resolved appearance (after "auto" is mapped to the system scheme). */

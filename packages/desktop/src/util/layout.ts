@@ -97,13 +97,15 @@ export function getDockReservation(theme: OsTheme): {
   bottom: number;
   left: number;
 } {
-  if (theme.chrome.dockPosition === "hidden") {
+  const isBar = theme.chrome.dockStyle === "bar";
+  // A hidden dock, or an auto-hiding bar that is currently tucked away, reserves
+  // nothing: windows fill the space and the bar overlays them when it reveals.
+  if (theme.chrome.dockPosition === "hidden" || (isBar && theme.chrome.dockAutoHide)) {
     return { top: 0, right: 0, bottom: 0, left: 0 };
   }
   const metrics = getChromeMetrics();
   // The taskbar form sits flush to the edge, so it reserves its own thickness
   // with no surrounding gap. The floating dock adds its edge offset.
-  const isBar = theme.chrome.dockStyle === "bar";
   if (theme.chrome.dockPosition === "left") {
     return {
       top: 0,

@@ -218,6 +218,12 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
           { value: "floating", label: "Floating" },
         ],
       },
+      "chrome.dockAutoHide": {
+        kind: "toggle",
+        section: "Taskbar",
+        label: "Automatically hide the taskbar",
+        description: "Slide the taskbar away until you point at the screen edge.",
+      },
       "chrome.windowControls": {
         kind: "select",
         section: "Layout",

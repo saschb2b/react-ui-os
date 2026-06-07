@@ -56,6 +56,10 @@ const SMOOTH_TAU = 0.05;
 // strip past the clock; a click toggles minimize-all.
 const SHOW_DESKTOP_WIDTH = 12;
 
+// How close to the screen edge (px) the pointer must come to reveal an
+// auto-hidden bar. A thin strip matches Windows "slam to the edge" reveal.
+const AUTO_HIDE_EDGE = 3;
+
 /**
  * App dock. Direction follows `theme.chrome.dockPosition`:
  *
@@ -82,6 +86,13 @@ export function Dock() {
   const span = base + gap;
   const count = apps.length;
   const mag = theme.motion.dockMagnification ?? MAG_SCALE;
+  const reducedMotion = useReducedMotion();
+  // Auto-hide: the bar tucks off the edge and slides back only while the
+  // pointer is at that edge or over the bar (the Windows taskbar behavior).
+  const autoHide = isBar && (theme.chrome.dockAutoHide ?? false);
+  const [revealed, setRevealed] = useState(false);
+  const revealedRef = useRef(revealed);
+  revealedRef.current = revealed;
 
   const [sizes, setSizes] = useState<number[]>(() => apps.map(() => base));
   const sizesRef = useRef<number[]>(sizes);
@@ -167,6 +178,36 @@ export function Dock() {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     };
   }, []);
+
+  // Reveal/hide an auto-hiding bar from the pointer's distance to its edge.
+  // Hysteresis: reveal only at the very edge, hide once the pointer climbs back
+  // past the bar's own thickness, so the bar doesn't flicker along its inner
+  // border. Coordinate math avoids enter/leave fighting between the bar and a
+  // reveal strip.
+  const taskbarSize = metrics.taskbarSize;
+  useEffect(() => {
+    if (!autoHide || typeof window === "undefined") {
+      setRevealed(false);
+      return;
+    }
+    const onMove = (e: PointerEvent) => {
+      const dist = isLeft ? e.clientX : window.innerHeight - e.clientY;
+      if (!revealedRef.current) {
+        if (dist <= AUTO_HIDE_EDGE) setRevealed(true);
+      } else if (dist > taskbarSize) {
+        setRevealed(false);
+      }
+    };
+    const onLeave = () => {
+      setRevealed(false);
+    };
+    window.addEventListener("pointermove", onMove);
+    document.addEventListener("mouseleave", onLeave);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      document.removeEventListener("mouseleave", onLeave);
+    };
+  }, [autoHide, isLeft, taskbarSize]);
 
   if (position === "hidden") return null;
 
@@ -326,6 +367,21 @@ export function Dock() {
                 borderTop: `1px solid ${theme.palette.border}`,
                 boxShadow: "0 -1px 8px rgba(0,0,0,0.12)",
               }),
+          // Auto-hide slide. Reuse the genie translate timing: same character,
+          // a system surface moving on and off the screen edge.
+          ...(autoHide
+            ? {
+                transform: revealed
+                  ? "none"
+                  : isLeft
+                    ? "translateX(-100%)"
+                    : "translateY(100%)",
+                transition: reducedMotion
+                  ? undefined
+                  : `transform ${String(theme.motion.genieDurationMs)}ms ${theme.motion.genieEasing}`,
+                willChange: "transform",
+              }
+            : {}),
         }
       : {
           // Floating macOS pill: centered, offset from the edge, rounded.
