@@ -3,12 +3,14 @@
 import {
   useEffect,
   useRef,
+  type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { useTheme } from "../desktop-context";
 import { getDockReservation } from "../util/layout";
 import { useReducedMotion } from "../util/use-reduced-motion";
+import { useSurfaceTransition } from "../util/use-surface-transition";
 import { useLauncher, type LauncherResult, type LauncherState } from "./use-launcher";
 
 /**
@@ -25,15 +27,22 @@ import { useLauncher, type LauncherResult, type LauncherState } from "./use-laun
  */
 export function Launcher() {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const launcher = useLauncher();
-  if (!launcher.open) return null;
+  // The same open/close transition every surface shares: grow in, and shrink
+  // out instead of vanishing. Stays mounted through the close animation.
+  const { mounted, surfaceStyle } = useSurfaceTransition(launcher.open, {
+    durationMs: reducedMotion ? 0 : theme.motion.windowOpenDurationMs,
+    easing: theme.motion.windowOpenEasing,
+  });
+  if (!mounted) return null;
   switch (theme.chrome.launcher) {
     case "grid":
-      return <GridView launcher={launcher} />;
+      return <GridView launcher={launcher} surfaceStyle={surfaceStyle} />;
     case "menu":
-      return <MenuView launcher={launcher} />;
+      return <MenuView launcher={launcher} surfaceStyle={surfaceStyle} />;
     default:
-      return <SpotlightView launcher={launcher} />;
+      return <SpotlightView launcher={launcher} surfaceStyle={surfaceStyle} />;
   }
 }
 
@@ -49,9 +58,14 @@ function spotlightOptionId(index: number): string {
   return `rui-spotlight-option-${String(index)}`;
 }
 
-function SpotlightView({ launcher }: { launcher: LauncherState }) {
+function SpotlightView({
+  launcher,
+  surfaceStyle,
+}: {
+  launcher: LauncherState;
+  surfaceStyle: CSSProperties;
+}) {
   const theme = useTheme();
-  const reducedMotion = useReducedMotion();
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
   const { moveSelection, activate, activateSelected, close } = launcher;
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -128,7 +142,7 @@ function SpotlightView({ launcher }: { launcher: LauncherState }) {
         justifyContent: "center",
         alignItems: "flex-start",
         paddingTop: "14vh",
-        animation: `rui-window-open ${String(reducedMotion ? 0 : theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
+        ...surfaceStyle,
       }}
     >
       <div
@@ -255,9 +269,14 @@ function gridOptionId(index: number): string {
  * search field while the arrow keys move a visual selection across the grid,
  * the GNOME behavior.
  */
-function GridView({ launcher }: { launcher: LauncherState }) {
+function GridView({
+  launcher,
+  surfaceStyle,
+}: {
+  launcher: LauncherState;
+  surfaceStyle: CSSProperties;
+}) {
   const theme = useTheme();
-  const reducedMotion = useReducedMotion();
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
   const { moveSelection, activate, activateSelected, close } = launcher;
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -321,7 +340,7 @@ function GridView({ launcher }: { launcher: LauncherState }) {
         alignItems: "center",
         paddingTop: "11vh",
         gap: 40,
-        animation: `rui-window-open ${String(reducedMotion ? 0 : theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
+        ...surfaceStyle,
       }}
     >
       <input
@@ -506,9 +525,14 @@ function menuOptionId(index: number): string {
  * a visual selection across the grid. Anchored and animated from the dock edge
  * (bottom-left for a bottom taskbar, beside a left dock).
  */
-function MenuView({ launcher }: { launcher: LauncherState }) {
+function MenuView({
+  launcher,
+  surfaceStyle,
+}: {
+  launcher: LauncherState;
+  surfaceStyle: CSSProperties;
+}) {
   const theme = useTheme();
-  const reducedMotion = useReducedMotion();
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
   const { moveSelection, activate, activateSelected, close } = launcher;
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -593,7 +617,7 @@ function MenuView({ launcher }: { launcher: LauncherState }) {
           padding: 16,
           gap: 14,
           transformOrigin: "bottom left",
-          animation: `rui-window-open ${String(reducedMotion ? 0 : theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
+          ...surfaceStyle,
         }}
       >
         <input
