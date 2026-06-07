@@ -216,7 +216,7 @@ export const SHORTCUTS: Shortcut[] = [
   },
   {
     id: "app.switcher",
-    chords: ["Mod+Tab"],
+    chords: ["Mod+Tab", "Mod+Shift+Tab"],
     label: "Application switcher",
     group: "Apps",
     scope: "desktop",

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useWindowManager, windowIdOf } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import {
+  APP_SWITCHER_CYCLE_EVENT,
   KEYBOARD_HELP_TOGGLE_EVENT,
   MISSION_CONTROL_TOGGLE_EVENT,
   SPOTLIGHT_OPEN_EVENT,
@@ -83,6 +84,19 @@ export function KeyboardShortcuts() {
       if (chordMatches(e, "app.help")) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent(KEYBOARD_HELP_TOGGLE_EVENT));
+        return;
+      }
+
+      // App switcher (Mod+Tab, Mod+Shift+Tab to reverse). The hold-and-release
+      // machine lives in AppSwitcher; the dispatcher owns the keydown chord and
+      // tells it to advance, so the switcher needs no second global keydown.
+      if (chordMatches(e, "app.switcher")) {
+        e.preventDefault();
+        window.dispatchEvent(
+          new CustomEvent(APP_SWITCHER_CYCLE_EVENT, {
+            detail: { backward: e.shiftKey },
+          }),
+        );
         return;
       }
 

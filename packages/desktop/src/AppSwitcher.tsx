@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { useWindowManager, windowIdOf, type App } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
+import { APP_SWITCHER_CYCLE_EVENT } from "./events";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 
 /**
  * Cmd/Ctrl + Tab application switcher. Holds while the modifier is down,
  * cycles selection on Tab (and Shift+Tab to reverse), and activates the
- * focused app when the modifier is released. Esc cancels without
- * switching.
+ * focused app when the modifier is released. Esc cancels without switching.
+ * The open / cycle keydown comes from the single keyboard dispatcher as
+ * APP_SWITCHER_CYCLE_EVENT; this component only watches the modifier release,
+ * so it adds no second global keydown listener.
  *
  * MRU order comes from window z-index: the highest z is the most recent
  * focus, so the first Cmd+Tab selects the second entry (Mac convention).
@@ -73,48 +76,40 @@ export function AppSwitcher() {
   // Modifier-state machine: open on Cmd/Ctrl+Tab, cycle on Tab, commit on
   // mod-up, cancel on Escape.
   useEffect(() => {
-    const isMod = (e: KeyboardEvent) => e.metaKey || e.ctrlKey;
-
-    const handleDown = (e: KeyboardEvent) => {
-      // Bail when typing in a field.
-      const t = e.target as HTMLElement | null;
-      if (
-        t &&
-        (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)
-      ) {
-        return;
+    // The open / cycle chord (Mod+Tab) is dispatched by the single keyboard
+    // dispatcher as this event: the first one opens and selects the second
+    // entry, each later one steps (Shift reverses via detail.backward).
+    const onCycle = (e: Event) => {
+      if (candidates.length === 0) return;
+      const backward =
+        (e as CustomEvent<{ backward?: boolean }>).detail?.backward === true;
+      if (!open) {
+        setOpen(true);
+        const startIdx = candidates.length > 1 ? 1 : 0;
+        setIndex(backward ? candidates.length - 1 : startIdx);
+      } else {
+        setIndex((prev) => {
+          const dir = backward ? -1 : 1;
+          return (prev + dir + candidates.length) % candidates.length;
+        });
       }
+    };
 
-      if (e.key === "Tab" && isMod(e)) {
-        e.preventDefault();
-        if (candidates.length === 0) return;
-        if (!open) {
-          // First press: open and select the second entry (or the only one).
-          setOpen(true);
-          const startIdx = candidates.length > 1 ? 1 : 0;
-          setIndex(e.shiftKey ? candidates.length - 1 : startIdx);
-        } else {
-          setIndex((prev) => {
-            const dir = e.shiftKey ? -1 : 1;
-            return (prev + dir + candidates.length) % candidates.length;
-          });
-        }
-        return;
-      }
-
-      if (open && e.key === "Escape") {
-        e.preventDefault();
+    // Commit when the modifier is released. We watch keyup ourselves because a
+    // keydown dispatcher can't tell us about a release; not detecting "all keys
+    // up" is deliberate, so a quick double-tap Cmd+Tab cycles like every OS.
+    const handleUp = (e: KeyboardEvent) => {
+      if (!open) return;
+      if (e.key === "Meta" || e.key === "Control") {
+        activate(index);
         setOpen(false);
       }
     };
 
-    const handleUp = (e: KeyboardEvent) => {
-      if (!open) return;
-      // The switcher closes when the modifier itself is released. We do not
-      // try to detect "user let go of all keys": that lets quick double-
-      // tap Cmd+Tab cycles work the way every OS does it.
-      if (e.key === "Meta" || e.key === "Control") {
-        activate(index);
+    // Esc cancels; live only while open, so this is not a global shortcut.
+    const handleDown = (e: KeyboardEvent) => {
+      if (open && e.key === "Escape") {
+        e.preventDefault();
         setOpen(false);
       }
     };
@@ -123,12 +118,14 @@ export function AppSwitcher() {
       if (open) setOpen(false);
     };
 
-    window.addEventListener("keydown", handleDown);
+    window.addEventListener(APP_SWITCHER_CYCLE_EVENT, onCycle);
     window.addEventListener("keyup", handleUp);
+    window.addEventListener("keydown", handleDown);
     window.addEventListener("blur", handleBlur);
     return () => {
-      window.removeEventListener("keydown", handleDown);
+      window.removeEventListener(APP_SWITCHER_CYCLE_EVENT, onCycle);
       window.removeEventListener("keyup", handleUp);
+      window.removeEventListener("keydown", handleDown);
       window.removeEventListener("blur", handleBlur);
     };
   }, [open, candidates, activate, index]);

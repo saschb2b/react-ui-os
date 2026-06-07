@@ -38,3 +38,12 @@ export const MISSION_CONTROL_TOGGLE_EVENT = "react-ui-os:mission-control-toggle"
  * reference without prop drilling.
  */
 export const KEYBOARD_HELP_TOGGLE_EVENT = "react-ui-os:keyboard-help-toggle";
+
+/**
+ * Advance the application switcher. The single keyboard dispatcher owns the
+ * Mod+Tab keydown and fires this (with `detail.backward` for Shift+Tab); the
+ * AppSwitcher opens on the first one and cycles on the rest, then commits when
+ * the modifier is released. Keeps the switcher's open chord out of a second
+ * global keydown listener.
+ */
+export const APP_SWITCHER_CYCLE_EVENT = "react-ui-os:app-switcher-cycle";
