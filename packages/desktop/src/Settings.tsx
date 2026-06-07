@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   ColorFromPaletteField,
   CustomizableField,
@@ -12,6 +12,7 @@ import type {
 } from "@react-ui-os/core";
 import { getPath } from "@react-ui-os/core";
 import { useSettings, useTheme } from "./desktop-context";
+import { getRequestedSection, subscribeSettingsNav } from "./settings-nav";
 import { Slider, Toggle } from "./primitives";
 import { useIsomorphicLayoutEffect } from "./util/use-isomorphic-layout-effect";
 import { rovingTarget } from "./util/roving";
@@ -53,8 +54,36 @@ export function Settings() {
   const grouped = Array.from(sections.entries());
 
   const hasPrefs = Object.keys(prefs).length > 0;
-  const [active, setActive] = useState<string>(() => grouped[0]?.[0] ?? "");
+  // Honor a pending deep link (right-click the taskbar > Taskbar settings) when
+  // it names a section this theme actually has; otherwise land on the first.
+  const sectionNames = grouped.map(([name]) => name);
+  const [active, setActive] = useState<string>(() => {
+    const req = getRequestedSection();
+    return req && sectionNames.includes(req.section)
+      ? req.section
+      : (grouped[0]?.[0] ?? "");
+  });
   const [query, setQuery] = useState("");
+  // The deep link consumed at mount; later requests (window already open) come
+  // through the subscription below. Latest section list read via a ref so the
+  // listener stays a one-time subscription.
+  const appliedNonceRef = useRef(getRequestedSection()?.nonce ?? 0);
+  const sectionNamesRef = useRef(sectionNames);
+  sectionNamesRef.current = sectionNames;
+  useEffect(() => {
+    return subscribeSettingsNav(() => {
+      const req = getRequestedSection();
+      if (
+        req &&
+        req.nonce > appliedNonceRef.current &&
+        sectionNamesRef.current.includes(req.section)
+      ) {
+        appliedNonceRef.current = req.nonce;
+        setActive(req.section);
+        setQuery("");
+      }
+    });
+  }, []);
 
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [width, setWidth] = useState(0);

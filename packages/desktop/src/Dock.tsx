@@ -24,6 +24,7 @@ import {
   SPOTLIGHT_OPEN_EVENT,
 } from "./events";
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
+import { requestSettingsSection } from "./settings-nav";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { getChromeMetrics } from "./util/layout";
 import { useIsomorphicLayoutEffect } from "./util/use-isomorphic-layout-effect";
@@ -240,11 +241,15 @@ export function Dock() {
       items: [
         {
           label: "Taskbar settings",
-          onSelect: () =>
+          onSelect: () => {
+            // Request the section first so a fresh Settings window reads it on
+            // mount; an already-open one switches via the subscription.
+            requestSettingsSection("Taskbar");
             openWindow(
               payload,
               pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
-            ),
+            );
+          },
         },
       ],
     });

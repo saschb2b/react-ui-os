@@ -172,20 +172,36 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
         step: 1,
         unit: "px",
       },
-      "chrome.windowControls": {
+      // The Taskbar section mirrors Windows 11's Personalization > Taskbar page,
+      // which the taskbar's right-click "Taskbar settings" opens directly: an
+      // alignment control over a list of taskbar-item toggles.
+      "chrome.dockAlign": {
         kind: "select",
-        section: "Layout",
-        label: "Window controls",
+        section: "Taskbar",
+        label: "Taskbar alignment",
+        description:
+          "Center the icons (Windows 11) or pack them to the left (Windows 10).",
         options: [
-          { value: "windows", label: "Windows" },
-          { value: "traffic-lights", label: "macOS" },
-          { value: "minimal", label: "Minimal" },
+          { value: "center", label: "Center" },
+          { value: "start", label: "Left" },
         ],
+      },
+      "chrome.taskViewButton": {
+        kind: "toggle",
+        section: "Taskbar",
+        label: "Task view",
+        description: "Show the Task View button that opens the windows overview.",
+      },
+      "chrome.showDesktopButton": {
+        kind: "toggle",
+        section: "Taskbar",
+        label: "Show desktop",
+        description: "Select the far corner of the taskbar to show the desktop.",
       },
       "chrome.dockPosition": {
         kind: "select",
-        section: "Layout",
-        label: "Dock position",
+        section: "Taskbar",
+        label: "Taskbar position",
         options: [
           { value: "bottom", label: "Bottom" },
           { value: "left", label: "Left" },
@@ -194,23 +210,22 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       },
       "chrome.dockStyle": {
         kind: "select",
-        section: "Layout",
-        label: "Dock style",
+        section: "Taskbar",
+        label: "Taskbar style",
         description: "A flush taskbar or the floating macOS pill.",
         options: [
           { value: "bar", label: "Taskbar" },
           { value: "floating", label: "Floating" },
         ],
       },
-      "chrome.dockAlign": {
+      "chrome.windowControls": {
         kind: "select",
         section: "Layout",
-        label: "Taskbar alignment",
-        description:
-          "Center the icons (Windows 11) or pack them to the left (Windows 10).",
+        label: "Window controls",
         options: [
-          { value: "center", label: "Center" },
-          { value: "start", label: "Left" },
+          { value: "windows", label: "Windows" },
+          { value: "traffic-lights", label: "macOS" },
+          { value: "minimal", label: "Minimal" },
         ],
       },
       "chrome.menuBar": {

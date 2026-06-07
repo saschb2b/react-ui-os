@@ -94,6 +94,7 @@ export {
 } from "./spotlight-sources";
 export type { SpotlightSource, SpotlightResult } from "./spotlight-sources";
 export { Settings } from "./Settings";
+export { requestSettingsSection } from "./settings-nav";
 export { FileExplorer } from "./FileExplorer";
 export type {
   ExplorerItem,
