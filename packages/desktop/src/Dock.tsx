@@ -15,7 +15,7 @@ import {
   useWindowManager,
   windowIdOf,
 } from "@react-ui-os/core";
-import type { App } from "@react-ui-os/core";
+import type { App, OsTheme } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { openContextMenu, type ContextMenuItem } from "./context-menu";
 import {
@@ -510,10 +510,12 @@ export function Dock() {
 }
 
 /**
- * Taskbar launcher. A neutral 2x2 grid glyph, not the Windows logo: it opens
- * Spotlight, the library's app launcher, respecting the pattern without copying
- * the mark. `inline` rides it inside the icon run so the whole cluster centers
- * (Windows 11); otherwise it pins to an edge (Ubuntu's trailing launcher).
+ * Taskbar launcher. Its glyph follows `chrome.launcher`: the Windows Start
+ * four-pane mark for the `"menu"` Start menu, the GNOME "Show Applications"
+ * dot grid for the `"grid"` overview, and a neutral 2x2 grid otherwise. All are
+ * original drawings, not vendor artwork. `inline` rides it inside the icon run
+ * so the whole cluster centers (Windows 11); otherwise it pins to an edge
+ * (Ubuntu's trailing launcher).
  */
 function StartButton({
   vertical,
@@ -565,13 +567,46 @@ function StartButton({
         transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
       }}
     >
-      <svg width={16} height={16} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-        <rect x="1" y="1" width="6" height="6" rx="1.5" />
-        <rect x="9" y="1" width="6" height="6" rx="1.5" />
-        <rect x="1" y="9" width="6" height="6" rx="1.5" />
-        <rect x="9" y="9" width="6" height="6" rx="1.5" />
-      </svg>
+      <LauncherGlyph mode={theme.chrome.launcher} />
     </button>
+  );
+}
+
+/**
+ * Launcher button glyph. Original drawings keyed to the launcher style, not
+ * traced from vendor artwork:
+ *
+ *   "menu"  the Windows Start mark, four flat panes with a hairline gap
+ *   "grid"  the GNOME "Show Applications" 3x3 dot grid
+ *   else    a neutral 2x2 grid (the macOS / generic launcher)
+ */
+function LauncherGlyph({ mode }: { mode: OsTheme["chrome"]["launcher"] }) {
+  if (mode === "menu") {
+    return (
+      <svg width={17} height={17} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+        <rect x="1.4" y="1.4" width="5.7" height="5.7" rx="0.6" />
+        <rect x="8.9" y="1.4" width="5.7" height="5.7" rx="0.6" />
+        <rect x="1.4" y="8.9" width="5.7" height="5.7" rx="0.6" />
+        <rect x="8.9" y="8.9" width="5.7" height="5.7" rx="0.6" />
+      </svg>
+    );
+  }
+  if (mode === "grid") {
+    return (
+      <svg width={16} height={16} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+        {[3, 8, 13].map((cy) =>
+          [3, 8, 13].map((cx) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.5" />),
+        )}
+      </svg>
+    );
+  }
+  return (
+    <svg width={16} height={16} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      <rect x="1" y="1" width="6" height="6" rx="1.5" />
+      <rect x="9" y="1" width="6" height="6" rx="1.5" />
+      <rect x="1" y="9" width="6" height="6" rx="1.5" />
+      <rect x="9" y="9" width="6" height="6" rx="1.5" />
+    </svg>
   );
 }
 
