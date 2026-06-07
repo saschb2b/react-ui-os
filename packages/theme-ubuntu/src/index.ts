@@ -128,6 +128,11 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       // GNOME has no Apple-style brand menu; the top-left is just workspaces.
       menuBarBrand: false,
       quickSettings: true,
+      // The Ubuntu dock uses large icons (~46px nearly filling a 56px tile),
+      // making the left bar ~64px wide. The Yaru top bar is ~30px.
+      dockTileSize: 56,
+      dockIconScale: 0.82,
+      menuBarHeight: 30,
     },
     // Yaru ships light and dark; the base here is Yaru dark, so the light
     // variant is the override. "auto" follows the OS scheme by default.

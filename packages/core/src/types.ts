@@ -250,6 +250,26 @@ export interface OsThemeChrome {
    * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
    */
   dockAutoHide?: boolean;
+  /**
+   * Resting size in px of a dock tile/button, set per platform to match its
+   * reference: the floating macOS dock tile (~56), the Windows taskbar button
+   * (~40, for 24px icons), or the Ubuntu dock tile (~56, for ~46px icons). A
+   * `"bar"` dock derives its thickness (taskbar height / dock width) from this.
+   * Optional; defaults to the viewport metric for the dock form, and compact
+   * viewports shrink it.
+   */
+  dockTileSize?: number;
+  /**
+   * Icon glyph size as a fraction of the tile (0..1). Windows taskbar icons sit
+   * near 0.6 (24px in a 40px tile); Ubuntu dock icons nearly fill the tile
+   * (~0.82); macOS ~0.6. Optional, defaults to 0.5.
+   */
+  dockIconScale?: number;
+  /**
+   * Top menu bar height in px, per platform: macOS 24, the GNOME top bar ~30.
+   * Optional, defaults to 24. Ignored unless `menuBar` is `"top"`.
+   */
+  menuBarHeight?: number;
 }
 
 /** A resolved appearance (after "auto" is mapped to the system scheme). */

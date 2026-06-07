@@ -26,7 +26,12 @@ import {
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
 import { requestSettingsSection } from "./settings-nav";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
-import { getChromeMetrics } from "./util/layout";
+import {
+  getBarThickness,
+  getChromeMetrics,
+  getDockTileSize,
+  getMenuBarHeight,
+} from "./util/layout";
 import { useIsomorphicLayoutEffect } from "./util/use-isomorphic-layout-effect";
 import { useReducedMotion } from "./util/use-reduced-motion";
 import { useViewportMode } from "./util/viewport-mode";
@@ -81,7 +86,11 @@ export function Dock() {
 
   const isLeft = position === "left";
   const isBar = theme.chrome.dockStyle === "bar";
-  const base = isBar ? metrics.taskbarTileSize : metrics.dockTileSize;
+  const base = getDockTileSize(theme, mode);
+  // Bar thickness (Windows taskbar height / Ubuntu dock width) and top-bar
+  // height both follow the theme's per-platform sizing.
+  const barThickness = getBarThickness(theme, mode);
+  const menuBarH = getMenuBarHeight(theme);
   const gap = isBar ? 4 : metrics.dockGap;
   const span = base + gap;
   const count = apps.length;
@@ -184,7 +193,7 @@ export function Dock() {
   // past the bar's own thickness, so the bar doesn't flicker along its inner
   // border. Coordinate math avoids enter/leave fighting between the bar and a
   // reveal strip.
-  const taskbarSize = metrics.taskbarSize;
+  const taskbarSize = barThickness;
   useEffect(() => {
     if (!autoHide || typeof window === "undefined") {
       setRevealed(false);
@@ -379,9 +388,9 @@ export function Dock() {
                 left: 0,
                 // Sit below the top menu bar when there is one, so the bar can
                 // span the full width above the dock (the GNOME arrangement).
-                top: topMenuBar ? metrics.menuBarHeight : 0,
+                top: topMenuBar ? menuBarH : 0,
                 bottom: 0,
-                width: metrics.taskbarSize,
+                width: barThickness,
                 borderRight: `1px solid ${theme.palette.border}`,
                 boxShadow: "1px 0 8px rgba(0,0,0,0.12)",
               }
@@ -389,7 +398,7 @@ export function Dock() {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                height: metrics.taskbarSize,
+                height: barThickness,
                 borderTop: `1px solid ${theme.palette.border}`,
                 boxShadow: "0 -1px 8px rgba(0,0,0,0.12)",
               }),
@@ -464,12 +473,12 @@ export function Dock() {
               ? isLeft
                 ? {
                     top: barLabelMain,
-                    left: metrics.taskbarSize + 8,
+                    left: barThickness + 8,
                     transform: "translateY(-50%)",
                   }
                 : {
                     left: barLabelMain,
-                    bottom: metrics.taskbarSize + 8,
+                    bottom: barThickness + 8,
                     transform: "translateX(-50%)",
                   }
               : isLeft
@@ -1028,6 +1037,11 @@ function DockTile({
   };
 
   const accent = app.accent ?? theme.palette.accent;
+  // Icon size as a fraction of the tile, per platform: Windows ~0.6 (24px in a
+  // 40px tile), Ubuntu ~0.82 (icons nearly fill the dock), macOS ~0.6. Full-art
+  // icons fill a little more than a stroke glyph.
+  const glyphScale = theme.chrome.dockIconScale ?? 0.5;
+  const artScale = Math.min(glyphScale + 0.2, 0.92);
   const Art = app.iconArt;
   const Icon = app.icon;
   const isLeft = position === "left";
@@ -1076,15 +1090,15 @@ function DockTile({
       }}
     >
       {Art ? (
-        <Art size={Math.round(size * 0.7)} />
+        <Art size={Math.round(size * artScale)} />
       ) : Icon ? (
-        <Icon size={Math.round(size * 0.5)} />
+        <Icon size={Math.round(size * glyphScale)} />
       ) : (
         <span
           style={{
             fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
             fontWeight: 700,
-            fontSize: Math.round(size * 0.4),
+            fontSize: Math.round(size * (glyphScale - 0.1)),
             textShadow: bar ? undefined : "0 1px 2px rgba(0,0,0,0.4)",
           }}
         >

@@ -13,7 +13,7 @@ import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
 import { Tooltip } from "./tooltip";
-import { getChromeMetrics, MENU_BAR_HEIGHT } from "./util/layout";
+import { getChromeMetrics, getMenuBarHeight, MENU_BAR_HEIGHT } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
 
 export { MENU_BAR_HEIGHT };
@@ -99,7 +99,7 @@ export function MenuBar({ brand }: { brand?: string }) {
         top: 0,
         left: 0,
         right: 0,
-        height: metrics.menuBarHeight,
+        height: getMenuBarHeight(theme),
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",

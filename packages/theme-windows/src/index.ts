@@ -109,6 +109,9 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       taskViewButton: true,
       // Right-click the empty taskbar for "Taskbar settings".
       taskbarContextMenu: true,
+      // Windows 11 taskbar: 24px icons in a 40px button, a 48px-tall bar.
+      dockTileSize: 40,
+      dockIconScale: 0.6,
     },
     // Follow the OS color scheme by default; switch in Settings > Appearance.
     appearance: "auto",

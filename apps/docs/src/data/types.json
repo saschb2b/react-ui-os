@@ -434,6 +434,24 @@
           "type": "boolean",
           "optional": true,
           "description": "When true, a `\"bar\"` dock hides itself off the edge and slides back in\nonly while the pointer is at that edge or over the bar, the Windows\n\"Automatically hide the taskbar\" behavior. While hidden it reserves no\nwork area, so windows fill the space and the bar overlays them on reveal.\nOptional, defaults to false. Ignored by the floating dock.\nSource: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07"
+        },
+        {
+          "name": "dockTileSize",
+          "type": "number",
+          "optional": true,
+          "description": "Resting size in px of a dock tile/button, set per platform to match its\nreference: the floating macOS dock tile (~56), the Windows taskbar button\n(~40, for 24px icons), or the Ubuntu dock tile (~56, for ~46px icons). A\n`\"bar\"` dock derives its thickness (taskbar height / dock width) from this.\nOptional; defaults to the viewport metric for the dock form, and compact\nviewports shrink it."
+        },
+        {
+          "name": "dockIconScale",
+          "type": "number",
+          "optional": true,
+          "description": "Icon glyph size as a fraction of the tile (0..1). Windows taskbar icons sit\nnear 0.6 (24px in a 40px tile); Ubuntu dock icons nearly fill the tile\n(~0.82); macOS ~0.6. Optional, defaults to 0.5."
+        },
+        {
+          "name": "menuBarHeight",
+          "type": "number",
+          "optional": true,
+          "description": "Top menu bar height in px, per platform: macOS 24, the GNOME top bar ~30.\nOptional, defaults to 24. Ignored unless `menuBar` is `\"top\"`."
         }
       ]
     },

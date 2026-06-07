@@ -82,9 +82,52 @@ export interface WorkArea {
   height: number;
 }
 
+// Compact viewports shrink the chrome; this is the ratio the compact metric set
+// applies to the regular bar tile (30/36), reused so a theme-set tile shrinks
+// in step rather than staying full size on a small embed.
+const COMPACT_TILE_RATIO = 0.83;
+// Breathing room on each side of a bar tile, so the bar's thickness exceeds the
+// tile (a 40px Windows tile in a 48px bar; a 56px Ubuntu tile in a 64px dock).
+const BAR_TILE_MARGIN = 4;
+
+/**
+ * Resting size of a dock tile/button. A theme sets `chrome.dockTileSize` to its
+ * platform's icon size (Windows ~40 for 24px icons, Ubuntu ~56 for ~46px icons,
+ * macOS ~56); otherwise it falls back to the viewport metric for the dock form.
+ * Compact viewports shrink it in step.
+ */
+export function getDockTileSize(
+  theme: OsTheme,
+  mode: ViewportMode = getViewportMode(),
+): number {
+  const metrics = getChromeMetrics(mode);
+  const override = theme.chrome.dockTileSize;
+  if (override !== undefined) {
+    return Math.round(mode === "compact" ? override * COMPACT_TILE_RATIO : override);
+  }
+  return theme.chrome.dockStyle === "bar" ? metrics.taskbarTileSize : metrics.dockTileSize;
+}
+
+/**
+ * Thickness of a `"bar"` dock: the Windows taskbar height or the Ubuntu dock
+ * width. Derived from the tile size so a larger-icon dock (Ubuntu) is a wider
+ * bar, the way the real platforms scale.
+ */
+export function getBarThickness(
+  theme: OsTheme,
+  mode: ViewportMode = getViewportMode(),
+): number {
+  // Derive from the tile when the theme sizes its dock; otherwise keep the
+  // viewport metric so un-tokenized bar themes are unchanged.
+  if (theme.chrome.dockTileSize === undefined) {
+    return getChromeMetrics(mode).taskbarSize;
+  }
+  return getDockTileSize(theme, mode) + BAR_TILE_MARGIN * 2;
+}
+
 export function getMenuBarHeight(theme: OsTheme): number {
   if (theme.chrome.menuBar === "none") return 0;
-  return getChromeMetrics().menuBarHeight;
+  return theme.chrome.menuBarHeight ?? getChromeMetrics().menuBarHeight;
 }
 
 /**
@@ -106,20 +149,20 @@ export function getDockReservation(theme: OsTheme): {
   const metrics = getChromeMetrics();
   // The taskbar form sits flush to the edge, so it reserves its own thickness
   // with no surrounding gap. The floating dock adds its edge offset.
+  const barThickness = getBarThickness(theme);
+  const floatFootprint = getDockTileSize(theme) + metrics.dockPadding * 2;
   if (theme.chrome.dockPosition === "left") {
     return {
       top: 0,
       right: 0,
       bottom: 0,
-      left: isBar
-        ? metrics.taskbarSize
-        : metrics.dockWidth + metrics.dockEdgeOffset * 2,
+      left: isBar ? barThickness : floatFootprint + metrics.dockEdgeOffset * 2,
     };
   }
   return {
     top: 0,
     right: 0,
-    bottom: isBar ? metrics.taskbarSize : metrics.dockHeight + metrics.dockEdgeOffset,
+    bottom: isBar ? barThickness : floatFootprint + metrics.dockEdgeOffset,
     left: 0,
   };
 }

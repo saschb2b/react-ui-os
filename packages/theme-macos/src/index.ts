@@ -103,6 +103,11 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       windowControls: "traffic-lights",
       dockPosition: "bottom",
       menuBar: "top",
+      // The floating dock's resting tile; icons fill ~0.6 of it. The 24pt menu
+      // bar is the Big Sur+ height.
+      dockTileSize: 56,
+      dockIconScale: 0.6,
+      menuBarHeight: 24,
     },
     // Follow the OS color scheme by default; the user can force Light or Dark
     // from Settings > Appearance.
