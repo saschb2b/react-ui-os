@@ -235,6 +235,18 @@
           "optional": false
         },
         {
+          "name": "windowOpenScale",
+          "type": "number",
+          "optional": true,
+          "description": "Scale a window grows from as it opens (and shrinks to as it closes).\nOptional, defaults to 0.92 (a subtle macOS-like pop). A theme that imitates\nGNOME, where a window rises from a near-flat sliver, sets a smaller value."
+        },
+        {
+          "name": "windowOpenOrigin",
+          "type": "string",
+          "optional": true,
+          "description": "`transform-origin` the open scale pivots on. Optional, defaults to center,\nthe point a new macOS or Windows window grows from. GNOME maps a normal\nwindow from its bottom edge (pivot 0.5, 1.0), so the Ubuntu theme sets\n\"50% 100%\" to rise from the bottom. Applied only during the open phase, so\nclose and minimize keep their own pivots."
+        },
+        {
           "name": "dockHoverDurationMs",
           "type": "number",
           "optional": false
@@ -254,6 +266,12 @@
           "name": "genieEasing",
           "type": "string",
           "optional": false
+        },
+        {
+          "name": "genieScale",
+          "type": "number",
+          "optional": true,
+          "description": "Fallback scale a minimizing window shrinks to when no dock tile is found,\nso it collapses in place. Optional, defaults to 0.08. When a dock tile is\npresent the window instead scales to the tile's own footprint, the way\nGNOME scales a window to its icon geometry (geom.width / actor.width)."
         },
         {
           "name": "missionControlDurationMs",
