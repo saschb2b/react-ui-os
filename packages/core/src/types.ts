@@ -215,6 +215,15 @@ export interface OsThemeChrome {
    * `menuBar` is `"top"`.
    */
   quickSettings?: boolean;
+  /**
+   * When true, a thin sliver at the far trailing corner of a bottom `"bar"`
+   * dock acts as the Windows "Show desktop" button: one click minimizes every
+   * window on the active workspace, a second click restores the ones it
+   * minimized. Mirrors the Win+D toggle. Optional, defaults to false. Ignored
+   * by the floating dock and the vertical (left) bar.
+   * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
+   */
+  showDesktopButton?: boolean;
 }
 
 /** A resolved appearance (after "auto" is mapped to the system scheme). */

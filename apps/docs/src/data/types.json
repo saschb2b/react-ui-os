@@ -410,6 +410,12 @@
           "type": "boolean",
           "optional": true,
           "description": "When true, the menu-bar status cluster becomes a single button that opens\nthe Quick Settings popover (the GNOME system menu, the macOS Control\nCenter, the Windows quick settings flyout). Populate the popover with\n`registerQuickSetting(...)`. Optional, defaults to false. Ignored unless\n`menuBar` is `\"top\"`."
+        },
+        {
+          "name": "showDesktopButton",
+          "type": "boolean",
+          "optional": true,
+          "description": "When true, a thin sliver at the far trailing corner of a bottom `\"bar\"`\ndock acts as the Windows \"Show desktop\" button: one click minimizes every\nwindow on the active workspace, a second click restores the ones it\nminimized. Mirrors the Win+D toggle. Optional, defaults to false. Ignored\nby the floating dock and the vertical (left) bar.\nSource: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07"
         }
       ]
     },

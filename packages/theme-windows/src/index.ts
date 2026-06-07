@@ -103,6 +103,8 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       menuBar: "none",
       // The Windows Start menu, raised from the taskbar launcher.
       launcher: "menu",
+      // The "Show desktop" sliver in the far bottom-right corner.
+      showDesktopButton: true,
     },
     // Follow the OS color scheme by default; switch in Settings > Appearance.
     appearance: "auto",

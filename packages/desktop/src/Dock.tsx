@@ -47,6 +47,10 @@ const MAG_DISTANCE = 140;
 // smooth, settling in roughly 150 ms.
 const SMOOTH_TAU = 0.05;
 
+// Width of the Windows "Show desktop" corner sliver. Windows 11 keeps it a thin
+// strip past the clock; a click toggles minimize-all.
+const SHOW_DESKTOP_WIDTH = 12;
+
 /**
  * App dock. Direction follows `theme.chrome.dockPosition`:
  *
@@ -169,6 +173,10 @@ export function Dock() {
   // sits. The Windows register (bottom bar, no menu bar) keeps both.
   const showTray = isBar && !topMenuBar;
   const launcherTrailing = isBar && isLeft && topMenuBar;
+  // The Windows "Show desktop" sliver lives in the far bottom-right corner, so
+  // it only applies to a horizontal bar. When present, the tray shifts inward
+  // to leave the corner clear.
+  const showDesktop = isBar && !isLeft && (theme.chrome.showDesktopButton ?? false);
 
   // Bar-dock icon alignment along the long axis. macOS / Windows 11 center;
   // GNOME / Ubuntu and Windows 10 pack from the start. When not centered, the
@@ -363,7 +371,10 @@ export function Dock() {
         </span>
       ) : null}
       {isBar && <StartButton vertical={isLeft} trailing={launcherTrailing} />}
-      {showTray && <TaskbarTray vertical={isLeft} />}
+      {showTray && (
+        <TaskbarTray vertical={isLeft} trailingInset={showDesktop ? SHOW_DESKTOP_WIDTH : 0} />
+      )}
+      {showDesktop && <ShowDesktopButton />}
     </nav>
   );
 }
@@ -422,12 +433,87 @@ function StartButton({ vertical, trailing }: { vertical: boolean; trailing: bool
 }
 
 /**
+ * The "Show desktop" sliver at the far bottom-right corner of the Windows
+ * taskbar. One click minimizes every window on the active workspace; a second
+ * click restores the set it minimized (or, if the user minimized everything by
+ * hand, all of them). Mirrors the Win+D toggle and the thin corner button
+ * Windows 11 exposes via "Select the far corner of the taskbar to show the
+ * desktop".
+ * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
+ */
+function ShowDesktopButton() {
+  const theme = useTheme();
+  const { state, windows, minimizeWindow, restoreWindow } = useWindowManager();
+  // The set we last minimized, so the next click restores exactly those.
+  const stashRef = useRef<string[]>([]);
+
+  const handleClick = () => {
+    const active = state.activeWorkspaceId;
+    const visible = windows.filter(
+      (w) => w.workspaceId === active && w.state !== "minimized",
+    );
+    if (visible.length > 0) {
+      visible.forEach((w) => minimizeWindow(w.id));
+      stashRef.current = visible.map((w) => w.id);
+      return;
+    }
+    // Desktop already clear: restore the stash, or everything still minimized
+    // here if there is no stash (the user minimized by hand).
+    const minimized = windows.filter(
+      (w) => w.workspaceId === active && w.state === "minimized",
+    );
+    const live = new Set(minimized.map((w) => w.id));
+    const ids = stashRef.current.length > 0 ? stashRef.current : minimized.map((w) => w.id);
+    ids.forEach((id) => {
+      if (live.has(id)) restoreWindow(id);
+    });
+    stashRef.current = [];
+  };
+
+  const hover = `${theme.palette.textPrimary}14`;
+  return (
+    <button
+      type="button"
+      aria-label="Show desktop"
+      onClick={handleClick}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = hover;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+      }}
+      style={{
+        position: "absolute",
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: SHOW_DESKTOP_WIDTH,
+        border: "none",
+        // A faint hairline on the leading edge marks the sliver, as Windows
+        // separates it from the clock with a thin divider.
+        borderLeft: `1px solid ${theme.palette.border}`,
+        background: "transparent",
+        cursor: "pointer",
+        padding: 0,
+        transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+      }}
+    />
+  );
+}
+
+/**
  * Taskbar system tray pinned to the trailing edge: the registered status
  * items and a clock (time over date), the cluster Windows keeps bottom-right.
  * Clicking the clock toggles the Notification Center, as the Windows clock
  * opens the notification panel.
  */
-function TaskbarTray({ vertical }: { vertical: boolean }) {
+function TaskbarTray({
+  vertical,
+  trailingInset = 0,
+}: {
+  vertical: boolean;
+  trailingInset?: number;
+}) {
   const theme = useTheme();
   const items = useSyncExternalStore(
     subscribeStatusItems,
@@ -463,7 +549,7 @@ function TaskbarTray({ vertical }: { vertical: boolean }) {
         gap: 2,
         ...(vertical
           ? { left: 0, right: 0, bottom: 6, flexDirection: "column" }
-          : { right: 6, top: 0, bottom: 0 }),
+          : { right: 6 + trailingInset, top: 0, bottom: 0 }),
       }}
     >
       {items.map((item) => (
