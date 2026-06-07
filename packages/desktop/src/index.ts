@@ -31,6 +31,7 @@ export {
 } from "./quick-settings";
 export { AppSwitcher } from "./AppSwitcher";
 export { MissionControl } from "./MissionControl";
+export { KeyboardHelp } from "./KeyboardHelp";
 export {
   HudOverlay,
   showHud,
@@ -74,7 +75,17 @@ export {
   SPOTLIGHT_OPEN_EVENT,
   NOTIFICATION_CENTER_TOGGLE_EVENT,
   QUICK_SETTINGS_TOGGLE_EVENT,
+  MISSION_CONTROL_TOGGLE_EVENT,
+  KEYBOARD_HELP_TOGGLE_EVENT,
 } from "./events";
+export {
+  SHORTCUTS,
+  chordOf,
+  formatChord,
+  findConflicts,
+  type Shortcut,
+  type Conflict,
+} from "./keymap";
 export {
   registerSpotlightSource,
   listSpotlightSources,

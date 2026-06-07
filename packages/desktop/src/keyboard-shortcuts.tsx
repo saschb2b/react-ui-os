@@ -3,7 +3,11 @@
 import { useEffect } from "react";
 import { useWindowManager, windowIdOf } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
-import { MISSION_CONTROL_TOGGLE_EVENT, SPOTLIGHT_OPEN_EVENT } from "./events";
+import {
+  KEYBOARD_HELP_TOGGLE_EVENT,
+  MISSION_CONTROL_TOGGLE_EVENT,
+  SPOTLIGHT_OPEN_EVENT,
+} from "./events";
 import { chordMatches } from "./keymap";
 import { rectForZone, recordSnapRestore, type SnapZone } from "./snap";
 import { showHud } from "./hud";
@@ -72,6 +76,13 @@ export function KeyboardShortcuts() {
       if (chordMatches(e, "app.spotlight")) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT));
+        return;
+      }
+
+      // Keyboard shortcuts help (Mod+/), the GNOME Ctrl+? convention.
+      if (chordMatches(e, "app.help")) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent(KEYBOARD_HELP_TOGGLE_EVENT));
         return;
       }
 

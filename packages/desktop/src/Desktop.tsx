@@ -18,6 +18,7 @@ import { DesktopBackdrop } from "./desktop-backdrop";
 import { SnapPreview } from "./snap";
 import { AppSwitcher } from "./AppSwitcher";
 import { MissionControl } from "./MissionControl";
+import { KeyboardHelp } from "./KeyboardHelp";
 import { HudOverlay } from "./hud";
 
 export interface DesktopProps {
@@ -66,6 +67,7 @@ export function Desktop({ apps, theme, brand, storage, children }: DesktopProps)
         <ContextMenu />
         <AppSwitcher />
         <MissionControl />
+        <KeyboardHelp />
         <HudOverlay />
         <DesktopBackdrop />
       </div>

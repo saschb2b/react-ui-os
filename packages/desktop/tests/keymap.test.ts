@@ -3,6 +3,7 @@ import {
   chordOf,
   expandChord,
   findConflicts,
+  formatChord,
   SHORTCUTS,
   type Shortcut,
 } from "../src/keymap";
@@ -81,5 +82,27 @@ describe("findConflicts", () => {
 
   it("the shipped registry has no clashes", () => {
     expect(findConflicts(SHORTCUTS)).toEqual([]);
+  });
+});
+
+describe("formatChord", () => {
+  it("glues mac symbols and spaces pc words", () => {
+    expect(formatChord("Mod+Shift+ArrowLeft", true)).toBe("⌘⇧←");
+    expect(formatChord("Mod+Shift+ArrowLeft", false)).toBe("Ctrl + Shift + ←");
+  });
+
+  it("maps Mod to the platform's primary key", () => {
+    expect(formatChord("Mod+W", true)).toBe("⌘W");
+    expect(formatChord("Mod+W", false)).toBe("Ctrl + W");
+  });
+
+  it("gives arrows and Escape glyphs, and uppercases a single letter", () => {
+    expect(formatChord("Mod+ArrowUp", false)).toBe("Ctrl + ↑");
+    expect(formatChord("Escape", false)).toBe("Esc");
+    expect(formatChord("F3", false)).toBe("F3");
+  });
+
+  it("passes a range display through unchanged", () => {
+    expect(formatChord("Mod+1–9", false)).toBe("Ctrl + 1–9");
   });
 });

@@ -79,6 +79,12 @@ export interface Shortcut {
   label: string;
   group: string;
   scope: Scope;
+  /**
+   * Optional override for how the chord reads in the shortcuts help, when the
+   * raw chords would be unwieldy (a 1..9 range, say). A spec string like the
+   * chords, run through {@link formatChord}.
+   */
+  display?: string;
 }
 
 /** Expand a chord spec into the concrete canonical chords it can produce. */
@@ -231,6 +237,14 @@ export const SHORTCUTS: Shortcut[] = [
     label: "Open / focus / cycle app 1 to 9",
     group: "Apps",
     scope: "desktop",
+    display: "Mod+1–9",
+  },
+  {
+    id: "app.help",
+    chords: ["Mod+/"],
+    label: "Keyboard shortcuts",
+    group: "Apps",
+    scope: "desktop",
   },
   // Spaces
   {
@@ -311,4 +325,44 @@ export function chordMatches(e: ChordEvent, id: string): boolean {
   if (!shortcut) return false;
   const chord = chordOf(e);
   return shortcut.chords.some((spec) => expandChord(spec).includes(chord));
+}
+
+const MAC_SYMBOL: Record<string, string> = {
+  mod: "⌘",
+  meta: "⌘",
+  ctrl: "⌃",
+  alt: "⌥",
+  shift: "⇧",
+};
+const PC_WORD: Record<string, string> = {
+  mod: "Ctrl",
+  meta: "Super",
+  ctrl: "Ctrl",
+  alt: "Alt",
+  shift: "Shift",
+};
+const KEY_LABEL: Record<string, string> = {
+  arrowup: "↑",
+  arrowdown: "↓",
+  arrowleft: "←",
+  arrowright: "→",
+  escape: "Esc",
+};
+
+/**
+ * Render a chord spec for the shortcuts help: macOS-style glued symbols
+ * (⌘⇧K) when `mac`, spaced words otherwise (Ctrl + Shift + K).
+ * Modifiers map to the platform's key, "Mod" included; arrows and Escape get
+ * glyphs; a single letter is uppercased.
+ */
+export function formatChord(spec: string, mac: boolean): string {
+  const tokens = spec.split("+");
+  const last = tokens.length - 1;
+  const parts = tokens.map((raw, i) => {
+    const token = raw.trim();
+    const low = token.toLowerCase();
+    if (i < last) return (mac ? MAC_SYMBOL[low] : PC_WORD[low]) ?? token;
+    return KEY_LABEL[low] ?? (token.length === 1 ? token.toUpperCase() : token);
+  });
+  return parts.join(mac ? "" : " + ");
 }

@@ -31,3 +31,10 @@ export const QUICK_SETTINGS_TOGGLE_EVENT = "react-ui-os:quick-settings-toggle";
  * overview by dispatching it.
  */
 export const MISSION_CONTROL_TOGGLE_EVENT = "react-ui-os:mission-control-toggle";
+
+/**
+ * Toggle the keyboard shortcuts help overlay. The KeyboardHelp component
+ * listens, so the menu bar, a button, or the Mod+/ shortcut can all open the
+ * reference without prop drilling.
+ */
+export const KEYBOARD_HELP_TOGGLE_EVENT = "react-ui-os:keyboard-help-toggle";
