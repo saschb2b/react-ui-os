@@ -238,14 +238,14 @@ export function Dock() {
   const barJustify =
     align === "start" ? "flex-start" : align === "end" ? "flex-end" : "center";
   const LAUNCHER_SLOT = 44;
-  const TASK_VIEW_SLOT = 36;
   const FREE_EDGE = 8;
-  // The leading cluster reserves the launcher plus, when present, the Task View
-  // button so left-packed app icons clear both.
-  const leadingClusterPad =
-    (isBar && !launcherTrailing ? LAUNCHER_SLOT : FREE_EDGE) +
-    (taskView ? TASK_VIEW_SLOT : 0);
-  const leadingPad = align === "center" ? 0 : leadingClusterPad;
+  // Windows rides the launcher (and Task View) inside the icon run, so the whole
+  // cluster centers together; Ubuntu pins its launcher to the trailing edge.
+  // Only an edge-pinned launcher (or the trailing tray) needs the run inset to
+  // clear it; with the cluster inline the leading side just wants a breathing
+  // gap when packed from the start.
+  const launcherInline = isBar && !launcherTrailing;
+  const leadingPad = align === "center" ? 0 : FREE_EDGE;
   const trailingPad =
     align === "center"
       ? 0
@@ -443,6 +443,8 @@ export function Dock() {
       onContextMenu={taskbarMenu ? handleBarContextMenu : undefined}
       style={navStyle}
     >
+      {launcherInline && <StartButton inline vertical={isLeft} />}
+      {launcherInline && taskView && <TaskViewButton />}
       {apps.map((app, i) => (
         <DockTile
           key={app.id}
@@ -498,8 +500,7 @@ export function Dock() {
           {focusedApp.name}
         </span>
       ) : null}
-      {isBar && <StartButton vertical={isLeft} trailing={launcherTrailing} />}
-      {taskView && <TaskViewButton />}
+      {launcherTrailing && <StartButton vertical={isLeft} trailing />}
       {showTray && (
         <TaskbarTray vertical={isLeft} trailingInset={showDesktop ? SHOW_DESKTOP_WIDTH : 0} />
       )}
@@ -509,11 +510,20 @@ export function Dock() {
 }
 
 /**
- * Taskbar launcher pinned to the leading edge (Start's place on Windows).
- * A neutral 2x2 grid glyph, not the Windows logo: it opens Spotlight, the
- * library's app launcher, respecting the pattern without copying the mark.
+ * Taskbar launcher. A neutral 2x2 grid glyph, not the Windows logo: it opens
+ * Spotlight, the library's app launcher, respecting the pattern without copying
+ * the mark. `inline` rides it inside the icon run so the whole cluster centers
+ * (Windows 11); otherwise it pins to an edge (Ubuntu's trailing launcher).
  */
-function StartButton({ vertical, trailing }: { vertical: boolean; trailing: boolean }) {
+function StartButton({
+  vertical,
+  trailing = false,
+  inline = false,
+}: {
+  vertical: boolean;
+  trailing?: boolean;
+  inline?: boolean;
+}) {
   const theme = useTheme();
   const hover = `${theme.palette.textPrimary}14`;
   return (
@@ -530,14 +540,18 @@ function StartButton({ vertical, trailing }: { vertical: boolean; trailing: bool
         e.currentTarget.style.background = "transparent";
       }}
       style={{
-        position: "absolute",
-        ...(vertical
-          ? trailing
-            ? { bottom: 6, left: "50%", transform: "translateX(-50%)" }
-            : { top: 6, left: "50%", transform: "translateX(-50%)" }
-          : trailing
-            ? { right: 8, top: "50%", transform: "translateY(-50%)" }
-            : { left: 8, top: "50%", transform: "translateY(-50%)" }),
+        ...(inline
+          ? { position: "relative", flexShrink: 0 }
+          : {
+              position: "absolute",
+              ...(vertical
+                ? trailing
+                  ? { bottom: 6, left: "50%", transform: "translateX(-50%)" }
+                  : { top: 6, left: "50%", transform: "translateX(-50%)" }
+                : trailing
+                  ? { right: 8, top: "50%", transform: "translateY(-50%)" }
+                  : { left: 8, top: "50%", transform: "translateY(-50%)" }),
+            }),
         width: 32,
         height: 32,
         display: "flex",
@@ -584,11 +598,10 @@ function TaskViewButton() {
         e.currentTarget.style.background = "transparent";
       }}
       style={{
-        // Sits just right of the 32px Start button pinned at left: 8.
-        position: "absolute",
-        left: 44,
-        top: "50%",
-        transform: "translateY(-50%)",
+        // Rides in the leading cluster just after Start, so the whole group
+        // centers together.
+        position: "relative",
+        flexShrink: 0,
         width: 32,
         height: 32,
         display: "flex",
