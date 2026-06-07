@@ -150,7 +150,12 @@ const WALLPAPERS = [
   { src: "/macos-wallpaper-dark.jpg", label: "Tahoe Dark" },
   { src: "/windows-wallpaper.jpg", label: "Bloom Light" },
   { src: "/windows-wallpaper-dark.jpg", label: "Bloom Dark" },
-  { src: "/ubuntu-wallpaper.png", label: "Yaru" },
+  // Ubuntu 25.10 "Resolute Raccoon" wallpapers, Canonical's official set
+  // (CC-BY-SA). See apps/playground/public/CREDITS.md.
+  { src: "/ubuntu-wallpaper.png", label: "Resolute Raccoon" },
+  { src: "/ubuntu-wallpaper-dark.png", label: "Resolute Raccoon Dark" },
+  { src: "/ubuntu-wallpaper-light.png", label: "Resolute Raccoon Light" },
+  { src: "/ubuntu-wallpaper-blank.png", label: "Resolute Raccoon Plain" },
 ];
 
 function buildTheme(choice: ThemeChoice): OsTheme {
@@ -163,7 +168,9 @@ function buildTheme(choice: ThemeChoice): OsTheme {
   }
   if (choice === "ubuntu") {
     return createUbuntuTheme({
-      wallpaperSrc: "/ubuntu-wallpaper.png",
+      // Ubuntu's base look is dark; light mode gets the colorful variant.
+      wallpaperSrc: "/ubuntu-wallpaper-dark.png",
+      lightWallpaperSrc: "/ubuntu-wallpaper.png",
       wallpaperOptions: WALLPAPERS,
     });
   }
