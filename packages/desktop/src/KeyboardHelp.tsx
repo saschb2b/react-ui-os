@@ -4,6 +4,8 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useTheme } from "./desktop-context";
 import { KEYBOARD_HELP_TOGGLE_EVENT } from "./events";
 import { formatChord, SHORTCUTS, type Shortcut } from "./keymap";
+import { useReducedMotion } from "./util/use-reduced-motion";
+import { useSurfaceTransition } from "./util/use-surface-transition";
 
 const DEFAULT_SHADOW = "0 24px 60px -16px rgba(0,0,0,0.55)";
 
@@ -31,8 +33,9 @@ function grouped(): [string, Shortcut[]][] {
 }
 
 /**
- * The keyboard shortcuts reference, opened with Mod+/ (the GNOME Ctrl+?
- * convention). It renders the keymap registry, so the list a user reads is
+ * The keyboard shortcuts reference. Opens with Mod+/ or Ctrl+? (and from the
+ * right-click desktop menu, for keyboard layouts where neither chord is
+ * reachable). It renders the keymap registry, so the list a user reads is
  * exactly the one the dispatcher fires. Toggled by KEYBOARD_HELP_TOGGLE_EVENT;
  * closes on Escape or a backdrop click.
  */
@@ -40,6 +43,11 @@ export function KeyboardHelp() {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
   const [mac] = useState(isMacPlatform);
+  const reducedMotion = useReducedMotion();
+  const { mounted, surfaceStyle, backdropStyle } = useSurfaceTransition(open, {
+    durationMs: reducedMotion ? 0 : theme.motion.windowOpenDurationMs,
+    easing: theme.motion.windowOpenEasing,
+  });
 
   useEffect(() => {
     const onToggle = () => {
@@ -56,7 +64,7 @@ export function KeyboardHelp() {
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   const kbd: CSSProperties = {
     flexShrink: 0,
@@ -81,6 +89,7 @@ export function KeyboardHelp() {
         justifyContent: "center",
         background: "rgba(0,0,0,0.32)",
         padding: 16,
+        ...backdropStyle,
       }}
     >
       <div
@@ -102,6 +111,7 @@ export function KeyboardHelp() {
           boxShadow: theme.elevation?.windowFocused ?? DEFAULT_SHADOW,
           color: theme.palette.textPrimary,
           padding: 22,
+          ...surfaceStyle,
         }}
       >
         <h2 style={{ margin: "0 0 16px", fontSize: 16 }}>Keyboard Shortcuts</h2>

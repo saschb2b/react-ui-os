@@ -26,6 +26,11 @@ import { useEffect } from "react";
  * (default 0.92), set per theme by `motion.windowOpenScale`. (Folding the scale
  * into the keyframe's transform would discard the position and fly the window
  * in from the origin.)
+ *
+ * On-demand surfaces (dialogs, popovers, overlays) reuse `rui-window-open` /
+ * `rui-window-close` for their panel through `useSurfaceTransition`, so they
+ * grow and shrink with the same motion as a window; `rui-fade-in` /
+ * `rui-fade-out` carry their dimmed backdrop.
  */
 export function StyleInjector() {
   useEffect(() => {
@@ -55,6 +60,14 @@ export function StyleInjector() {
       @keyframes rui-wallpaper-in {
         from { opacity: 0; }
         to   { opacity: 1; }
+      }
+      @keyframes rui-fade-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      @keyframes rui-fade-out {
+        from { opacity: 1; }
+        to   { opacity: 0; }
       }
     `;
     document.head.appendChild(style);
