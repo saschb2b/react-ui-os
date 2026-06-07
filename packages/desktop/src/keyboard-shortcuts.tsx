@@ -80,7 +80,9 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      // Keyboard shortcuts help (Mod+/), the GNOME Ctrl+? convention.
+      // Keyboard shortcuts help: Mod+/ or Ctrl+? (Mod+Shift+/), which also
+      // catches the German layout where "/" is Shift+7. Right-clicking the
+      // desktop opens it too, for layouts neither chord reaches.
       if (chordMatches(e, "app.help")) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent(KEYBOARD_HELP_TOGGLE_EVENT));

@@ -241,10 +241,15 @@ export const SHORTCUTS: Shortcut[] = [
   },
   {
     id: "app.help",
-    chords: ["Mod+/"],
+    // Mod+/ and Mod+Shift+/ (which is Ctrl+?, the GNOME convention). The second
+    // also catches layouts where "/" needs Shift: on a German keyboard "/" is
+    // Shift+7, so pressing "Ctrl+/" arrives as ctrl+shift+/. A right-click
+    // desktop menu item opens it too, for layouts neither chord reaches.
+    chords: ["Mod+/", "Mod+Shift+/"],
     label: "Keyboard shortcuts",
     group: "Apps",
     scope: "desktop",
+    display: "Mod+/",
   },
   // Spaces
   {

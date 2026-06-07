@@ -9,7 +9,11 @@ import {
   type ContextMenuItem,
 } from "./context-menu";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
-import { NOTIFICATION_CENTER_TOGGLE_EVENT, SPOTLIGHT_OPEN_EVENT } from "./events";
+import {
+  KEYBOARD_HELP_TOGGLE_EVENT,
+  NOTIFICATION_CENTER_TOGGLE_EVENT,
+  SPOTLIGHT_OPEN_EVENT,
+} from "./events";
 
 interface DesktopBackdropProps {
   /** Extra items appended to the default set. */
@@ -74,6 +78,12 @@ export function DesktopBackdrop({ extraItems, buildItems }: DesktopBackdropProps
           label: "Notifications",
           onSelect: () => {
             window.dispatchEvent(new CustomEvent(NOTIFICATION_CENTER_TOGGLE_EVENT));
+          },
+        },
+        {
+          label: "Keyboard Shortcuts",
+          onSelect: () => {
+            window.dispatchEvent(new CustomEvent(KEYBOARD_HELP_TOGGLE_EVENT));
           },
         },
         { separator: true },
