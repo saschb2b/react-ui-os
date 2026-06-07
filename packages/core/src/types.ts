@@ -21,11 +21,19 @@ export interface App {
    * When absent, the theme's default accent is used.
    */
   accent?: string;
-  /** Lucide-style icon. Themes render a fallback letter when absent. */
+  /** Default icon. Themes render a fallback letter when absent. */
   icon?: ComponentType<{ size?: number }>;
   /**
+   * Per-icon-style variants, keyed by the theme's `chrome.iconStyle` (e.g.
+   * `{ fluent: WindowsNotesIcon }`). The active theme's style selects one;
+   * anything missing falls back to `icon`. Lets one app carry a platform-native
+   * icon per OS clone (Fluent on Windows, an SF-style glyph on macOS) without
+   * the component branching on the theme.
+   */
+  icons?: Record<string, ComponentType<{ size?: number }>>;
+  /**
    * Subject illustration painted inside the dock tile, on top of the accent
-   * gradient. Optional; themes fall back to `icon` or a letter.
+   * gradient. Optional; themes fall back to the resolved `icon` or a letter.
    */
   iconArt?: ComponentType<{ size?: number }>;
   /** Default window bounds when first opened. Theme has the fallback. */
@@ -270,6 +278,12 @@ export interface OsThemeChrome {
    * Optional, defaults to 24. Ignored unless `menuBar` is `"top"`.
    */
   menuBarHeight?: number;
+  /**
+   * Icon style this theme requests for app icons (e.g. `"fluent"` on Windows,
+   * `"macos"`, `"gnome"`). An app's `icons[iconStyle]` is used when present,
+   * otherwise its default `icon`. Optional; when unset every app uses `icon`.
+   */
+  iconStyle?: string;
 }
 
 /** A resolved appearance (after "auto" is mapped to the system scheme). */

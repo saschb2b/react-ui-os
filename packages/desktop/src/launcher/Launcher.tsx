@@ -11,6 +11,7 @@ import {
 } from "react";
 import { notify, useWindowManager } from "@react-ui-os/core";
 import { useApps, useTheme } from "../desktop-context";
+import { resolveAppIcon } from "../util/app-icon";
 import { getDockReservation } from "../util/layout";
 import { nextCascadeIndex, pickInitialBounds } from "../util/initial-bounds";
 import { useReducedMotion } from "../util/use-reduced-motion";
@@ -449,7 +450,7 @@ function LauncherTile({
   const theme = useTheme();
   const accent = result.accent ?? theme.palette.accent;
   const Art = result.kind === "app" ? result.app.iconArt : undefined;
-  const Icon = result.kind === "app" ? result.app.icon : undefined;
+  const Icon = result.kind === "app" ? resolveAppIcon(result.app, theme) : undefined;
   const externalIcon = result.kind === "external" ? result.icon : undefined;
   const tile = size;
   return (
@@ -1126,7 +1127,7 @@ function ResultGlyph({ result, size }: { result: LauncherResult; size: number })
   const theme = useTheme();
   const accent = result.accent ?? theme.palette.accent;
   const Art = result.kind === "app" ? result.app.iconArt : undefined;
-  const Icon = result.kind === "app" ? result.app.icon : undefined;
+  const Icon = result.kind === "app" ? resolveAppIcon(result.app, theme) : undefined;
   const externalIcon = result.kind === "external" ? result.icon : undefined;
   return (
     <div
@@ -1248,7 +1249,7 @@ function ResultRow({
 }) {
   const theme = useTheme();
   const accent = result.accent ?? theme.palette.accent;
-  const Icon = result.kind === "app" ? result.app.icon : undefined;
+  const Icon = result.kind === "app" ? resolveAppIcon(result.app, theme) : undefined;
   const externalIcon = result.kind === "external" ? result.icon : undefined;
 
   return (

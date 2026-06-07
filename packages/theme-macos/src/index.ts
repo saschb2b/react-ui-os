@@ -108,6 +108,9 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       dockTileSize: 56,
       dockIconScale: 0.6,
       menuBarHeight: 24,
+      // macOS uses its default SF-style glyphs (the app's `icon`); apps may add
+      // an `icons.macos` variant.
+      iconStyle: "macos",
     },
     // Follow the OS color scheme by default; the user can force Light or Dark
     // from Settings > Appearance.

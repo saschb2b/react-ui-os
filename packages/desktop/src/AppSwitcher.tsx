@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "r
 import { useWindowManager, windowIdOf, type App } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { APP_SWITCHER_CYCLE_EVENT } from "./events";
+import { resolveAppIcon } from "./util/app-icon";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 
 /**
@@ -227,7 +228,7 @@ function Tile({
   const accent = app.accent ?? theme.palette.accent;
   const size = focused ? 72 : 56;
   const Art = app.iconArt;
-  const Icon = app.icon;
+  const Icon = resolveAppIcon(app, theme);
   return (
     <div
       style={{

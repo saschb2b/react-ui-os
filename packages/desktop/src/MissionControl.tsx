@@ -13,6 +13,7 @@ import { useWindowManager, type OpenWindow } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { MISSION_CONTROL_TOGGLE_EVENT } from "./events";
 import { getSystemWindow, resolveSystemWindowName } from "./system-windows";
+import { resolveAppIcon } from "./util/app-icon";
 import { useReducedMotion } from "./util/use-reduced-motion";
 
 type Phase = "closed" | "enter" | "open" | "leave";
@@ -520,7 +521,7 @@ function Card({
   onPick: () => void;
 }) {
   const label = labelFor(win, apps);
-  const Icon = iconFor(win, apps);
+  const Icon = iconFor(win, apps, theme);
   const scale = Math.min(THUMB_MAX_W / win.w, THUMB_MAX_H / win.h, THUMB_MAX_SCALE);
   const frameW = Math.round(win.w * scale);
   const frameH = Math.round(win.h * scale);
@@ -753,7 +754,7 @@ function PreviewFallback({
   win: OpenWindow;
   theme: ReturnType<typeof useTheme>;
 }) {
-  const Icon = iconFor(win, apps);
+  const Icon = iconFor(win, apps, theme);
   return (
     <div
       style={{
@@ -819,11 +820,12 @@ function labelFor(win: OpenWindow, apps: ReturnType<typeof useApps>): string {
 function iconFor(
   win: OpenWindow,
   apps: ReturnType<typeof useApps>,
+  theme: ReturnType<typeof useTheme>,
 ): ComponentType<{ size?: number }> | null {
   const p = win.payload;
   if (p.kind === "app") {
     const app = apps.find((a) => a.id === p.appId);
-    return app?.icon ?? app?.iconArt ?? null;
+    return (app ? resolveAppIcon(app, theme) : undefined) ?? app?.iconArt ?? null;
   }
   return getSystemWindow(p.systemId)?.desktopIcon ?? null;
 }

@@ -32,6 +32,7 @@ import {
   getDockTileSize,
   getMenuBarHeight,
 } from "./util/layout";
+import { resolveAppIcon } from "./util/app-icon";
 import { useIsomorphicLayoutEffect } from "./util/use-isomorphic-layout-effect";
 import { useReducedMotion } from "./util/use-reduced-motion";
 import { useViewportMode } from "./util/viewport-mode";
@@ -1043,7 +1044,7 @@ function DockTile({
   const glyphScale = theme.chrome.dockIconScale ?? 0.5;
   const artScale = Math.min(glyphScale + 0.2, 0.92);
   const Art = app.iconArt;
-  const Icon = app.icon;
+  const Icon = resolveAppIcon(app, theme);
   const isLeft = position === "left";
   const dur = theme.motion.dockHoverDurationMs;
   // The taskbar button is a flat icon button (transparent, hover-highlighted,

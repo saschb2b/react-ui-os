@@ -35,13 +35,19 @@
           "name": "icon",
           "type": "ComponentType<{ size?: number }>",
           "optional": true,
-          "description": "Lucide-style icon. Themes render a fallback letter when absent."
+          "description": "Default icon. Themes render a fallback letter when absent."
+        },
+        {
+          "name": "icons",
+          "type": "Record<string, ComponentType<{ size?: number }>>",
+          "optional": true,
+          "description": "Per-icon-style variants, keyed by the theme's `chrome.iconStyle` (e.g.\n`{ fluent: WindowsNotesIcon }`). The active theme's style selects one;\nanything missing falls back to `icon`. Lets one app carry a platform-native\nicon per OS clone (Fluent on Windows, an SF-style glyph on macOS) without\nthe component branching on the theme."
         },
         {
           "name": "iconArt",
           "type": "ComponentType<{ size?: number }>",
           "optional": true,
-          "description": "Subject illustration painted inside the dock tile, on top of the accent\ngradient. Optional; themes fall back to `icon` or a letter."
+          "description": "Subject illustration painted inside the dock tile, on top of the accent\ngradient. Optional; themes fall back to the resolved `icon` or a letter."
         },
         {
           "name": "defaultBounds",
@@ -452,6 +458,12 @@
           "type": "number",
           "optional": true,
           "description": "Top menu bar height in px, per platform: macOS 24, the GNOME top bar ~30.\nOptional, defaults to 24. Ignored unless `menuBar` is `\"top\"`."
+        },
+        {
+          "name": "iconStyle",
+          "type": "string",
+          "optional": true,
+          "description": "Icon style this theme requests for app icons (e.g. `\"fluent\"` on Windows,\n`\"macos\"`, `\"gnome\"`). An app's `icons[iconStyle]` is used when present,\notherwise its default `icon`. Optional; when unset every app uses `icon`."
         }
       ]
     },

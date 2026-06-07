@@ -133,6 +133,9 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       dockTileSize: 56,
       dockIconScale: 0.82,
       menuBarHeight: 30,
+      // Ubuntu falls back to the app's default glyph until apps ship an
+      // `icons.gnome` variant.
+      iconStyle: "gnome",
     },
     // Yaru ships light and dark; the base here is Yaru dark, so the light
     // variant is the override. "auto" follows the OS scheme by default.
