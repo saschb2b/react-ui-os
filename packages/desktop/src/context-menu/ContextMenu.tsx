@@ -175,7 +175,10 @@ function Surface({ state }: { state: ContextMenuState }) {
     WebkitBackdropFilter: theme.blur.surface,
     border: `1px solid ${theme.palette.border}`,
     borderRadius: theme.shape.small + 4,
-    boxShadow: "0 14px 36px -10px rgba(0,0,0,0.55)",
+    // A menu floats on the tighter, softer of the two window shadows (the full
+    // focused-window shadow reads too heavy at menu scale, especially on the
+    // light themes).
+    boxShadow: theme.elevation?.windowUnfocused ?? "0 14px 36px -10px rgba(0,0,0,0.55)",
     padding: 4,
     zIndex: 1400,
     color: theme.palette.textPrimary,
