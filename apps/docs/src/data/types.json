@@ -416,6 +416,12 @@
           "type": "boolean",
           "optional": true,
           "description": "When true, a thin sliver at the far trailing corner of a bottom `\"bar\"`\ndock acts as the Windows \"Show desktop\" button: one click minimizes every\nwindow on the active workspace, a second click restores the ones it\nminimized. Mirrors the Win+D toggle. Optional, defaults to false. Ignored\nby the floating dock and the vertical (left) bar.\nSource: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07"
+        },
+        {
+          "name": "taskViewButton",
+          "type": "boolean",
+          "optional": true,
+          "description": "When true, a Task View button sits in the leading cluster of a bottom\n`\"bar\"` dock, beside the launcher. It opens the all-windows overview\n(Mission Control), the Windows 11 \"Task View\" taskbar button (Win+Tab).\nOptional, defaults to false. Ignored by the floating dock and the\nvertical (left) bar.\nSource: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07"
         }
       ]
     },

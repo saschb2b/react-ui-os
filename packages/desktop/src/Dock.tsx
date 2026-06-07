@@ -18,7 +18,11 @@ import {
 import type { App } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { openContextMenu, type ContextMenuItem } from "./context-menu";
-import { NOTIFICATION_CENTER_TOGGLE_EVENT, SPOTLIGHT_OPEN_EVENT } from "./events";
+import {
+  MISSION_CONTROL_TOGGLE_EVENT,
+  NOTIFICATION_CENTER_TOGGLE_EVENT,
+  SPOTLIGHT_OPEN_EVENT,
+} from "./events";
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import { getChromeMetrics } from "./util/layout";
@@ -177,6 +181,10 @@ export function Dock() {
   // it only applies to a horizontal bar. When present, the tray shifts inward
   // to leave the corner clear.
   const showDesktop = isBar && !isLeft && (theme.chrome.showDesktopButton ?? false);
+  // The Task View button sits beside the launcher in the leading cluster, so it
+  // only applies to a horizontal bar with the launcher at the leading edge.
+  const taskView =
+    isBar && !isLeft && !launcherTrailing && (theme.chrome.taskViewButton ?? false);
 
   // Bar-dock icon alignment along the long axis. macOS / Windows 11 center;
   // GNOME / Ubuntu and Windows 10 pack from the start. When not centered, the
@@ -186,9 +194,14 @@ export function Dock() {
   const barJustify =
     align === "start" ? "flex-start" : align === "end" ? "flex-end" : "center";
   const LAUNCHER_SLOT = 44;
+  const TASK_VIEW_SLOT = 36;
   const FREE_EDGE = 8;
-  const leadingPad =
-    align === "center" ? 0 : isBar && !launcherTrailing ? LAUNCHER_SLOT : FREE_EDGE;
+  // The leading cluster reserves the launcher plus, when present, the Task View
+  // button so left-packed app icons clear both.
+  const leadingClusterPad =
+    (isBar && !launcherTrailing ? LAUNCHER_SLOT : FREE_EDGE) +
+    (taskView ? TASK_VIEW_SLOT : 0);
+  const leadingPad = align === "center" ? 0 : leadingClusterPad;
   const trailingPad =
     align === "center"
       ? 0
@@ -371,6 +384,7 @@ export function Dock() {
         </span>
       ) : null}
       {isBar && <StartButton vertical={isLeft} trailing={launcherTrailing} />}
+      {taskView && <TaskViewButton />}
       {showTray && (
         <TaskbarTray vertical={isLeft} trailingInset={showDesktop ? SHOW_DESKTOP_WIDTH : 0} />
       )}
@@ -427,6 +441,64 @@ function StartButton({ vertical, trailing }: { vertical: boolean; trailing: bool
         <rect x="9" y="1" width="6" height="6" rx="1.5" />
         <rect x="1" y="9" width="6" height="6" rx="1.5" />
         <rect x="9" y="9" width="6" height="6" rx="1.5" />
+      </svg>
+    </button>
+  );
+}
+
+/**
+ * Task View button, beside Start in the taskbar's leading cluster. Opens the
+ * all-windows overview (Mission Control), the Windows 11 "Task View" button
+ * (Win+Tab). The glyph is two stacked window outlines, the Windows mark.
+ * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
+ */
+function TaskViewButton() {
+  const theme = useTheme();
+  const hover = `${theme.palette.textPrimary}14`;
+  return (
+    <button
+      type="button"
+      aria-label="Task view"
+      onClick={() => {
+        window.dispatchEvent(new CustomEvent(MISSION_CONTROL_TOGGLE_EVENT));
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = hover;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+      }}
+      style={{
+        // Sits just right of the 32px Start button pinned at left: 8.
+        position: "absolute",
+        left: 44,
+        top: "50%",
+        transform: "translateY(-50%)",
+        width: 32,
+        height: 32,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "none",
+        background: "transparent",
+        borderRadius: theme.shape.small,
+        cursor: "pointer",
+        color: theme.palette.textPrimary,
+        transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
+      }}
+    >
+      <svg width={18} height={18} viewBox="0 0 18 18" fill="none" aria-hidden>
+        <rect x="4.5" y="2.5" width="11" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+        <rect
+          x="2.5"
+          y="6.5"
+          width="9"
+          height="8"
+          rx="1.5"
+          fill={theme.palette.surface}
+          stroke="currentColor"
+          strokeWidth="1.3"
+        />
       </svg>
     </button>
   );

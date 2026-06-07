@@ -105,6 +105,8 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       launcher: "menu",
       // The "Show desktop" sliver in the far bottom-right corner.
       showDesktopButton: true,
+      // The Task View button beside Start, opening the windows overview.
+      taskViewButton: true,
     },
     // Follow the OS color scheme by default; switch in Settings > Appearance.
     appearance: "auto",

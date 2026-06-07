@@ -224,6 +224,15 @@ export interface OsThemeChrome {
    * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
    */
   showDesktopButton?: boolean;
+  /**
+   * When true, a Task View button sits in the leading cluster of a bottom
+   * `"bar"` dock, beside the launcher. It opens the all-windows overview
+   * (Mission Control), the Windows 11 "Task View" taskbar button (Win+Tab).
+   * Optional, defaults to false. Ignored by the floating dock and the
+   * vertical (left) bar.
+   * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
+   */
+  taskViewButton?: boolean;
 }
 
 /** A resolved appearance (after "auto" is mapped to the system scheme). */
