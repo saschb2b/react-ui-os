@@ -92,6 +92,11 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       genieEasing: "cubic-bezier(0.16, 1, 0.3, 1)",
       missionControlDurationMs: 250,
       missionControlEasing: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      // GTK4 PopoverMenu pops up scaling from the anchor (GTK3's menus were
+      // instant): a fade plus a slight grow. GNOME's short-transition pacing is
+      // ~150ms; ease-out-quad (windowOpenEasing) carries it.
+      contextMenuDurationMs: 150,
+      contextMenuScale: 0.96,
     },
     blur: {
       // The shell chrome and the system menu are dark and lightly translucent.

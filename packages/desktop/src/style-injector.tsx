@@ -30,7 +30,10 @@ import { useEffect } from "react";
  * On-demand surfaces (dialogs, popovers, overlays) reuse `rui-window-open` /
  * `rui-window-close` for their panel through `useSurfaceTransition`, so they
  * grow and shrink with the same motion as a window; `rui-fade-in` /
- * `rui-fade-out` carry their dimmed backdrop.
+ * `rui-fade-out` carry their dimmed backdrop. The context menu has its own
+ * `rui-context-menu-in` entrance, shaped per platform by the `contextMenu*`
+ * motion tokens (scale from the anchor on GNOME, fade-and-slide on Windows, a
+ * plain fade on macOS) through the `--rui-ctx-scale` / `--rui-ctx-ty` vars.
  */
 export function StyleInjector() {
   useEffect(() => {
@@ -68,6 +71,14 @@ export function StyleInjector() {
       @keyframes rui-fade-out {
         from { opacity: 1; }
         to   { opacity: 0; }
+      }
+      @keyframes rui-context-menu-in {
+        from {
+          opacity: 0;
+          scale: var(--rui-ctx-scale, 1);
+          transform: translateY(var(--rui-ctx-ty, 0px));
+        }
+        to { opacity: 1; scale: 1; transform: translateY(0); }
       }
     `;
     document.head.appendChild(style);

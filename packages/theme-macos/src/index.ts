@@ -76,6 +76,10 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       genieEasing: "cubic-bezier(0.4, 0.0, 0.2, 1)",
       missionControlDurationMs: 220,
       missionControlEasing: "cubic-bezier(0.32, 0.72, 0, 1)",
+      // NSMenu fades in (rendered by the Window Server), no scale or slide. The
+      // system fade is not publicly documented, so a short fade matching its
+      // near-instant feel; the scale/offset defaults keep it a plain fade.
+      contextMenuDurationMs: 120,
     },
     blur: {
       surface: "blur(20px) saturate(160%)",

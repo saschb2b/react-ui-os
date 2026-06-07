@@ -71,6 +71,11 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       genieEasing: "cubic-bezier(0.4, 0.0, 0.2, 1)",
       missionControlDurationMs: 200,
       missionControlEasing: "cubic-bezier(0.32, 0.72, 0, 1)",
+      // Windows 11 Fluent menus (MenuFlyout) fade and slide in from a small
+      // vertical offset (MenuPopupThemeTransition). Fluent's fast duration is
+      // 167ms; the decelerate windowOpenEasing carries it.
+      contextMenuDurationMs: 167,
+      contextMenuTranslateY: 8,
     },
     blur: {
       // Mica / Acrylic: a heavy backdrop blur with mild saturation.

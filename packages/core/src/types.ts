@@ -104,6 +104,26 @@ export interface OsThemeMotion {
    */
   missionControlDurationMs: number;
   missionControlEasing: string;
+  /**
+   * Context menu entrance. Each platform animates its right-click menu
+   * differently, so these drive one shared keyframe (opacity always fades in):
+   *
+   * - `contextMenuScale` (default 1, no scale) is the start scale. A GTK4
+   *   PopoverMenu pops up scaling from the anchor, so the Ubuntu theme sets a
+   *   value just under 1.
+   * - `contextMenuTranslateY` (default 0) is a start vertical offset in px: the
+   *   Windows 11 Fluent menu fades and slides (MenuPopupThemeTransition). The
+   *   component flips the sign when the menu opens upward.
+   * - macOS leaves both at their defaults, an NSMenu just fades in (rendered by
+   *   the Window Server), with no scale or slide.
+   *
+   * `contextMenuDurationMs` defaults to 120 (a quick menu fade); Windows Fluent
+   * uses 167. `contextMenuEasing` falls back to `windowOpenEasing`.
+   */
+  contextMenuDurationMs?: number;
+  contextMenuEasing?: string;
+  contextMenuScale?: number;
+  contextMenuTranslateY?: number;
 }
 
 export interface OsThemeBlur {

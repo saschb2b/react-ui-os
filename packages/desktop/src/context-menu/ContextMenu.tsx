@@ -9,6 +9,7 @@ import {
   type CSSProperties,
 } from "react";
 import { useTheme } from "../desktop-context";
+import { useReducedMotion } from "../util/use-reduced-motion";
 import {
   closeContextMenu,
   getContextMenuState,
@@ -72,6 +73,7 @@ export function ContextMenu() {
 
 function Surface({ state }: { state: ContextMenuState }) {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const menuRef = useRef<HTMLDivElement | null>(null);
   const [position, setPosition] = useState<{ x: number; y: number }>({
     x: state.x,
@@ -154,7 +156,16 @@ function Surface({ state }: { state: ContextMenuState }) {
     }
   };
 
-  const surface: CSSProperties = {
+  // Per-platform entrance (macOS fades, Windows fades and slides, GNOME scales
+  // from the anchor), shaped by the theme's contextMenu* tokens. Grow from the
+  // corner nearest the click; when the menu was pushed back on-screen to open
+  // up or left, flip the pivot and the slide direction to match.
+  const m = theme.motion;
+  const ctxDurationMs = reducedMotion ? 0 : (m.contextMenuDurationMs ?? 120);
+  const flippedX = position.x < state.x;
+  const flippedY = position.y < state.y;
+  const ty = m.contextMenuTranslateY ?? 0;
+  const surface = {
     position: "fixed",
     top: position.y,
     left: position.x,
@@ -170,8 +181,11 @@ function Surface({ state }: { state: ContextMenuState }) {
     color: theme.palette.textPrimary,
     fontSize: 12,
     fontFamily: "inherit",
-    visibility: position === undefined ? "hidden" : "visible",
-  };
+    transformOrigin: `${flippedX ? "right" : "left"} ${flippedY ? "bottom" : "top"}`,
+    animation: `rui-context-menu-in ${String(ctxDurationMs)}ms ${m.contextMenuEasing ?? m.windowOpenEasing} both`,
+    "--rui-ctx-scale": String(m.contextMenuScale ?? 1),
+    "--rui-ctx-ty": `${String(flippedY ? ty : -ty)}px`,
+  } as unknown as CSSProperties;
 
   return (
     <div
