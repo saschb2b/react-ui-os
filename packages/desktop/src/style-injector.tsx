@@ -13,7 +13,10 @@ import { useEffect } from "react";
  * triggering the minimize. `from` is the window's current top-left; `to` is the
  * translate that lands the window's center on its dock tile, and `--genie-scale`
  * is the tile's footprint relative to the window, so each window shrinks to its
- * own tile's size and flies there instead of a fixed point and scale.
+ * own tile's size and flies there instead of a fixed point and scale. Restore
+ * plays `rui-window-genie-out`, the same path with `from` and `to` swapped, run
+ * forward rather than the genie reversed, so the easing stays ease-out (an
+ * `animation-direction: reverse` would invert it into a slow-start ease-in).
  *
  * Open and close use the individual `scale` property rather than baking a
  * transform into the keyframe. The window already carries its position in an
@@ -58,6 +61,16 @@ export function StyleInjector() {
         to {
           opacity: 0;
           transform: translate3d(var(--genie-to-x, 0px), var(--genie-to-y, 0px), 0) scale(var(--genie-scale, 0.08));
+        }
+      }
+      @keyframes rui-window-genie-out {
+        from {
+          opacity: 0;
+          transform: translate3d(var(--genie-to-x, 0px), var(--genie-to-y, 0px), 0) scale(var(--genie-scale, 0.08));
+        }
+        to {
+          opacity: 1;
+          transform: translate3d(var(--genie-from-x, 0px), var(--genie-from-y, 0px), 0) scale(1);
         }
       }
       @keyframes rui-wallpaper-in {

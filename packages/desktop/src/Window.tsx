@@ -584,7 +584,14 @@ export function Window({ win, hidden = false }: WindowProps) {
             }
           : phase === "restoring"
             ? {
-                animation: `rui-window-genie ${String(genieMs)}ms ${theme.motion.genieEasing} reverse both`,
+                // Forward through a dedicated grow keyframe, not the genie
+                // played in reverse: animation-direction: reverse also reverses
+                // the timing function, turning the theme's ease-out into an
+                // ease-in (slow start) that reads as sluggish. GNOME runs
+                // minimize and unminimize with the same EASE_OUT_EXPO mode
+                // (windowManager.js MINIMIZE_WINDOW_ANIMATION_MODE), so the
+                // window emerges fast and decelerates in. Same easing, forward.
+                animation: `rui-window-genie-out ${String(genieMs)}ms ${theme.motion.genieEasing} both`,
               }
             : {};
 
