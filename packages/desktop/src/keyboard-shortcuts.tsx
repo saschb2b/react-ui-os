@@ -20,10 +20,13 @@ import { getWorkArea } from "./util/layout";
  *                         the apps registry, in declared order)
  *   Cmd/Ctrl+K            dispatches SPOTLIGHT_OPEN_EVENT
  *   Cmd/Ctrl+,            open Settings (macOS convention)
- *   Super/Win/Cmd+Arrow   snap the focused window (Up maximize, Down restore,
- *                         Left/Right halves, +Shift quarters), the Windows
- *                         Win+Arrow / GNOME Super+Arrow chords
+ *   Mod+Arrow             snap the focused window (Up maximize, Down restore,
+ *                         Left/Right halves, +Shift quarters). The references
+ *                         snap with Win/Super, but the OS eats that key before
+ *                         the page, so this uses Mod (Ctrl, or Cmd on macOS)
  *   Ctrl+Alt+Arrow        switch workspace (+Shift brings the focused window)
+ *   F3                    Mission Control (Ctrl+Up is the macOS overview key,
+ *                         claimed by the OS, so it stays free for maximize)
  *   Escape                restore the focused window if maximized
  *
  * Every binding bails when the event target is an `<input>`, `<textarea>`, or
@@ -130,7 +133,7 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      // Restore a maximized window (Super/Win/Cmd+Down or Escape).
+      // Restore a maximized window (Mod+Down or Escape).
       if (chordMatches(e, "window.unmaximize")) {
         if (focusedWindow?.state === "maximized") {
           e.preventDefault();
@@ -169,18 +172,20 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      // Mission Control (Ctrl+Up / F3). The overview owns its open state, so
-      // dispatch the toggle; routing it here keeps Ctrl+Up to a single owner.
+      // Mission Control (F3). Its overview chords (Ctrl+Up on macOS, the Win/
+      // Super overview keys) are claimed by the host OS, so F3 is the reachable
+      // one. The overview owns its open state, so dispatch its toggle event.
       if (chordMatches(e, "space.missionControl")) {
         e.preventDefault();
         window.dispatchEvent(new CustomEvent(MISSION_CONTROL_TOGGLE_EVENT));
         return;
       }
 
-      // Super/Win/Cmd+Arrow snaps the focused window to a zone, the Windows
-      // Win+Arrow / GNOME Super+Arrow chords (metaKey, never Ctrl, so it cannot
-      // collide with the macOS Ctrl+Arrow conventions). Like a drag-snap, it
-      // records the pre-snap size so a later drag off the zone restores it.
+      // Mod+Arrow snaps the focused window to a zone. The references snap with
+      // the Win/Super key, but the OS eats that before the page (Win+Arrow
+      // maximizes the browser, not us), so we use Mod (Ctrl, or Cmd on macOS).
+      // Like a drag-snap it records the pre-snap size, so a later drag off the
+      // zone restores it.
       const zone = snapZoneFor(e);
       if (zone && focusedWindow && focusedWindow.state !== "maximized") {
         e.preventDefault();
@@ -194,7 +199,7 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      // Super/Win/Cmd+Up maximizes (a no-op while already maximized).
+      // Mod+Up maximizes (a no-op while already maximized).
       if (chordMatches(e, "window.maximize")) {
         if (focusedWindow && focusedWindow.state !== "maximized") {
           e.preventDefault();
@@ -249,7 +254,7 @@ function snapZoneLabel(zone: SnapZone): string {
 }
 
 // Which snap zone the event's chord asks for, read from the registry's snap
-// shortcuts (Meta+Left/Right halves, Meta+Shift+Left/Right top quarters).
+// shortcuts (Mod+Left/Right halves, Mod+Shift+Left/Right top quarters).
 function snapZoneFor(e: KeyboardEvent): SnapZone | null {
   if (chordMatches(e, "window.snapLeft")) return "left-half";
   if (chordMatches(e, "window.snapRight")) return "right-half";

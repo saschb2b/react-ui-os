@@ -19,11 +19,24 @@
  *
  * The shared rule is one chord, one action. {@link SHORTCUTS} is our single
  * list of every global binding, and {@link findConflicts} (run by the test)
- * fails the build if two shortcuts in the same scope claim the same chord. The
- * first clash it caught: Ctrl+Up drove both "maximize" (the snap chord matched
- * Cmd or Ctrl) and "mission control" (the macOS Ctrl+Up convention). Snap now
- * takes the Super/Win/Cmd key only (metaKey), matching Windows Win+Arrow and
- * GNOME Super+Arrow, which leaves Ctrl+Up to Mission Control.
+ * fails the build if two shortcuts in the same scope claim the same chord.
+ *
+ * ## The browser is not the OS
+ *
+ * A web desktop only ever sees the chords the browser and the host OS don't
+ * claim first. The Super/Win/Cmd key (metaKey) never reaches a page on Windows
+ * or GNOME, where Win+Arrow and Super+Arrow are the shell's own snap chords;
+ * Cmd+Arrow, Ctrl+W, and Ctrl+1..9 are reserved by the browser itself. So we
+ * cannot bind the references' literal chords. We use "Mod" (Ctrl, or Cmd on
+ * macOS) for the primary modifier, which does reach the page, and accept that a
+ * few combos the browser keeps (Cmd+Arrow on macOS, the tab chords) stay out of
+ * reach: a native build could use the real chords, a page cannot.
+ *
+ * The clash this caught: Ctrl+Up drove both maximize (Mod+Arrow) and Mission
+ * Control (the macOS Ctrl+Up). Maximize keeps Ctrl+Up, the chord that reaches
+ * the page and the one a browser user reaches for; Mission Control drops to F3,
+ * because on the desktops it imitates, the overview chords (Ctrl+Up on macOS,
+ * Super/Win+Tab) are taken by the host OS before a page could ever see them.
  */
 
 // Canonical modifier order, so a chord has one spelling no matter the press
@@ -140,42 +153,42 @@ export const SHORTCUTS: Shortcut[] = [
   },
   {
     id: "window.maximize",
-    chords: ["Meta+ArrowUp"],
+    chords: ["Mod+ArrowUp"],
     label: "Maximize window",
     group: "Window",
     scope: "desktop",
   },
   {
     id: "window.unmaximize",
-    chords: ["Meta+ArrowDown", "Escape"],
+    chords: ["Mod+ArrowDown", "Escape"],
     label: "Restore a maximized window",
     group: "Window",
     scope: "desktop",
   },
   {
     id: "window.snapLeft",
-    chords: ["Meta+ArrowLeft"],
+    chords: ["Mod+ArrowLeft"],
     label: "Snap left half",
     group: "Window",
     scope: "desktop",
   },
   {
     id: "window.snapRight",
-    chords: ["Meta+ArrowRight"],
+    chords: ["Mod+ArrowRight"],
     label: "Snap right half",
     group: "Window",
     scope: "desktop",
   },
   {
     id: "window.snapTopLeft",
-    chords: ["Meta+Shift+ArrowLeft"],
+    chords: ["Mod+Shift+ArrowLeft"],
     label: "Snap top-left quarter",
     group: "Window",
     scope: "desktop",
   },
   {
     id: "window.snapTopRight",
-    chords: ["Meta+Shift+ArrowRight"],
+    chords: ["Mod+Shift+ArrowRight"],
     label: "Snap top-right quarter",
     group: "Window",
     scope: "desktop",
@@ -250,7 +263,7 @@ export const SHORTCUTS: Shortcut[] = [
   },
   {
     id: "space.missionControl",
-    chords: ["Ctrl+ArrowUp", "F3"],
+    chords: ["F3"],
     label: "Mission Control",
     group: "Spaces",
     scope: "desktop",
