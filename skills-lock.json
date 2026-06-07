@@ -11,7 +11,13 @@
       "source": "saschb2b/skills",
       "sourceType": "github",
       "skillPath": "skills/productivity/autopilot/SKILL.md",
-      "computedHash": "a10e7d560b9422ba2d6b35a4bc64d0f36b77677b80e8d15807f09e2864ffecfb"
+      "computedHash": "773b9ef18522c4241fed813e6f4ddf8157aad2fdcecd1fe91dd885e62c93c734"
+    },
+    "javascript-ecosystem": {
+      "source": "saschb2b/skills",
+      "sourceType": "github",
+      "skillPath": "skills/engineering/javascript-ecosystem/SKILL.md",
+      "computedHash": "16dced59c2c379da8359b72c8c7dbf29e1e61884ed5093ff39c0511c010d2e94"
     }
   }
 }
