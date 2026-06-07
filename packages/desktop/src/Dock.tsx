@@ -296,38 +296,64 @@ export function Dock() {
     });
   };
 
-  // Name label above the icon under the cursor, like macOS. Computed from the
-  // live (eased) sizes so it glides with the tiles.
+  // Name label over the icon under the cursor. The floating dock finds that
+  // icon from the magnification offsets (its tiles resize, so positions are
+  // synthetic and glide with the eased sizes). A bar never magnifies, so it
+  // hit-tests the cursor against the real tile rects instead: that keeps the
+  // label aligned for any packing (centered, left) and any leading cluster,
+  // where the synthetic offsets would assume a centered run and miss.
   const cursorNow = cursorRef.current;
-  let focusedIndex = -1;
-  let focusedDist = Infinity;
-  if (cursorNow !== null && typeof window !== "undefined") {
+
+  let floatIndex = -1;
+  let floatDist = Infinity;
+  if (!isBar && cursorNow !== null && typeof window !== "undefined") {
     const center = (isLeft ? window.innerHeight : window.innerWidth) / 2;
     apps.forEach((_, i) => {
       const off = (i - (count - 1) / 2) * span;
       const d = Math.abs(cursorNow - center - off);
-      if (d < focusedDist) {
-        focusedDist = d;
-        focusedIndex = i;
+      if (d < floatDist) {
+        floatDist = d;
+        floatIndex = i;
       }
     });
   }
-  const focusedApp = focusedIndex >= 0 ? apps[focusedIndex] : undefined;
-  const showLabel = focusedApp !== undefined && focusedDist < MAG_DISTANCE * 0.55;
-  const focusedSize = focusedIndex >= 0 ? (sizes[focusedIndex] ?? base) : base;
+  const focusedSize = floatIndex >= 0 ? (sizes[floatIndex] ?? base) : base;
   let labelOffset = metrics.dockPadding;
-  for (let i = 0; i < focusedIndex; i++) {
+  for (let i = 0; i < floatIndex; i++) {
     labelOffset += (sizes[i] ?? base) + gap;
   }
-  if (focusedIndex >= 0) labelOffset += focusedSize / 2;
-  // The taskbar centers its tiles in a full-width bar, so the hover label
-  // tracks the tile's resting center (the same anchor magnification uses)
-  // rather than the left-packed offset the floating pill needs.
-  const barLabelMain =
-    typeof window !== "undefined" && focusedIndex >= 0
-      ? (isLeft ? window.innerHeight : window.innerWidth) / 2 +
-        (focusedIndex - (count - 1) / 2) * span
-      : 0;
+  if (floatIndex >= 0) labelOffset += focusedSize / 2;
+
+  let barIndex = -1;
+  let barLabelMain = 0;
+  if (isBar && cursorNow !== null && typeof document !== "undefined") {
+    for (let i = 0; i < count; i++) {
+      const app = apps[i];
+      if (!app) continue;
+      const el = document.querySelector<HTMLElement>(
+        `[data-dock-app-id="${app.id}"]`,
+      );
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      const lo = isLeft ? r.top : r.left;
+      const hi = isLeft ? r.bottom : r.right;
+      if (cursorNow >= lo && cursorNow <= hi) {
+        barIndex = i;
+        // Nav-relative center from the tile's own offset box, so the absolutely
+        // positioned label lands on the icon regardless of where the nav sits
+        // (a left bar starts below the menu bar) or any transformed ancestor.
+        barLabelMain = isLeft
+          ? el.offsetTop + el.offsetHeight / 2
+          : el.offsetLeft + el.offsetWidth / 2;
+        break;
+      }
+    }
+  }
+
+  const focusedIndex = isBar ? barIndex : floatIndex;
+  const focusedApp = focusedIndex >= 0 ? apps[focusedIndex] : undefined;
+  const showLabel =
+    focusedApp !== undefined && (isBar || floatDist < MAG_DISTANCE * 0.55);
 
   const navStyle: CSSProperties = {
     position: "fixed",
