@@ -12,6 +12,7 @@ import { createWindowsTheme } from "@react-ui-os/theme-windows";
 import { exampleApps, HelloFluentIcon } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
+import { RecentsIcon } from "./RecentsIcon";
 import { ThemeSwitcher, type ThemeChoice } from "./ThemeSwitcher";
 import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
 
@@ -25,6 +26,7 @@ registerSystemWindow("recents", {
   accent: "#6b8afd",
   defaultBounds: { w: 560, h: 420 },
   content: RecentsFolder,
+  icon: RecentsIcon,
   appearsAsDesktopIcon: (storage) => hasRecents(storage),
 });
 

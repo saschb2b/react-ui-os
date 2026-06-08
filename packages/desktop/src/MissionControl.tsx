@@ -827,5 +827,6 @@ function iconFor(
     const app = apps.find((a) => a.id === p.appId);
     return (app ? resolveAppIcon(app, theme) : undefined) ?? app?.iconArt ?? null;
   }
-  return getSystemWindow(p.systemId)?.desktopIcon ?? null;
+  const def = getSystemWindow(p.systemId);
+  return def ? (resolveAppIcon(def, theme) ?? def.desktopIcon ?? null) : null;
 }

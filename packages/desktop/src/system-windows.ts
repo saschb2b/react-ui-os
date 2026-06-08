@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { StorageAdapter, SystemWindowArgs } from "@react-ui-os/core";
 import { Settings } from "./Settings";
+import { SettingsIcon } from "./system-icons";
 
 export interface SystemWindowContentProps {
   focused: boolean;
@@ -28,6 +29,17 @@ export interface SystemWindowDef {
   defaultBounds: { w: number; h: number };
   /** Window body component. Receives the optional args alongside focus. */
   content: ComponentType<SystemWindowContentProps>;
+  /**
+   * Icon shown for this window in the launcher / Start menu, the app switcher,
+   * and Mission Control. Optional; without it those surfaces fall back to the
+   * window's first letter.
+   */
+  icon?: ComponentType<{ size?: number }>;
+  /**
+   * Per-icon-style variants keyed by the theme's `chrome.iconStyle` (like
+   * `App.icons`); the active style is preferred over `icon`.
+   */
+  icons?: Record<string, ComponentType<{ size?: number }>>;
   /**
    * Controls whether this system window surfaces as a desktop shortcut icon.
    *
@@ -57,6 +69,7 @@ export const systemWindows: Record<string, SystemWindowDef> = {
     accent: "#8a8a93",
     defaultBounds: { w: 660, h: 540 },
     content: Settings,
+    icon: SettingsIcon,
     // Settings doesn't get a desktop shortcut by default; it's expected to
     // be reached via Cmd-, or Spotlight. Consumers can override per-app.
   },
