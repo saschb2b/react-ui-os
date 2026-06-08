@@ -23,3 +23,9 @@ packages/cli/src/apps.data.json
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# Local-only proprietary icon packs (not redistributable). Drop a pack in
+# apps/playground/public/local/<platform>/ for OS-exact fidelity in the demo;
+# the playground falls back to the bundled permissive icons when absent.
+apps/playground/public/local/*
+!apps/playground/public/local/README.md

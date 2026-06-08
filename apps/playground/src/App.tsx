@@ -28,7 +28,7 @@ registerSystemWindow("recents", {
   defaultBounds: { w: 560, h: 420 },
   content: RecentsFolder,
   icon: RecentsIcon,
-  icons: { fluent: pngIcon("/win11/recents.png") },
+  icons: { fluent: localIcon("/local/win11/recents.png", RecentsIcon) },
   appearsAsDesktopIcon: (storage) => hasRecents(storage),
 });
 
@@ -131,19 +131,20 @@ const UBUNTU_ICON_SRC: Record<string, string> = {
   terminal: "/yaru/terminal.png",
 };
 
-// Real Windows 11 app icons (full color), selected when the theme's iconStyle is
-// "fluent". Cropped from a third-party "Windows 11 Icon Pack" by Samliu; bundled
-// in this demo only (see public/CREDITS.md), not in the published packages,
-// which keep the MIT Fluent System Icons.
+// Real Windows 11 app icons (full color) for the "fluent" icon style. These are
+// a third-party pack with no open license, so they are NOT committed: drop them
+// in the gitignored public/local/win11/ slot (see the README there). When a file
+// is missing, localIcon falls back to the bundled MIT Fluent glyph, so a clean
+// checkout still renders.
 const WIN11_ICON_SRC: Record<string, string> = {
-  hello: "/win11/hello.png",
-  notes: "/win11/notes.png",
-  calculator: "/win11/calculator.png",
-  clock: "/win11/clock.png",
-  calendar: "/win11/calendar.png",
-  reminders: "/win11/reminders.png",
-  sketch: "/win11/sketch.png",
-  terminal: "/win11/terminal.png",
+  hello: "/local/win11/hello.png",
+  notes: "/local/win11/notes.png",
+  calculator: "/local/win11/calculator.png",
+  clock: "/local/win11/clock.png",
+  calendar: "/local/win11/calendar.png",
+  reminders: "/local/win11/reminders.png",
+  sketch: "/local/win11/sketch.png",
+  terminal: "/local/win11/terminal.png",
 };
 
 function pngIcon(src: string): ComponentType<{ size?: number }> {
@@ -154,16 +155,40 @@ function pngIcon(src: string): ComponentType<{ size?: number }> {
   };
 }
 
+// An icon from the local-only drop-in slot, with a fallback for when the file
+// is absent (a clean checkout without the proprietary pack).
+function localIcon(
+  src: string,
+  Fallback?: ComponentType<{ size?: number }>,
+): ComponentType<{ size?: number }> {
+  return function LocalIcon({ size = 24 }: { size?: number }) {
+    const [failed, setFailed] = useState(false);
+    if (failed && Fallback) return <Fallback size={size} />;
+    return (
+      <img
+        src={src}
+        width={size}
+        height={size}
+        alt=""
+        style={{ display: failed ? "none" : "block" }}
+        onError={() => {
+          setFailed(true);
+        }}
+      />
+    );
+  };
+}
+
 const apps: OsApp[] = [helloApp, ...exampleApps].map((app) => {
   const gnome = UBUNTU_ICON_SRC[app.id];
-  const fluent = WIN11_ICON_SRC[app.id];
-  if (!gnome && !fluent) return app;
+  const win11 = WIN11_ICON_SRC[app.id];
+  if (!gnome && !win11) return app;
   return {
     ...app,
     icons: {
       ...app.icons,
       ...(gnome ? { gnome: pngIcon(gnome) } : {}),
-      ...(fluent ? { fluent: pngIcon(fluent) } : {}),
+      ...(win11 ? { fluent: localIcon(win11, app.icons?.fluent) } : {}),
     },
   };
 });
@@ -177,7 +202,7 @@ if (settingsDef) {
     icons: {
       ...settingsDef.icons,
       gnome: pngIcon("/yaru/settings.png"),
-      fluent: pngIcon("/win11/settings.png"),
+      fluent: localIcon("/local/win11/settings.png", settingsDef.icons?.fluent),
     },
   });
 }
