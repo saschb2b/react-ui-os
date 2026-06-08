@@ -209,6 +209,8 @@ function buildTheme(choice: ThemeChoice): OsTheme {
       wallpaperSrc: "/ubuntu-wallpaper-dark.png",
       lightWallpaperSrc: "/ubuntu-wallpaper.png",
       wallpaperOptions: WALLPAPERS,
+      // The real Yaru Show Applications glyph (recolored to the foreground).
+      launcherIconSrc: "/yaru/show-apps.svg",
     });
   }
   return createMacosTheme({

@@ -476,6 +476,12 @@
           "type": "\"windows\" | \"grid\" | \"dots\" | \"ubuntu\"",
           "optional": true,
           "description": "Glyph drawn on the dock launcher button, overriding the default derived from\n`launcher`. `\"windows\"` is the four-pane Start mark, `\"grid\"` the GNOME\n9-dot app grid, `\"dots\"` the neutral 2x2, and `\"ubuntu\"` the Ubuntu Circle\nof Friends (current Ubuntu themes its Show Applications button with the\ndistro logo rather than the upstream grid). Optional; defaults to the glyph\nfor the active launcher."
+        },
+        {
+          "name": "launcherIconSrc",
+          "type": "string",
+          "optional": true,
+          "description": "URL of a consumer-supplied launcher-button icon (e.g. the real Ubuntu\nShow Applications glyph). When set it takes precedence over `launcherIcon`\nand is rendered as a symbolic mask recolored to the chrome foreground, so a\nmonochrome SVG inherits the theme's text color. Themes do not bundle assets;\nthe consumer passes the path, the same split as `wallpaper.src`."
         }
       ]
     },

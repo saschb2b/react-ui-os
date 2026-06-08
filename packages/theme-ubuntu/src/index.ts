@@ -24,6 +24,13 @@ export interface UbuntuThemeOptions {
    * default until reset.
    */
   wallpaperOptions?: { src: string; label: string }[];
+  /**
+   * URL of the real Ubuntu Show Applications icon (the Yaru Circle of Friends
+   * symbolic glyph). Themes do not bundle assets; the consumer serves the file
+   * and passes the path. When omitted, the launcher button falls back to a
+   * drawn Circle of Friends.
+   */
+  launcherIconSrc?: string;
 }
 
 /**
@@ -125,8 +132,11 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       // The GNOME Activities app-grid overview, not the macOS palette.
       launcher: "grid",
       // Current Ubuntu themes its Show Applications button with the Circle of
-      // Friends logo rather than the upstream 9-dot grid.
+      // Friends logo rather than the upstream 9-dot grid. When the consumer
+      // supplies the real Yaru glyph, it takes precedence; otherwise the drawn
+      // fallback is used.
       launcherIcon: "ubuntu",
+      launcherIconSrc: options.launcherIconSrc,
       // Ubuntu packs the app icons from the top, launcher pinned at the bottom.
       dockAlign: "start",
       menuBar: "top",

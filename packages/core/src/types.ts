@@ -293,6 +293,14 @@ export interface OsThemeChrome {
    * for the active launcher.
    */
   launcherIcon?: "windows" | "grid" | "dots" | "ubuntu";
+  /**
+   * URL of a consumer-supplied launcher-button icon (e.g. the real Ubuntu
+   * Show Applications glyph). When set it takes precedence over `launcherIcon`
+   * and is rendered as a symbolic mask recolored to the chrome foreground, so a
+   * monochrome SVG inherits the theme's text color. Themes do not bundle assets;
+   * the consumer passes the path, the same split as `wallpaper.src`.
+   */
+  launcherIconSrc?: string;
 }
 
 /** A resolved appearance (after "auto" is mapped to the system scheme). */

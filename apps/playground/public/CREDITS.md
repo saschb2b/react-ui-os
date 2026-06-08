@@ -14,9 +14,10 @@ Commons Attribution-ShareAlike 4.0 licence
 
 ## Ubuntu Yaru app icons (CC-BY-SA 4.0)
 
-`yaru/*.png` are Yaru app icons, copyright (c) Canonical Ltd. and the Yaru
-contributors, from https://github.com/ubuntu/yaru. Used unmodified under the
-Creative Commons Attribution-ShareAlike 4.0 licence
+`yaru/*.png` are Yaru app icons, and `yaru/show-apps.svg` is the Yaru
+Show Applications glyph (`start-here-symbolic`), copyright (c) Canonical Ltd.
+and the Yaru contributors, from https://github.com/ubuntu/yaru. Used unmodified
+under the Creative Commons Attribution-ShareAlike 4.0 licence
 (https://creativecommons.org/licenses/by-sa/4.0/). Any modified copies must
 remain under CC-BY-SA 4.0.
 

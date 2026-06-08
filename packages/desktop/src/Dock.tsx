@@ -585,10 +585,32 @@ function StartButton({
         transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
       }}
     >
-      <LauncherGlyph
-        icon={theme.chrome.launcherIcon ?? launcherGlyphFor(theme.chrome.launcher)}
-        size={glyph}
-      />
+      {theme.chrome.launcherIconSrc ? (
+        // A consumer-supplied symbolic icon (e.g. Ubuntu's real Show
+        // Applications glyph): mask it so the monochrome art takes the chrome
+        // foreground color, the way GTK recolors symbolic icons.
+        <span
+          aria-hidden
+          style={{
+            width: glyph,
+            height: glyph,
+            backgroundColor: theme.palette.textPrimary,
+            maskImage: `url("${theme.chrome.launcherIconSrc}")`,
+            WebkitMaskImage: `url("${theme.chrome.launcherIconSrc}")`,
+            maskRepeat: "no-repeat",
+            WebkitMaskRepeat: "no-repeat",
+            maskPosition: "center",
+            WebkitMaskPosition: "center",
+            maskSize: "contain",
+            WebkitMaskSize: "contain",
+          }}
+        />
+      ) : (
+        <LauncherGlyph
+          icon={theme.chrome.launcherIcon ?? launcherGlyphFor(theme.chrome.launcher)}
+          size={glyph}
+        />
+      )}
     </button>
   );
 }
