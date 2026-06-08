@@ -1150,6 +1150,10 @@ function DockTile({
   const artScale = Math.min(glyphScale + 0.2, 0.92);
   const Art = app.iconArt;
   const Icon = resolveAppIcon(app, theme);
+  // A full-color macOS app icon (from the local pack) is the whole tile, so it
+  // replaces the accent squircle rather than sitting a glyph on top of it.
+  const macosFullBleed =
+    !bar && theme.chrome.iconStyle === "macos" && !!app.icons?.macos && !!Icon;
   const isLeft = position === "left";
   const dur = theme.motion.dockHoverDurationMs;
   // The taskbar button is a flat icon button (transparent, hover-highlighted,
@@ -1181,12 +1185,15 @@ function DockTile({
         padding: 0,
         border: "none",
         borderRadius: radius,
-        background: bar
-          ? "transparent"
-          : `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
+        background:
+          bar || macosFullBleed
+            ? "transparent"
+            : `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
         boxShadow: bar
           ? "none"
-          : "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 6px rgba(0,0,0,0.35)",
+          : macosFullBleed
+            ? "0 3px 8px rgba(0,0,0,0.3)"
+            : "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 6px rgba(0,0,0,0.35)",
         cursor: "pointer",
         color: bar ? accent : "#fff",
         display: "flex",
@@ -1195,7 +1202,9 @@ function DockTile({
         transition: bar ? `background ${String(dur)}ms ease` : undefined,
       }}
     >
-      {Art ? (
+      {macosFullBleed && Icon ? (
+        <Icon size={Math.round(size * 0.92)} />
+      ) : Art ? (
         <Art size={Math.round(size * artScale)} />
       ) : Icon ? (
         <Icon size={Math.round(size * glyphScale)} />

@@ -147,6 +147,24 @@ const WIN11_ICON_SRC: Record<string, string> = {
   terminal: "/local/win11/terminal.png",
 };
 
+// Real macOS app icons (full color) for the "macos" icon style. Apple's icons
+// are proprietary, so none are committed. Flip LOCAL_MACOS_ICONS to true AFTER
+// dropping a pack into the gitignored public/local/macos/ slot (see the README
+// there); the macOS dock then renders them full-bleed instead of the built-in
+// line glyph on an accent squircle. Off by default so a clean checkout keeps
+// the squircle look (a bare full-bleed glyph would look wrong).
+const LOCAL_MACOS_ICONS = false;
+const MACOS_ICON_SRC: Record<string, string> = {
+  hello: "/local/macos/hello.png",
+  notes: "/local/macos/notes.png",
+  calculator: "/local/macos/calculator.png",
+  clock: "/local/macos/clock.png",
+  calendar: "/local/macos/calendar.png",
+  reminders: "/local/macos/reminders.png",
+  sketch: "/local/macos/sketch.png",
+  terminal: "/local/macos/terminal.png",
+};
+
 function pngIcon(src: string): ComponentType<{ size?: number }> {
   return function PngIcon({ size = 24 }: { size?: number }) {
     return (
@@ -182,13 +200,15 @@ function localIcon(
 const apps: OsApp[] = [helloApp, ...exampleApps].map((app) => {
   const gnome = UBUNTU_ICON_SRC[app.id];
   const win11 = WIN11_ICON_SRC[app.id];
-  if (!gnome && !win11) return app;
+  const macos = LOCAL_MACOS_ICONS ? MACOS_ICON_SRC[app.id] : undefined;
+  if (!gnome && !win11 && !macos) return app;
   return {
     ...app,
     icons: {
       ...app.icons,
       ...(gnome ? { gnome: pngIcon(gnome) } : {}),
       ...(win11 ? { fluent: localIcon(win11, app.icons?.fluent) } : {}),
+      ...(macos ? { macos: localIcon(macos, app.icon) } : {}),
     },
   };
 });

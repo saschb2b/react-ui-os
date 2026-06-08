@@ -23,6 +23,16 @@ designs are Microsoft's; the pack carries no open license), so they live here
 rather than in the repo. Without them, the Windows dock uses the MIT Fluent
 glyphs.
 
-Apple/macOS icons (SF Symbols and product icons) are license-restricted and
-should not be added even here if the repo is ever distributed. Ubuntu's Yaru
-icons are CC-BY-SA and ship in `public/yaru/` instead.
+## macOS (`macos/`)
+
+The macOS theme can render full-color macOS app icons full-bleed (no accent
+squircle) from `macos/<app>.png` (`hello`, `notes`, `calculator`, `clock`,
+`calendar`, `reminders`, `sketch`, `terminal`). This is **opt-in**: set
+`LOCAL_MACOS_ICONS = true` in `apps/playground/src/App.tsx` after dropping a
+pack in, because unlike the bare Windows/Ubuntu icons the macOS dock uses
+squircles, and a bare fallback glyph would look wrong. Off by default, the dock
+keeps the built-in line glyph on an accent squircle.
+
+Apple's macOS icons (SF Symbols and product icons) are license-restricted, so
+nothing is committed here. Ubuntu's Yaru icons are CC-BY-SA and ship in
+`public/yaru/` instead.
