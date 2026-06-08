@@ -1,7 +1,7 @@
 import type { App } from "@react-ui-os/core";
 import { TerminalContent } from "./Terminal";
-import { TerminalIcon } from "./icon";
-import { TerminalFluentIcon } from "../fluent-icons";
+import { TerminalIcon } from "@react-ui-os/icons";
+import { TerminalFluentIcon } from "@react-ui-os/icons";
 
 export const terminalApp: App = {
   id: "terminal",

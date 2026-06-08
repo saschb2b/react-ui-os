@@ -3,8 +3,8 @@
 import { useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import type { App } from "@react-ui-os/core";
 import { useTheme } from "@react-ui-os/desktop";
-import { ClockIcon } from "./icon";
-import { ClockFluentIcon } from "../fluent-icons";
+import { ClockIcon } from "@react-ui-os/icons";
+import { ClockFluentIcon } from "@react-ui-os/icons";
 import { WorldClock } from "./WorldClock";
 import { Stopwatch } from "./Stopwatch";
 import { Timer } from "./Timer";

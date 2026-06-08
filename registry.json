@@ -9,9 +9,13 @@
       "category": "productivity",
       "accent": "#f59e0b",
       "export": "notesApp",
-      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "dependencies": [
+        "@react-ui-os/core",
+        "@react-ui-os/desktop",
+        "@react-ui-os/icons"
+      ],
       "dir": "packages/example-apps/src/notes",
-      "files": ["index.tsx", "icon.tsx", "notes-store.ts"]
+      "files": ["index.tsx", "notes-store.ts"]
     },
     {
       "id": "calculator",
@@ -20,9 +24,13 @@
       "category": "utilities",
       "accent": "#22c55e",
       "export": "calculatorApp",
-      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "dependencies": [
+        "@react-ui-os/core",
+        "@react-ui-os/desktop",
+        "@react-ui-os/icons"
+      ],
       "dir": "packages/example-apps/src/calculator",
-      "files": ["index.tsx", "Calculator.tsx", "calc-engine.ts", "icon.tsx"]
+      "files": ["index.tsx", "Calculator.tsx", "calc-engine.ts"]
     },
     {
       "id": "clock",
@@ -31,15 +39,18 @@
       "category": "utilities",
       "accent": "#f97316",
       "export": "clockApp",
-      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "dependencies": [
+        "@react-ui-os/core",
+        "@react-ui-os/desktop",
+        "@react-ui-os/icons"
+      ],
       "dir": "packages/example-apps/src/clock",
       "files": [
         "index.tsx",
         "WorldClock.tsx",
         "Stopwatch.tsx",
         "Timer.tsx",
-        "format.ts",
-        "icon.tsx"
+        "format.ts"
       ]
     },
     {
@@ -49,9 +60,13 @@
       "category": "productivity",
       "accent": "#ef4444",
       "export": "calendarApp",
-      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "dependencies": [
+        "@react-ui-os/core",
+        "@react-ui-os/desktop",
+        "@react-ui-os/icons"
+      ],
       "dir": "packages/example-apps/src/calendar",
-      "files": ["index.tsx", "CalendarContent.tsx", "calendar-store.ts", "icon.tsx"]
+      "files": ["index.tsx", "CalendarContent.tsx", "calendar-store.ts"]
     },
     {
       "id": "reminders",
@@ -60,9 +75,13 @@
       "category": "productivity",
       "accent": "#fb7185",
       "export": "remindersApp",
-      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "dependencies": [
+        "@react-ui-os/core",
+        "@react-ui-os/desktop",
+        "@react-ui-os/icons"
+      ],
       "dir": "packages/example-apps/src/reminders",
-      "files": ["index.tsx", "RemindersContent.tsx", "reminders-store.ts", "icon.tsx"]
+      "files": ["index.tsx", "RemindersContent.tsx", "reminders-store.ts"]
     },
     {
       "id": "sketch",
@@ -71,15 +90,18 @@
       "category": "creative",
       "accent": "#a855f7",
       "export": "sketchApp",
-      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "dependencies": [
+        "@react-ui-os/core",
+        "@react-ui-os/desktop",
+        "@react-ui-os/icons"
+      ],
       "dir": "packages/example-apps/src/sketch",
       "files": [
         "index.tsx",
         "SketchContent.tsx",
         "Toolbar.tsx",
         "tool-icons.tsx",
-        "useSketchCanvas.ts",
-        "icon.tsx"
+        "useSketchCanvas.ts"
       ]
     },
     {
@@ -89,9 +111,13 @@
       "category": "developer",
       "accent": "#06b6d4",
       "export": "terminalApp",
-      "dependencies": ["@react-ui-os/core", "@react-ui-os/desktop"],
+      "dependencies": [
+        "@react-ui-os/core",
+        "@react-ui-os/desktop",
+        "@react-ui-os/icons"
+      ],
       "dir": "packages/example-apps/src/terminal",
-      "files": ["index.tsx", "Terminal.tsx", "shell.ts", "icon.tsx"]
+      "files": ["index.tsx", "Terminal.tsx", "shell.ts"]
     }
   ]
 }

@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ComponentRef, CSSProperties, KeyboardEvent } from "react";
 import type { App } from "@react-ui-os/core";
 import { useApp, useDesktopContext, useTheme } from "@react-ui-os/desktop";
-import { NotesIcon } from "./icon";
-import { NotesFluentIcon } from "../fluent-icons";
+import { NotesIcon } from "@react-ui-os/icons";
+import { NotesFluentIcon } from "@react-ui-os/icons";
 import {
   createNote,
   deleteNote,

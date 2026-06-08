@@ -1,6 +1,6 @@
 import type { App, AppContentProps } from "@react-ui-os/core";
-import { RemindersIcon } from "./icon";
-import { RemindersFluentIcon } from "../fluent-icons";
+import { RemindersIcon } from "@react-ui-os/icons";
+import { RemindersFluentIcon } from "@react-ui-os/icons";
 import { RemindersContent } from "./RemindersContent";
 
 function Content({ appId }: AppContentProps) {

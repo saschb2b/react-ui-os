@@ -1,6 +1,6 @@
 import type { App, AppContentProps } from "@react-ui-os/core";
-import { CalendarIcon } from "./icon";
-import { CalendarFluentIcon } from "../fluent-icons";
+import { CalendarIcon } from "@react-ui-os/icons";
+import { CalendarFluentIcon } from "@react-ui-os/icons";
 import { CalendarContent } from "./CalendarContent";
 
 function Content({ appId }: AppContentProps) {

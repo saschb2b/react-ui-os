@@ -1,7 +1,7 @@
 import type { App } from "@react-ui-os/core";
 import { CalculatorContent } from "./Calculator";
-import { CalculatorIcon } from "./icon";
-import { CalculatorFluentIcon } from "../fluent-icons";
+import { CalculatorIcon } from "@react-ui-os/icons";
+import { CalculatorFluentIcon } from "@react-ui-os/icons";
 
 export const calculatorApp: App = {
   id: "calculator",

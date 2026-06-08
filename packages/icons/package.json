@@ -1,5 +1,5 @@
 {
-  "name": "@react-ui-os/example-apps",
+  "name": "@react-ui-os/icons",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -22,24 +22,14 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "lint": "eslint src tests"
-  },
-  "dependencies": {
-    "@react-ui-os/core": "workspace:*",
-    "@react-ui-os/desktop": "workspace:*",
-    "@react-ui-os/icons": "workspace:*"
+    "lint": "eslint src"
   },
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": "^19.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "typescript": "^6.0.0",
-    "vitest": "^3.0.0"
+    "typescript": "^6.0.0"
   }
 }

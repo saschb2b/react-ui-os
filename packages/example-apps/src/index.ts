@@ -14,7 +14,7 @@ export { calendarApp } from "./calendar";
 export { remindersApp } from "./reminders";
 export { sketchApp } from "./sketch";
 export { terminalApp } from "./terminal";
-export * from "./fluent-icons";
+export * from "@react-ui-os/icons";
 
 /**
  * The example apps in dock order. A host composes its own app list as

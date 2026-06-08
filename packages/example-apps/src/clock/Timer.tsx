@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { notify } from "@react-ui-os/core";
 import { useTheme } from "@react-ui-os/desktop";
 import { formatCountdown } from "./format";
-import { ClockIcon } from "./icon";
+import { ClockIcon } from "@react-ui-os/icons";
 
 /**
  * Timer tab modeled on the iOS Clock timer.
