@@ -301,7 +301,13 @@ export function Dock() {
             requestSettingsSection("Taskbar");
             openWindow(
               payload,
-              pickInitialBounds(payload, theme, apps, undefined, nextCascadeIndex(state)),
+              pickInitialBounds(
+                payload,
+                theme,
+                apps,
+                undefined,
+                nextCascadeIndex(state),
+              ),
             );
           },
         },
@@ -343,9 +349,7 @@ export function Dock() {
     for (let i = 0; i < count; i++) {
       const app = apps[i];
       if (!app) continue;
-      const el = document.querySelector<HTMLElement>(
-        `[data-dock-app-id="${app.id}"]`,
-      );
+      const el = document.querySelector<HTMLElement>(`[data-dock-app-id="${app.id}"]`);
       if (!el) continue;
       const r = el.getBoundingClientRect();
       const lo = isLeft ? r.top : r.left;
@@ -515,7 +519,10 @@ export function Dock() {
       ) : null}
       {launcherTrailing && <StartButton vertical={isLeft} trailing tile={base} />}
       {showTray && (
-        <TaskbarTray vertical={isLeft} trailingInset={showDesktop ? SHOW_DESKTOP_WIDTH : 0} />
+        <TaskbarTray
+          vertical={isLeft}
+          trailingInset={showDesktop ? SHOW_DESKTOP_WIDTH : 0}
+        />
       )}
       {showDesktop && <ShowDesktopButton />}
     </nav>
@@ -636,7 +643,13 @@ const WINDOWS_LOGO_BLUE = "#0078d4";
  *   "ubuntu"   the Ubuntu Circle of Friends (current Ubuntu's Show Apps mark)
  *   "dots"     a neutral 2x2 grid (the macOS / generic launcher)
  */
-function LauncherGlyph({ icon, size = 16 }: { icon: LauncherGlyphName; size?: number }) {
+function LauncherGlyph({
+  icon,
+  size = 16,
+}: {
+  icon: LauncherGlyphName;
+  size?: number;
+}) {
   if (icon === "windows") {
     // The Windows 11 logo: four sharp-cornered squares with a thin gap (~5% of
     // the mark), matching the proportions of the official four-pane mark rather
@@ -645,7 +658,13 @@ function LauncherGlyph({ icon, size = 16 }: { icon: LauncherGlyphName; size?: nu
     // user's accent (a deliberate exception to the read-tokens rule, since this
     // is brand identity, not theme look).
     return (
-      <svg width={size} height={size} viewBox="0 0 16 16" fill={WINDOWS_LOGO_BLUE} aria-hidden>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 16 16"
+        fill={WINDOWS_LOGO_BLUE}
+        aria-hidden
+      >
         <rect x="1" y="1" width="6.6" height="6.6" />
         <rect x="8.4" y="1" width="6.6" height="6.6" />
         <rect x="1" y="8.4" width="6.6" height="6.6" />
@@ -655,9 +674,17 @@ function LauncherGlyph({ icon, size = 16 }: { icon: LauncherGlyphName; size?: nu
   }
   if (icon === "grid") {
     return (
-      <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 16 16"
+        fill="currentColor"
+        aria-hidden
+      >
         {[3, 8, 13].map((cy) =>
-          [3, 8, 13].map((cx) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.5" />),
+          [3, 8, 13].map((cx) => (
+            <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.5" />
+          )),
         )}
       </svg>
     );
@@ -665,8 +692,21 @@ function LauncherGlyph({ icon, size = 16 }: { icon: LauncherGlyphName; size?: nu
   if (icon === "ubuntu") {
     // The Ubuntu Circle of Friends: three "heads" on a ring, 120 degrees apart.
     return (
-      <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-        <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" strokeWidth="1.3" />
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 16 16"
+        fill="currentColor"
+        aria-hidden
+      >
+        <circle
+          cx="8"
+          cy="8"
+          r="5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.3"
+        />
         <circle cx="8" cy="3" r="1.75" />
         <circle cx="3.67" cy="10.5" r="1.75" />
         <circle cx="12.33" cy="10.5" r="1.75" />
@@ -725,7 +765,15 @@ function TaskViewButton({ tile = 32 }: { tile?: number }) {
       }}
     >
       <svg width={glyph} height={glyph} viewBox="0 0 18 18" fill="none" aria-hidden>
-        <rect x="4.5" y="2.5" width="11" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+        <rect
+          x="4.5"
+          y="2.5"
+          width="11"
+          height="8"
+          rx="1.5"
+          stroke="currentColor"
+          strokeWidth="1.3"
+        />
         <rect
           x="2.5"
           y="6.5"

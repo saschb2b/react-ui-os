@@ -63,9 +63,9 @@ describe("getDockTileSize", () => {
   });
 
   it("uses the theme's dockTileSize token when set", () => {
-    expect(getDockTileSize(themeWith({ dockStyle: "bar", dockTileSize: 40 }), "regular")).toBe(
-      40,
-    );
+    expect(
+      getDockTileSize(themeWith({ dockStyle: "bar", dockTileSize: 40 }), "regular"),
+    ).toBe(40);
   });
 
   it("shrinks a token-set tile in compact mode", () => {
@@ -84,15 +84,15 @@ describe("getBarThickness", () => {
   });
 
   it("derives from the tile when a token is set (Windows 40 -> 48 bar)", () => {
-    expect(getBarThickness(themeWith({ dockStyle: "bar", dockTileSize: 40 }), "regular")).toBe(
-      48,
-    );
+    expect(
+      getBarThickness(themeWith({ dockStyle: "bar", dockTileSize: 40 }), "regular"),
+    ).toBe(48);
   });
 
   it("makes a larger-icon dock a wider bar (Ubuntu 56 -> 64)", () => {
-    expect(getBarThickness(themeWith({ dockStyle: "bar", dockTileSize: 56 }), "regular")).toBe(
-      64,
-    );
+    expect(
+      getBarThickness(themeWith({ dockStyle: "bar", dockTileSize: 56 }), "regular"),
+    ).toBe(64);
   });
 });
 

@@ -105,7 +105,9 @@ export function getDockTileSize(
   if (override !== undefined) {
     return Math.round(mode === "compact" ? override * COMPACT_TILE_RATIO : override);
   }
-  return theme.chrome.dockStyle === "bar" ? metrics.taskbarTileSize : metrics.dockTileSize;
+  return theme.chrome.dockStyle === "bar"
+    ? metrics.taskbarTileSize
+    : metrics.dockTileSize;
 }
 
 /**

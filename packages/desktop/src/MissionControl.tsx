@@ -332,7 +332,6 @@ function EmptyState({
   );
 }
 
-
 function Card({
   win,
   apps,

@@ -128,7 +128,9 @@ font: '"Ubuntu", "Ubuntu Sans", system-ui, sans-serif',
 `chrome.iconStyle` (`"fluent"`, `"macos"`, `"gnome"`, or your own key) declares which icon variant the theme wants. An app that ships an `icons[style]` entry renders its platform-native icon under that theme; otherwise it falls back to its default `icon`. This is how one app carries a Fluent icon on Windows and an SF-style glyph on macOS without a component ever branching on the theme.
 
 ```ts
-chrome: { iconStyle: "fluent" }
+chrome: {
+  iconStyle: "fluent";
+}
 ```
 
 ## Publishing

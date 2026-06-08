@@ -944,9 +944,7 @@ function MenuSectionHeader({
         flexShrink: 0,
       }}
     >
-      <span
-        style={{ fontSize: 13, fontWeight: 600, color: theme.palette.textPrimary }}
-      >
+      <span style={{ fontSize: 13, fontWeight: 600, color: theme.palette.textPrimary }}>
         {label}
       </span>
       {action ? (
@@ -1235,7 +1233,8 @@ function MenuRow({
       aria-selected={index !== undefined ? selected : undefined}
       onMouseEnter={(e) => {
         onHover?.();
-        if (!selected) e.currentTarget.style.background = `${theme.palette.textPrimary}10`;
+        if (!selected)
+          e.currentTarget.style.background = `${theme.palette.textPrimary}10`;
       }}
       onMouseLeave={(e) => {
         if (!selected) e.currentTarget.style.background = "transparent";
