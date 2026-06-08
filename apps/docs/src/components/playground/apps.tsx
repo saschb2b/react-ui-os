@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { ComponentType, CSSProperties } from "react";
 import type { App } from "@react-ui-os/core";
 import { notify } from "@react-ui-os/core";
 import { registerStatusItem, registerSystemWindow } from "@react-ui-os/desktop";
@@ -114,17 +114,46 @@ function HelloContent({ focused }: { focused: boolean }) {
   );
 }
 
+// Ubuntu's Yaru app icons (colorful), selected when the theme's iconStyle is
+// "gnome". Bundled in the demo only (CC-BY-SA, see public/CREDITS.md), prefixed
+// with the docs base path so they resolve on the /react-ui-os sub-path deploy.
+const ICON_BASE = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+const UBUNTU_ICON_SRC: Record<string, string> = {
+  hello: "hello",
+  notes: "notes",
+  calculator: "calculator",
+  clock: "clock",
+  calendar: "calendar",
+  reminders: "reminders",
+  sketch: "sketch",
+  terminal: "terminal",
+};
+
+function pngIcon(src: string): ComponentType<{ size?: number }> {
+  return function PngIcon({ size = 24 }: { size?: number }) {
+    return (
+      <img src={src} width={size} height={size} alt="" style={{ display: "block" }} />
+    );
+  };
+}
+
 // The docs demo carries its own Hello window (with the "Fire a toast" button
 // above), then shares the real app suite with the playground so both surfaces
-// stay in sync. See @react-ui-os/example-apps.
-export const docsApps: App[] = [
-  {
-    id: "hello",
-    name: "Hello",
-    tagline: "Try the library",
-    accent: "#6b8afd",
-    content: HelloContent,
-    defaultBounds: { w: 560, h: 380 },
-  },
-  ...exampleApps,
-];
+// stay in sync (including the per-theme icons). See @react-ui-os/example-apps.
+const helloApp: App = {
+  id: "hello",
+  name: "Hello",
+  tagline: "Try the library",
+  accent: "#6b8afd",
+  content: HelloContent,
+  defaultBounds: { w: 560, h: 380 },
+};
+
+export const docsApps: App[] = [helloApp, ...exampleApps].map((app) => {
+  const key = UBUNTU_ICON_SRC[app.id];
+  return key
+    ? { ...app, icons: { ...app.icons, gnome: pngIcon(`${ICON_BASE}yaru/${key}.png`) } }
+    : app;
+});

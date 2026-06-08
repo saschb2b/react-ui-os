@@ -15,6 +15,7 @@ import { rehypeBaseLinks } from "./plugins/rehype-base-links.mjs";
 const PACKAGES = [
   "core",
   "desktop",
+  "icons",
   "example-apps",
   "theme-macos",
   "theme-ubuntu",

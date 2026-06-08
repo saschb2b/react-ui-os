@@ -18,6 +18,7 @@
     "@react-ui-os/core": "workspace:*",
     "@react-ui-os/desktop": "workspace:*",
     "@react-ui-os/example-apps": "workspace:*",
+    "@react-ui-os/icons": "workspace:*",
     "@react-ui-os/theme-macos": "workspace:*",
     "@react-ui-os/theme-ubuntu": "workspace:*",
     "@react-ui-os/theme-windows": "workspace:*",

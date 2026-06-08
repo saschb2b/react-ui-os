@@ -73,14 +73,19 @@ function buildTheme(choice: ThemeChoice): OsTheme {
   }
   if (choice === "ubuntu") {
     return createUbuntuTheme({
-      wallpaperSrc: `${base}ubuntu-wallpaper.png`,
+      wallpaperSrc: `${base}ubuntu-wallpaper-dark.png`,
+      lightWallpaperSrc: `${base}ubuntu-wallpaper.png`,
       wallpaperOptions,
+      // The real Yaru Show Applications glyph (recolored to the foreground).
+      launcherIconSrc: `${base}yaru/show-apps.svg`,
     });
   }
   return createMacosTheme({
     wallpaperSrc: `${base}macos-wallpaper.jpg`,
     darkWallpaperSrc: `${base}macos-wallpaper-dark.jpg`,
     wallpaperOptions,
+    // Tahoe Liquid Glass refraction where supported (Chromium); blur fallback.
+    liquidGlass: true,
   });
 }
 
