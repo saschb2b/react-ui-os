@@ -1016,8 +1016,21 @@ function MenuFooterButton({
 function PowerButton({ onAction }: { onAction: () => void }) {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const firstItemRef = useRef<HTMLButtonElement>(null);
   const hover = `${theme.palette.textPrimary}14`;
   const items = ["Sleep", "Restart", "Shut down"];
+
+  // Move focus into the menu when it opens so keyboard users land on an item.
+  useEffect(() => {
+    if (open) firstItemRef.current?.focus();
+  }, [open]);
+
+  const close = () => {
+    setOpen(false);
+    btnRef.current?.focus();
+  };
+
   return (
     <div style={{ position: "relative" }}>
       {open ? (
@@ -1032,6 +1045,13 @@ function PowerButton({ onAction }: { onAction: () => void }) {
           <div
             role="menu"
             aria-label="Power"
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                // Close just this menu, not the whole Start menu around it.
+                e.stopPropagation();
+                close();
+              }
+            }}
             style={{
               position: "absolute",
               right: 0,
@@ -1047,9 +1067,10 @@ function PowerButton({ onAction }: { onAction: () => void }) {
               boxShadow: "0 12px 28px -10px rgba(0,0,0,0.5)",
             }}
           >
-            {items.map((label) => (
+            {items.map((label, i) => (
               <button
                 key={label}
+                ref={i === 0 ? firstItemRef : undefined}
                 type="button"
                 role="menuitem"
                 onClick={() => {
@@ -1084,8 +1105,11 @@ function PowerButton({ onAction }: { onAction: () => void }) {
         </>
       ) : null}
       <button
+        ref={btnRef}
         type="button"
         aria-label="Power"
+        aria-haspopup="menu"
+        aria-expanded={open}
         onClick={() => {
           setOpen((v) => !v);
         }}
