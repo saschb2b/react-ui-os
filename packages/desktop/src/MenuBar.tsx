@@ -27,6 +27,7 @@ export { MENU_BAR_HEIGHT };
  */
 export function MenuBar({ brand }: { brand?: string }) {
   const theme = useTheme();
+  const transparentBar = theme.chrome.menuBarStyle === "transparent";
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
   const apps = useApps();
@@ -104,11 +105,16 @@ export function MenuBar({ brand }: { brand?: string }) {
         alignItems: "center",
         justifyContent: "space-between",
         padding: "0 12px",
-        backgroundColor: theme.palette.surface,
-        backdropFilter: theme.blur.surface,
-        WebkitBackdropFilter: theme.blur.surface,
-        borderBottom: `1px solid ${theme.palette.border}`,
+        // macOS Tahoe makes the menu bar transparent (no fill, blur, or
+        // hairline) so the wallpaper shows through; other themes keep the
+        // translucent surface. A subtle text shadow keeps labels legible over
+        // an arbitrary wallpaper, the way the macOS menu bar always has.
+        backgroundColor: transparentBar ? "transparent" : theme.palette.surface,
+        backdropFilter: transparentBar ? "none" : theme.blur.surface,
+        WebkitBackdropFilter: transparentBar ? "none" : theme.blur.surface,
+        borderBottom: transparentBar ? "none" : `1px solid ${theme.palette.border}`,
         color: theme.palette.textPrimary,
+        textShadow: transparentBar ? "0 0 3px rgba(0,0,0,0.18)" : undefined,
         fontFamily: "inherit",
         fontSize: 12,
         zIndex: 10,

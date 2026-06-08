@@ -279,6 +279,13 @@ export interface OsThemeChrome {
    */
   menuBarHeight?: number;
   /**
+   * Top menu bar material. `"translucent"` (default) paints the bar with the
+   * theme surface and blur; `"transparent"` makes it invisible (no fill, blur,
+   * or hairline) so the wallpaper shows through, the macOS Tahoe default.
+   * Ignored unless `menuBar` is `"top"`.
+   */
+  menuBarStyle?: "translucent" | "transparent";
+  /**
    * Icon style this theme requests for app icons (e.g. `"fluent"` on Windows,
    * `"macos"`, `"gnome"`). An app's `icons[iconStyle]` is used when present,
    * otherwise its default `icon`. Optional; when unset every app uses `icon`.

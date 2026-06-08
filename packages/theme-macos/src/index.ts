@@ -110,6 +110,8 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       windowControls: "traffic-lights",
       dockPosition: "bottom",
       menuBar: "top",
+      // Tahoe's menu bar is transparent by default: the wallpaper shows through.
+      menuBarStyle: "transparent",
       // The floating dock's resting tile; icons fill ~0.6 of it. The 24pt menu
       // bar is the Big Sur+ height.
       dockTileSize: 56,
