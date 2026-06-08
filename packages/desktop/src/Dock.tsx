@@ -634,12 +634,15 @@ function launcherGlyphFor(launcher: OsTheme["chrome"]["launcher"]): LauncherGlyp
  */
 function LauncherGlyph({ icon, size = 16 }: { icon: LauncherGlyphName; size?: number }) {
   if (icon === "windows") {
+    // The Windows 11 logo: four sharp-cornered squares with a thin gap (~5% of
+    // the mark), matching the proportions of the official four-pane mark rather
+    // than the wide-gap rounded version we had.
     return (
       <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
-        <rect x="1.4" y="1.4" width="5.7" height="5.7" rx="0.6" />
-        <rect x="8.9" y="1.4" width="5.7" height="5.7" rx="0.6" />
-        <rect x="1.4" y="8.9" width="5.7" height="5.7" rx="0.6" />
-        <rect x="8.9" y="8.9" width="5.7" height="5.7" rx="0.6" />
+        <rect x="1" y="1" width="6.6" height="6.6" />
+        <rect x="8.4" y="1" width="6.6" height="6.6" />
+        <rect x="1" y="8.4" width="6.6" height="6.6" />
+        <rect x="8.4" y="8.4" width="6.6" height="6.6" />
       </svg>
     );
   }
