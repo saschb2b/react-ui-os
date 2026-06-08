@@ -80,6 +80,15 @@ export default defineConfig({
         },
         // Theme color picks up the dock accent in browser chrome.
         { tag: "meta", attrs: { name: "theme-color", content: "#7c66f5" } },
+        // Toggle `rui-at-top` on the header at scroll 0 so it blends into the
+        // page at the top and frosts in on scroll (see brand.css). A script, not
+        // pure CSS, so every browser gets it, not only ones that support
+        // scroll-driven animations.
+        {
+          tag: "script",
+          content:
+            "(function(){function u(){var h=document.querySelector('header.header');if(h)h.classList.toggle('rui-at-top',(window.scrollY||document.documentElement.scrollTop||0)<8);}if(document.readyState!=='loading')u();else document.addEventListener('DOMContentLoaded',u);window.addEventListener('scroll',u,{passive:true});window.addEventListener('load',u);})();",
+        },
       ],
       social: [
         {
