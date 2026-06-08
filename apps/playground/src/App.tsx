@@ -2,6 +2,7 @@ import { useMemo, useState, type ComponentType } from "react";
 import type { App as OsApp, OsTheme } from "@react-ui-os/core";
 import {
   Desktop,
+  getSystemWindow,
   registerSystemWindow,
   useDesktopContext,
   useTheme,
@@ -141,6 +142,16 @@ const apps: OsApp[] = [helloApp, ...exampleApps].map((app) => {
   const src = UBUNTU_ICON_SRC[app.id];
   return src ? { ...app, icons: { ...app.icons, gnome: yaruIcon(src) } } : app;
 });
+
+// Give the built-in Settings window its Ubuntu (Yaru) icon for the gnome style;
+// it keeps the Lucide default (macOS) and the Fluent variant (Windows).
+const settingsDef = getSystemWindow("settings");
+if (settingsDef) {
+  registerSystemWindow("settings", {
+    ...settingsDef,
+    icons: { ...settingsDef.icons, gnome: yaruIcon("/yaru/settings.png") },
+  });
+}
 
 const THEME_STORAGE_KEY = "rui-os:playground-theme";
 

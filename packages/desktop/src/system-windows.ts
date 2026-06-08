@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import type { StorageAdapter, SystemWindowArgs } from "@react-ui-os/core";
 import { Settings } from "./Settings";
-import { SettingsIcon } from "./system-icons";
+import { SettingsFluentIcon, SettingsIcon } from "./system-icons";
 
 export interface SystemWindowContentProps {
   focused: boolean;
@@ -70,6 +70,7 @@ export const systemWindows: Record<string, SystemWindowDef> = {
     defaultBounds: { w: 660, h: 540 },
     content: Settings,
     icon: SettingsIcon,
+    icons: { fluent: SettingsFluentIcon },
     // Settings doesn't get a desktop shortcut by default; it's expected to
     // be reached via Cmd-, or Spotlight. Consumers can override per-app.
   },
