@@ -17,6 +17,10 @@ describe("createUbuntuTheme", () => {
     expect(t.chrome.menuBarHeight).toBe(30);
   });
 
+  it("uses the Ubuntu Circle of Friends for the launcher button", () => {
+    expect(t.chrome.launcherIcon).toBe("ubuntu");
+  });
+
   it("uses the Ubuntu font stack", () => {
     expect(t.font).toContain("Ubuntu");
   });

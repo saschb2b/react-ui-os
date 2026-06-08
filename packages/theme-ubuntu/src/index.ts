@@ -124,6 +124,9 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
       dockStyle: "bar",
       // The GNOME Activities app-grid overview, not the macOS palette.
       launcher: "grid",
+      // Current Ubuntu themes its Show Applications button with the Circle of
+      // Friends logo rather than the upstream 9-dot grid.
+      launcherIcon: "ubuntu",
       // Ubuntu packs the app icons from the top, launcher pinned at the bottom.
       dockAlign: "start",
       menuBar: "top",

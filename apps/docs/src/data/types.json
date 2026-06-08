@@ -470,6 +470,12 @@
           "type": "string",
           "optional": true,
           "description": "Icon style this theme requests for app icons (e.g. `\"fluent\"` on Windows,\n`\"macos\"`, `\"gnome\"`). An app's `icons[iconStyle]` is used when present,\notherwise its default `icon`. Optional; when unset every app uses `icon`."
+        },
+        {
+          "name": "launcherIcon",
+          "type": "\"windows\" | \"grid\" | \"dots\" | \"ubuntu\"",
+          "optional": true,
+          "description": "Glyph drawn on the dock launcher button, overriding the default derived from\n`launcher`. `\"windows\"` is the four-pane Start mark, `\"grid\"` the GNOME\n9-dot app grid, `\"dots\"` the neutral 2x2, and `\"ubuntu\"` the Ubuntu Circle\nof Friends (current Ubuntu themes its Show Applications button with the\ndistro logo rather than the upstream grid). Optional; defaults to the glyph\nfor the active launcher."
         }
       ]
     },

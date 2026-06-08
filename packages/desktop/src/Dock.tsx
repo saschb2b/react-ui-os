@@ -578,21 +578,32 @@ function StartButton({
         transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
       }}
     >
-      <LauncherGlyph mode={theme.chrome.launcher} />
+      <LauncherGlyph
+        icon={theme.chrome.launcherIcon ?? launcherGlyphFor(theme.chrome.launcher)}
+      />
     </button>
   );
 }
 
+type LauncherGlyphName = NonNullable<OsTheme["chrome"]["launcherIcon"]>;
+
+/** The glyph a launcher style defaults to when the theme sets no launcherIcon. */
+function launcherGlyphFor(launcher: OsTheme["chrome"]["launcher"]): LauncherGlyphName {
+  if (launcher === "menu") return "windows";
+  if (launcher === "grid") return "grid";
+  return "dots";
+}
+
 /**
- * Launcher button glyph. Original drawings keyed to the launcher style, not
- * traced from vendor artwork:
+ * Launcher button glyph. Original drawings, not traced from vendor artwork:
  *
- *   "menu"  the Windows Start mark, four flat panes with a hairline gap
- *   "grid"  the GNOME "Show Applications" 3x3 dot grid
- *   else    a neutral 2x2 grid (the macOS / generic launcher)
+ *   "windows"  the Windows Start mark, four flat panes with a hairline gap
+ *   "grid"     the GNOME "Show Applications" 9-dot grid
+ *   "ubuntu"   the Ubuntu Circle of Friends (current Ubuntu's Show Apps mark)
+ *   "dots"     a neutral 2x2 grid (the macOS / generic launcher)
  */
-function LauncherGlyph({ mode }: { mode: OsTheme["chrome"]["launcher"] }) {
-  if (mode === "menu") {
+function LauncherGlyph({ icon }: { icon: LauncherGlyphName }) {
+  if (icon === "windows") {
     return (
       <svg width={17} height={17} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
         <rect x="1.4" y="1.4" width="5.7" height="5.7" rx="0.6" />
@@ -602,12 +613,23 @@ function LauncherGlyph({ mode }: { mode: OsTheme["chrome"]["launcher"] }) {
       </svg>
     );
   }
-  if (mode === "grid") {
+  if (icon === "grid") {
     return (
       <svg width={16} height={16} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
         {[3, 8, 13].map((cy) =>
           [3, 8, 13].map((cx) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.5" />),
         )}
+      </svg>
+    );
+  }
+  if (icon === "ubuntu") {
+    // The Ubuntu Circle of Friends: three "heads" on a ring, 120 degrees apart.
+    return (
+      <svg width={17} height={17} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+        <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" strokeWidth="1.3" />
+        <circle cx="8" cy="3" r="1.75" />
+        <circle cx="3.67" cy="10.5" r="1.75" />
+        <circle cx="12.33" cy="10.5" r="1.75" />
       </svg>
     );
   }

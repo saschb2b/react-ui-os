@@ -284,6 +284,15 @@ export interface OsThemeChrome {
    * otherwise its default `icon`. Optional; when unset every app uses `icon`.
    */
   iconStyle?: string;
+  /**
+   * Glyph drawn on the dock launcher button, overriding the default derived from
+   * `launcher`. `"windows"` is the four-pane Start mark, `"grid"` the GNOME
+   * 9-dot app grid, `"dots"` the neutral 2x2, and `"ubuntu"` the Ubuntu Circle
+   * of Friends (current Ubuntu themes its Show Applications button with the
+   * distro logo rather than the upstream grid). Optional; defaults to the glyph
+   * for the active launcher.
+   */
+  launcherIcon?: "windows" | "grid" | "dots" | "ubuntu";
 }
 
 /** A resolved appearance (after "auto" is mapped to the system scheme). */
