@@ -114,6 +114,9 @@ importers:
       '@react-ui-os/example-apps':
         specifier: workspace:*
         version: link:../../packages/example-apps
+      '@react-ui-os/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
       '@react-ui-os/theme-macos':
         specifier: workspace:*
         version: link:../../packages/theme-macos
