@@ -1,0 +1,299 @@
+---
+/**
+ * Landing hero (overrides Starlight's default Hero on the splash page). A
+ * demo-dominant two-column layout: a compact pitch on the left, and the live
+ * desktop as the wide centerpiece on the right. The OS switcher is a segmented
+ * control built into the window's title bar (the in-canvas one is hidden via
+ * ?embed=1), so there is one control and it reads as part of the product. The
+ * desktop cycles macOS / Windows / Ubuntu on its own; clicking a segment or
+ * hovering the window pins the current look.
+ */
+const base = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+const src = `${base}playground?embed=1`;
+
+const oses = [
+  { id: "macos", name: "macOS", accent: "#6b8afd" },
+  { id: "windows", name: "Windows", accent: "#0078d4" },
+  { id: "ubuntu", name: "Ubuntu", accent: "#e95420" },
+];
+---
+
+<section class="lh">
+  <div class="lh__pitch">
+    <p class="lh__kicker">React 19 component library</p>
+    <h1 class="lh__title">A real desktop OS, in one component.</h1>
+    <p class="lh__tagline">
+      Clone macOS, Windows, or Ubuntu down to the chrome, fill it with your own apps, and
+      ship it to the browser. The desktop here is the whole library, running live.
+    </p>
+    <div class="lh__actions">
+      <a class="lh__cta" href={`${base}quickstart/`}>Quickstart →</a>
+      <div class="lh__links">
+        <a href={`${base}introduction/`}>Read the docs</a>
+        <a href="https://github.com/saschb2b/react-ui-os">GitHub</a>
+      </div>
+    </div>
+  </div>
+
+  <figure class="lh__window">
+    <header class="lh__bar">
+      <span class="lh__dots" aria-hidden><span></span><span></span><span></span></span>
+      <div class="lh__segs" role="group" aria-label="Switch the operating system">
+        {
+          oses.map((os, i) => (
+            <button
+              type="button"
+              class="lh__seg"
+              data-theme={os.id}
+              style={`--seg-accent: ${os.accent}`}
+              aria-pressed={i === 0 ? "true" : "false"}
+            >
+              {os.name}
+            </button>
+          ))
+        }
+      </div>
+      <a class="lh__open" href={`${base}playground`} target="_blank" rel="noreferrer">
+        Full-screen ↗
+      </a>
+    </header>
+    <iframe class="lh__frame" src={src} title="react-ui-os live desktop" loading="eager"
+    ></iframe>
+  </figure>
+</section>
+
+<style>
+  .lh {
+    display: grid;
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.5fr);
+    gap: 2.75rem;
+    align-items: center;
+    width: min(1320px, calc(100vw - 140px));
+    margin: 0.5rem 50% 2.75rem;
+    transform: translateX(-50%);
+  }
+  @media (max-width: 1100px) {
+    .lh {
+      width: calc(100% + 32px);
+      margin-left: -16px;
+      transform: none;
+    }
+  }
+  @media (max-width: 920px) {
+    .lh {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+
+  .lh__kicker {
+    margin: 0 0 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--sl-color-accent);
+  }
+  .lh__title {
+    margin: 0 0 1rem;
+    font-size: clamp(2.1rem, 1.4rem + 2.6vw, 3.3rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+  .lh__tagline {
+    margin: 0 0 1.75rem;
+    font-size: 1.08rem;
+    line-height: 1.55;
+    color: var(--sl-color-gray-2);
+    max-width: 42ch;
+  }
+
+  .lh__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .lh__cta {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.7rem 1.6rem;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    background: var(--sl-color-accent);
+    color: var(--sl-color-black);
+    transition: transform 120ms ease;
+  }
+  .lh__cta:hover {
+    transform: translateY(-2px);
+  }
+  .lh__links {
+    display: flex;
+    gap: 1.25rem;
+    font-size: 0.92rem;
+  }
+  .lh__links a {
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+  }
+  .lh__links a:hover {
+    color: var(--sl-color-white);
+    text-decoration: underline;
+  }
+
+  /* The live desktop, the dominant element. */
+  .lh__window {
+    margin: 0;
+    border-radius: 14px;
+    border: 1px solid var(--sl-color-gray-5);
+    overflow: hidden;
+    background: var(--sl-color-black);
+    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.75);
+    isolation: isolate;
+  }
+  .lh__bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 42px;
+    padding: 0 0.85rem;
+    background: var(--sl-color-gray-6);
+    border-bottom: 1px solid var(--sl-color-gray-5);
+  }
+  .lh__dots {
+    display: inline-flex;
+    gap: 6px;
+    flex: none;
+  }
+  .lh__dots span {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+  .lh__dots span:nth-child(1) {
+    background: #ff5f57;
+  }
+  .lh__dots span:nth-child(2) {
+    background: #febc2e;
+  }
+  .lh__dots span:nth-child(3) {
+    background: #28c840;
+  }
+
+  /* Segmented OS switcher, built into the title bar. */
+  .lh__segs {
+    display: inline-flex;
+    gap: 2px;
+    margin: 0 auto;
+    padding: 3px;
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 999px;
+  }
+  .lh__seg {
+    appearance: none;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--sl-color-gray-2);
+    background: transparent;
+    border-radius: 999px;
+    padding: 0.28rem 0.85rem;
+    transition:
+      background 150ms ease,
+      color 150ms ease;
+  }
+  .lh__seg:hover:not([aria-pressed="true"]) {
+    color: var(--sl-color-white);
+  }
+  .lh__seg[aria-pressed="true"] {
+    background: var(--seg-accent);
+    color: #fff;
+  }
+
+  .lh__open {
+    flex: none;
+    color: var(--sl-color-gray-3);
+    text-decoration: none;
+    font-size: 0.72rem;
+  }
+  .lh__open:hover {
+    color: var(--sl-color-accent);
+  }
+  @media (max-width: 620px) {
+    .lh__open {
+      display: none;
+    }
+  }
+
+  .lh__frame {
+    display: block;
+    width: 100%;
+    height: 580px;
+    border: 0;
+    background: var(--sl-color-black);
+  }
+  @media (max-width: 920px) {
+    .lh__frame {
+      height: 460px;
+    }
+  }
+</style>
+
+<script>
+  const frame = document.querySelector<HTMLIFrameElement>(".lh__frame");
+  const segs = Array.from(document.querySelectorAll<HTMLButtonElement>(".lh__seg"));
+  const order = ["macos", "windows", "ubuntu"];
+
+  let cycling = true;
+  let timer: ReturnType<typeof setInterval> | undefined;
+  let started = false;
+
+  function applySegs(theme: string | undefined) {
+    for (const s of segs) {
+      s.setAttribute("aria-pressed", String(s.dataset.theme === theme));
+    }
+  }
+  function setOS(theme: string) {
+    frame?.contentWindow?.postMessage({ type: "rui:set-theme", theme }, "*");
+    applySegs(theme);
+  }
+  function stopCycle() {
+    cycling = false;
+    if (timer) clearInterval(timer);
+  }
+
+  // Begin the auto-cycle once the embedded desktop reports it is ready (it posts
+  // its current theme on mount); keep the segments synced to what it shows.
+  window.addEventListener("message", (event) => {
+    const data = event.data as { type?: string; theme?: string } | null;
+    if (data?.type !== "rui:theme") return;
+    applySegs(data.theme);
+    if (started) return;
+    started = true;
+    let idx = Math.max(0, order.indexOf(data.theme ?? "macos"));
+    timer = setInterval(() => {
+      if (!cycling) return;
+      idx = (idx + 1) % order.length;
+      setOS(order[idx]!);
+    }, 3800);
+  });
+
+  for (const seg of segs) {
+    seg.addEventListener("click", () => {
+      stopCycle();
+      setOS(seg.dataset.theme ?? "macos");
+    });
+  }
+  // Engaging the desktop pins the look so it never switches mid-interaction.
+  document.querySelector(".lh__window")?.addEventListener("pointerenter", stopCycle);
+</script>

@@ -138,9 +138,11 @@ export default defineConfig({
         },
       ],
       components: {
-        // Use Starlight defaults for now. Layout slots will be overridden
-        // here once we want the LivePreview to appear in the head of the
-        // landing page automatically.
+        // The landing (the only splash page) renders a custom two-column hero
+        // with the live, auto-cycling desktop as its centerpiece. Overriding
+        // Hero lets it own the hero slot, so the splash template does not also
+        // print its default title block above it.
+        Hero: "./src/components/LandingHero.astro",
       },
     }),
     react(),

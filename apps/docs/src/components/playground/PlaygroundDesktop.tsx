@@ -231,6 +231,12 @@ export default function PlaygroundDesktop() {
   const [themeChoice, setThemeChoice] = useState<ThemeChoice>(readInitialThemeChoice);
   const theme = useMemo<OsTheme>(() => buildTheme(themeChoice), [themeChoice]);
 
+  // When embedded in the landing hero (?embed=1), the page owns the single OS
+  // switcher, so hide the in-canvas one to avoid a duplicate control.
+  const embedded =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("embed") === "1";
+
   const handleThemeChange = (choice: ThemeChoice) => {
     setThemeChoice(choice);
     persistThemeChoice(choice);
@@ -266,7 +272,7 @@ export default function PlaygroundDesktop() {
       <DemoActivator />
       <DocsSpotlightSource />
       {themeChoice === "ubuntu" && <UbuntuQuickSettings />}
-      <ThemeSwitcher value={themeChoice} onChange={handleThemeChange} />
+      {!embedded && <ThemeSwitcher value={themeChoice} onChange={handleThemeChange} />}
     </Desktop>
   );
 }
