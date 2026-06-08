@@ -38,6 +38,17 @@ Corporation, MIT License. These ship in the `@react-ui-os/example-apps` and
 `system-icons.tsx`, and `RecentsIcon.tsx`. The default Settings gear is from
 Lucide (https://lucide.dev), ISC License.
 
+## Windows 11 app icons (third-party pack, demo only)
+
+`win11/*.png` are individual icons cropped from the "Windows 11 Icon Pack (32px
+& 22px)" by Samliu (copyright (c) 2024 Samliu), used for the Windows theme's app
+icons in this demo. This is a third-party icon pack with **no stated open-source
+license**; it is bundled here only for visual fidelity and is not part of the
+published packages (which ship the MIT Fluent System Icons above). The depicted
+Windows app icon designs and "Windows" are the property of Microsoft
+Corporation. Confirm the pack's redistribution terms before reusing these files
+or shipping them anywhere public.
+
 ## Trademarks
 
 "Ubuntu" and the Circle of Friends logo are trademarks of Canonical Ltd.;

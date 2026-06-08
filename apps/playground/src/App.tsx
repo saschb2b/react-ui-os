@@ -28,6 +28,7 @@ registerSystemWindow("recents", {
   defaultBounds: { w: 560, h: 420 },
   content: RecentsFolder,
   icon: RecentsIcon,
+  icons: { fluent: pngIcon("/win11/recents.png") },
   appearsAsDesktopIcon: (storage) => hasRecents(storage),
 });
 
@@ -130,8 +131,23 @@ const UBUNTU_ICON_SRC: Record<string, string> = {
   terminal: "/yaru/terminal.png",
 };
 
-function yaruIcon(src: string): ComponentType<{ size?: number }> {
-  return function YaruIcon({ size = 24 }: { size?: number }) {
+// Real Windows 11 app icons (full color), selected when the theme's iconStyle is
+// "fluent". Cropped from a third-party "Windows 11 Icon Pack" by Samliu; bundled
+// in this demo only (see public/CREDITS.md), not in the published packages,
+// which keep the MIT Fluent System Icons.
+const WIN11_ICON_SRC: Record<string, string> = {
+  hello: "/win11/hello.png",
+  notes: "/win11/notes.png",
+  calculator: "/win11/calculator.png",
+  clock: "/win11/clock.png",
+  calendar: "/win11/calendar.png",
+  reminders: "/win11/reminders.png",
+  sketch: "/win11/sketch.png",
+  terminal: "/win11/terminal.png",
+};
+
+function pngIcon(src: string): ComponentType<{ size?: number }> {
+  return function PngIcon({ size = 24 }: { size?: number }) {
     return (
       <img src={src} width={size} height={size} alt="" style={{ display: "block" }} />
     );
@@ -139,8 +155,17 @@ function yaruIcon(src: string): ComponentType<{ size?: number }> {
 }
 
 const apps: OsApp[] = [helloApp, ...exampleApps].map((app) => {
-  const src = UBUNTU_ICON_SRC[app.id];
-  return src ? { ...app, icons: { ...app.icons, gnome: yaruIcon(src) } } : app;
+  const gnome = UBUNTU_ICON_SRC[app.id];
+  const fluent = WIN11_ICON_SRC[app.id];
+  if (!gnome && !fluent) return app;
+  return {
+    ...app,
+    icons: {
+      ...app.icons,
+      ...(gnome ? { gnome: pngIcon(gnome) } : {}),
+      ...(fluent ? { fluent: pngIcon(fluent) } : {}),
+    },
+  };
 });
 
 // Give the built-in Settings window its Ubuntu (Yaru) icon for the gnome style;
@@ -149,7 +174,11 @@ const settingsDef = getSystemWindow("settings");
 if (settingsDef) {
   registerSystemWindow("settings", {
     ...settingsDef,
-    icons: { ...settingsDef.icons, gnome: yaruIcon("/yaru/settings.png") },
+    icons: {
+      ...settingsDef.icons,
+      gnome: pngIcon("/yaru/settings.png"),
+      fluent: pngIcon("/win11/settings.png"),
+    },
   });
 }
 
