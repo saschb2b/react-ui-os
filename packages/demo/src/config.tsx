@@ -1,0 +1,179 @@
+"use client";
+
+/**
+ * Shared demo configuration for the playground and the docs embed, so the two
+ * surfaces stay in sync from one source instead of drifting copies. Everything
+ * here is parameterized by `assetBase` ("/" for the playground, "/react-ui-os/"
+ * for the docs deploy) since each app serves its own `public/` under a
+ * different path.
+ */
+import type { ComponentType } from "react";
+import { useState } from "react";
+import type { App, OsTheme } from "@react-ui-os/core";
+import { getSystemWindow, registerSystemWindow } from "@react-ui-os/desktop";
+import { createMacosTheme } from "@react-ui-os/theme-macos";
+import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
+import { createWindowsTheme } from "@react-ui-os/theme-windows";
+
+export type DemoThemeChoice = "macos" | "windows" | "ubuntu";
+
+const THEME_STORAGE_KEY = "rui-os:playground-theme";
+
+export function isThemeChoice(value: string | null): value is DemoThemeChoice {
+  return value === "macos" || value === "windows" || value === "ubuntu";
+}
+
+// `?theme=` wins (a shareable deep link), then the visitor's last choice, then macOS.
+export function readInitialThemeChoice(): DemoThemeChoice {
+  if (typeof window === "undefined") return "macos";
+  const fromUrl = new URLSearchParams(window.location.search).get("theme");
+  if (isThemeChoice(fromUrl)) return fromUrl;
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (isThemeChoice(stored)) return stored;
+  return "macos";
+}
+
+export function persistThemeChoice(choice: DemoThemeChoice): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(THEME_STORAGE_KEY, choice);
+  const params = new URLSearchParams(window.location.search);
+  params.set("theme", choice);
+  window.history.replaceState(
+    null,
+    "",
+    `${window.location.pathname}?${params.toString()}`,
+  );
+}
+
+function withBase(base: string, path: string): string {
+  const b = base.endsWith("/") ? base : `${base}/`;
+  return `${b}${path.replace(/^\//, "")}`;
+}
+
+/** A plain image icon (full-color art served from `public/`). */
+export function pngIcon(src: string): ComponentType<{ size?: number }> {
+  return function PngIcon({ size = 24 }: { size?: number }) {
+    return (
+      <img src={src} width={size} height={size} alt="" style={{ display: "block" }} />
+    );
+  };
+}
+
+/**
+ * An icon from a local-only (gitignored) pack, with a fallback for when the file
+ * is absent, so a clean checkout or the docs deploy degrades gracefully.
+ */
+export function localIcon(
+  src: string,
+  Fallback?: ComponentType<{ size?: number }>,
+): ComponentType<{ size?: number }> {
+  return function LocalIcon({ size = 24 }: { size?: number }) {
+    const [failed, setFailed] = useState(false);
+    if (failed && Fallback) return <Fallback size={size} />;
+    return (
+      <img
+        src={src}
+        width={size}
+        height={size}
+        alt=""
+        style={{ display: failed ? "none" : "block" }}
+        onError={() => {
+          setFailed(true);
+        }}
+      />
+    );
+  };
+}
+
+// App ids that have a committed Yaru (gnome) icon and a Windows-11 (fluent) icon.
+const ICON_IDS = [
+  "hello",
+  "notes",
+  "calculator",
+  "clock",
+  "calendar",
+  "reminders",
+  "sketch",
+  "terminal",
+];
+
+/**
+ * Add the per-theme icons every demo app shares: Ubuntu's Yaru art (committed)
+ * for the `gnome` style, and the real Windows 11 pack for `fluent` (from the
+ * gitignored `public/local/win11/` slot; falls back to the bundled MIT Fluent
+ * glyph when the pack is absent). macOS keeps each app's default glyph.
+ */
+export function applyDemoIcons(apps: App[], assetBase: string): App[] {
+  return apps.map((app) => {
+    if (!ICON_IDS.includes(app.id)) return app;
+    return {
+      ...app,
+      icons: {
+        ...app.icons,
+        gnome: pngIcon(withBase(assetBase, `yaru/${app.id}.png`)),
+        fluent: localIcon(
+          withBase(assetBase, `local/win11/${app.id}.png`),
+          app.icons?.fluent,
+        ),
+      },
+    };
+  });
+}
+
+/** The wallpaper gallery offered in Settings > Appearance. */
+export function demoWallpapers(assetBase: string): { src: string; label: string }[] {
+  return [
+    { src: withBase(assetBase, "macos-wallpaper.jpg"), label: "Tahoe Day" },
+    { src: withBase(assetBase, "macos-wallpaper-dark.jpg"), label: "Tahoe Dark" },
+    { src: withBase(assetBase, "windows-wallpaper.jpg"), label: "Bloom Light" },
+    { src: withBase(assetBase, "windows-wallpaper-dark.jpg"), label: "Bloom Dark" },
+    { src: withBase(assetBase, "ubuntu-wallpaper.png"), label: "Resolute Raccoon" },
+    {
+      src: withBase(assetBase, "ubuntu-wallpaper-dark.png"),
+      label: "Resolute Raccoon Dark",
+    },
+  ];
+}
+
+/** Build the OsTheme for a chosen platform, with assets resolved under `assetBase`. */
+export function buildDemoTheme(choice: DemoThemeChoice, assetBase: string): OsTheme {
+  const wallpaperOptions = demoWallpapers(assetBase);
+  if (choice === "windows") {
+    return createWindowsTheme({
+      wallpaperSrc: withBase(assetBase, "windows-wallpaper.jpg"),
+      darkWallpaperSrc: withBase(assetBase, "windows-wallpaper-dark.jpg"),
+      wallpaperOptions,
+    });
+  }
+  if (choice === "ubuntu") {
+    return createUbuntuTheme({
+      wallpaperSrc: withBase(assetBase, "ubuntu-wallpaper-dark.png"),
+      lightWallpaperSrc: withBase(assetBase, "ubuntu-wallpaper.png"),
+      wallpaperOptions,
+      launcherIconSrc: withBase(assetBase, "yaru/show-apps.svg"),
+    });
+  }
+  return createMacosTheme({
+    wallpaperSrc: withBase(assetBase, "macos-wallpaper.jpg"),
+    darkWallpaperSrc: withBase(assetBase, "macos-wallpaper-dark.jpg"),
+    wallpaperOptions,
+    liquidGlass: true,
+  });
+}
+
+/** Give the built-in Settings window its per-theme icons (gnome + fluent). */
+export function applyDemoSettingsIcon(assetBase: string): void {
+  const def = getSystemWindow("settings");
+  if (!def) return;
+  registerSystemWindow("settings", {
+    ...def,
+    icons: {
+      ...def.icons,
+      gnome: pngIcon(withBase(assetBase, "yaru/settings.png")),
+      fluent: localIcon(
+        withBase(assetBase, "local/win11/settings.png"),
+        def.icons?.fluent,
+      ),
+    },
+  });
+}

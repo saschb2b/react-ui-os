@@ -3,9 +3,13 @@ import type { OsTheme } from "@react-ui-os/core";
 import { Desktop } from "@react-ui-os/desktop";
 import { notify, useWindowManager } from "@react-ui-os/core";
 import type { WindowPayload } from "@react-ui-os/core";
-import { createMacosTheme } from "@react-ui-os/theme-macos";
-import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
-import { createWindowsTheme } from "@react-ui-os/theme-windows";
+import {
+  buildDemoTheme,
+  isThemeChoice,
+  persistThemeChoice,
+  readInitialThemeChoice,
+  type DemoThemeChoice,
+} from "@react-ui-os/demo";
 import { docsApps } from "./apps";
 import {
   NOTIFICATION_CENTER_TOGGLE_EVENT,
@@ -15,79 +19,15 @@ import {
   useTheme,
 } from "@react-ui-os/desktop";
 import { DocsSpotlightSource } from "./DocsSpotlightSource";
-import { ThemeSwitcher, type ThemeChoice } from "./ThemeSwitcher";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
 
-const THEME_STORAGE_KEY = "rui-os:playground-theme";
-
-function isThemeChoice(value: string | null): value is ThemeChoice {
-  return value === "macos" || value === "windows" || value === "ubuntu";
-}
-
-// `?theme=` wins (an explicit, shareable deep link), then the last choice the
-// visitor made, then macOS, the look the docs lead with.
-function readInitialThemeChoice(): ThemeChoice {
-  if (typeof window === "undefined") return "macos";
-  const fromUrl = new URLSearchParams(window.location.search).get("theme");
-  if (isThemeChoice(fromUrl)) return fromUrl;
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (isThemeChoice(stored)) return stored;
-  return "macos";
-}
-
-function persistThemeChoice(choice: ThemeChoice) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(THEME_STORAGE_KEY, choice);
-  // Mirror the choice into the URL so the current view stays shareable
-  // without forcing a reload.
-  const params = new URLSearchParams(window.location.search);
-  params.set("theme", choice);
-  window.history.replaceState(null, "", `${window.location.pathname}?${params}`);
-}
-
-// Prefix the configured base path (e.g. "/react-ui-os/" on GitHub Pages). A
-// bare relative wallpaper path would resolve against the current page URL and
-// 404 on a sub-path deploy.
-function assetBase(): string {
-  return import.meta.env.BASE_URL.endsWith("/")
-    ? import.meta.env.BASE_URL
-    : `${import.meta.env.BASE_URL}/`;
-}
-
-function buildTheme(choice: ThemeChoice): OsTheme {
-  const base = assetBase();
-  // The bundled wallpapers, offered as a gallery in Settings > Appearance.
-  const wallpaperOptions = [
-    { src: `${base}macos-wallpaper.jpg`, label: "Tahoe Day" },
-    { src: `${base}macos-wallpaper-dark.jpg`, label: "Tahoe Dark" },
-    { src: `${base}windows-wallpaper.jpg`, label: "Bloom Light" },
-    { src: `${base}windows-wallpaper-dark.jpg`, label: "Bloom Dark" },
-    { src: `${base}ubuntu-wallpaper.png`, label: "Yaru" },
-  ];
-  if (choice === "windows") {
-    return createWindowsTheme({
-      wallpaperSrc: `${base}windows-wallpaper.jpg`,
-      darkWallpaperSrc: `${base}windows-wallpaper-dark.jpg`,
-      wallpaperOptions,
-    });
-  }
-  if (choice === "ubuntu") {
-    return createUbuntuTheme({
-      wallpaperSrc: `${base}ubuntu-wallpaper-dark.png`,
-      lightWallpaperSrc: `${base}ubuntu-wallpaper.png`,
-      wallpaperOptions,
-      // The real Yaru Show Applications glyph (recolored to the foreground).
-      launcherIconSrc: `${base}yaru/show-apps.svg`,
-    });
-  }
-  return createMacosTheme({
-    wallpaperSrc: `${base}macos-wallpaper.jpg`,
-    darkWallpaperSrc: `${base}macos-wallpaper-dark.jpg`,
-    wallpaperOptions,
-    // Tahoe Liquid Glass refraction where supported (Chromium); blur fallback.
-    liquidGlass: true,
-  });
-}
+// The docs serves its public/ under the /react-ui-os/ deploy base. The apps,
+// per-theme icons, and theme builder all come from the shared @react-ui-os/demo
+// config so this embed and the playground cannot drift.
+const ASSET_BASE = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
 
 /**
  * Deep-link the playground from a docs LivePreview. `?demo=<key>` opens
@@ -228,8 +168,12 @@ function DemoActivator() {
  * sits inside the same provider so it can dispatch openWindow.
  */
 export default function PlaygroundDesktop() {
-  const [themeChoice, setThemeChoice] = useState<ThemeChoice>(readInitialThemeChoice);
-  const theme = useMemo<OsTheme>(() => buildTheme(themeChoice), [themeChoice]);
+  const [themeChoice, setThemeChoice] =
+    useState<DemoThemeChoice>(readInitialThemeChoice);
+  const theme = useMemo<OsTheme>(
+    () => buildDemoTheme(themeChoice, ASSET_BASE),
+    [themeChoice],
+  );
 
   // When embedded in the landing hero (?embed=1), the page owns the single OS
   // switcher, so hide the in-canvas one to avoid a duplicate control.
@@ -237,7 +181,7 @@ export default function PlaygroundDesktop() {
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("embed") === "1";
 
-  const handleThemeChange = (choice: ThemeChoice) => {
+  const handleThemeChange = (choice: DemoThemeChoice) => {
     setThemeChoice(choice);
     persistThemeChoice(choice);
   };
@@ -247,7 +191,9 @@ export default function PlaygroundDesktop() {
   // chrome and watch the whole thing transform. Also report the current look
   // back so the landing's pills stay in sync with in-canvas switches.
   useEffect(() => {
-    const onMessage = (e: MessageEvent) => {
+    // Typed structurally (not as MessageEvent) to avoid a no-undef on the DOM
+    // global; addEventListener still narrows the runtime event for us.
+    const onMessage = (e: { data?: unknown }) => {
       const data = e.data as { type?: string; theme?: string } | null;
       if (
         data?.type === "rui:set-theme" &&

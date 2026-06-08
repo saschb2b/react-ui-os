@@ -1,26 +1,36 @@
-import { useMemo, useState, type ComponentType } from "react";
+import { useMemo, useState } from "react";
 import type { App as OsApp, OsTheme } from "@react-ui-os/core";
 import {
   Desktop,
-  getSystemWindow,
   registerSystemWindow,
   useDesktopContext,
   useTheme,
 } from "@react-ui-os/desktop";
-import { createMacosTheme } from "@react-ui-os/theme-macos";
-import { createUbuntuTheme } from "@react-ui-os/theme-ubuntu";
-import { createWindowsTheme } from "@react-ui-os/theme-windows";
+import {
+  applyDemoIcons,
+  applyDemoSettingsIcon,
+  buildDemoTheme,
+  localIcon,
+  persistThemeChoice,
+  readInitialThemeChoice,
+  type DemoThemeChoice,
+} from "@react-ui-os/demo";
 import { exampleApps, HelloFluentIcon } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
 import { RecentsIcon } from "./RecentsIcon";
-import { ThemeSwitcher, type ThemeChoice } from "./ThemeSwitcher";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
 
-// Register the Recents system window once at module load. The desktop
-// icon for it surfaces only when `hasRecents(storage)` returns true, so
-// the folder appears the moment the user adds their first entry and
-// disappears when they delete the last one.
+// The apps, per-theme icons, theme builder, and Settings icons all come from
+// the shared @react-ui-os/demo config so the playground and the docs embed
+// stay in sync. "/" is the playground's asset base (it serves public/ at root).
+const ASSET_BASE = "/";
+
+// Register the Recents system window once at module load. The desktop icon for
+// it surfaces only when `hasRecents(storage)` returns true, so the folder
+// appears the moment the user adds their first entry and disappears when they
+// delete the last one.
 registerSystemWindow("recents", {
   name: "Recents",
   tagline: "Recently created items",
@@ -28,9 +38,11 @@ registerSystemWindow("recents", {
   defaultBounds: { w: 560, h: 420 },
   content: RecentsFolder,
   icon: RecentsIcon,
-  icons: { fluent: localIcon("/local/win11/recents.png", RecentsIcon) },
+  icons: { fluent: localIcon(`${ASSET_BASE}local/win11/recents.png`, RecentsIcon) },
   appearsAsDesktopIcon: (storage) => hasRecents(storage),
 });
+
+applyDemoSettingsIcon(ASSET_BASE);
 
 function HelloContent({ focused }: { focused: boolean }) {
   const { storage } = useDesktopContext();
@@ -117,191 +129,17 @@ const helloApp: OsApp = {
   defaultBounds: { w: 580, h: 460 },
 };
 
-// Ubuntu's own Yaru app icons (colorful), selected when the theme's iconStyle is
-// "gnome". Bundled in this demo only (CC-BY-SA, not in the published packages);
-// see public/CREDITS.md.
-const UBUNTU_ICON_SRC: Record<string, string> = {
-  hello: "/yaru/hello.png",
-  notes: "/yaru/notes.png",
-  calculator: "/yaru/calculator.png",
-  clock: "/yaru/clock.png",
-  calendar: "/yaru/calendar.png",
-  reminders: "/yaru/reminders.png",
-  sketch: "/yaru/sketch.png",
-  terminal: "/yaru/terminal.png",
-};
-
-// Real Windows 11 app icons (full color) for the "fluent" icon style. These are
-// a third-party pack with no open license, so they are NOT committed: drop them
-// in the gitignored public/local/win11/ slot (see the README there). When a file
-// is missing, localIcon falls back to the bundled MIT Fluent glyph, so a clean
-// checkout still renders.
-const WIN11_ICON_SRC: Record<string, string> = {
-  hello: "/local/win11/hello.png",
-  notes: "/local/win11/notes.png",
-  calculator: "/local/win11/calculator.png",
-  clock: "/local/win11/clock.png",
-  calendar: "/local/win11/calendar.png",
-  reminders: "/local/win11/reminders.png",
-  sketch: "/local/win11/sketch.png",
-  terminal: "/local/win11/terminal.png",
-};
-
-// Real macOS app icons (full color) for the "macos" icon style. Apple's icons
-// are proprietary, so none are committed. Flip LOCAL_MACOS_ICONS to true AFTER
-// dropping a pack into the gitignored public/local/macos/ slot (see the README
-// there); the macOS dock then renders them full-bleed instead of the built-in
-// line glyph on an accent squircle. Off by default so a clean checkout keeps
-// the squircle look (a bare full-bleed glyph would look wrong).
-const LOCAL_MACOS_ICONS = false;
-const MACOS_ICON_SRC: Record<string, string> = {
-  hello: "/local/macos/hello.png",
-  notes: "/local/macos/notes.png",
-  calculator: "/local/macos/calculator.png",
-  clock: "/local/macos/clock.png",
-  calendar: "/local/macos/calendar.png",
-  reminders: "/local/macos/reminders.png",
-  sketch: "/local/macos/sketch.png",
-  terminal: "/local/macos/terminal.png",
-};
-
-function pngIcon(src: string): ComponentType<{ size?: number }> {
-  return function PngIcon({ size = 24 }: { size?: number }) {
-    return (
-      <img src={src} width={size} height={size} alt="" style={{ display: "block" }} />
-    );
-  };
-}
-
-// An icon from the local-only drop-in slot, with a fallback for when the file
-// is absent (a clean checkout without the proprietary pack).
-function localIcon(
-  src: string,
-  Fallback?: ComponentType<{ size?: number }>,
-): ComponentType<{ size?: number }> {
-  return function LocalIcon({ size = 24 }: { size?: number }) {
-    const [failed, setFailed] = useState(false);
-    if (failed && Fallback) return <Fallback size={size} />;
-    return (
-      <img
-        src={src}
-        width={size}
-        height={size}
-        alt=""
-        style={{ display: failed ? "none" : "block" }}
-        onError={() => {
-          setFailed(true);
-        }}
-      />
-    );
-  };
-}
-
-const apps: OsApp[] = [helloApp, ...exampleApps].map((app) => {
-  const gnome = UBUNTU_ICON_SRC[app.id];
-  const win11 = WIN11_ICON_SRC[app.id];
-  const macos = LOCAL_MACOS_ICONS ? MACOS_ICON_SRC[app.id] : undefined;
-  if (!gnome && !win11 && !macos) return app;
-  return {
-    ...app,
-    icons: {
-      ...app.icons,
-      ...(gnome ? { gnome: pngIcon(gnome) } : {}),
-      ...(win11 ? { fluent: localIcon(win11, app.icons?.fluent) } : {}),
-      ...(macos ? { macos: localIcon(macos, app.icon) } : {}),
-    },
-  };
-});
-
-// Give the built-in Settings window its Ubuntu (Yaru) icon for the gnome style;
-// it keeps the Lucide default (macOS) and the Fluent variant (Windows).
-const settingsDef = getSystemWindow("settings");
-if (settingsDef) {
-  registerSystemWindow("settings", {
-    ...settingsDef,
-    icons: {
-      ...settingsDef.icons,
-      gnome: pngIcon("/yaru/settings.png"),
-      fluent: localIcon("/local/win11/settings.png", settingsDef.icons?.fluent),
-    },
-  });
-}
-
-const THEME_STORAGE_KEY = "rui-os:playground-theme";
-
-function isThemeChoice(value: string | null): value is ThemeChoice {
-  return value === "macos" || value === "windows" || value === "ubuntu";
-}
-
-// `?theme=` wins (an explicit, shareable deep link), then the last choice the
-// visitor made, then macOS.
-function readInitialThemeChoice(): ThemeChoice {
-  if (typeof window === "undefined") return "macos";
-  const fromUrl = new URLSearchParams(window.location.search).get("theme");
-  if (isThemeChoice(fromUrl)) return fromUrl;
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (isThemeChoice(stored)) return stored;
-  return "macos";
-}
-
-function persistThemeChoice(choice: ThemeChoice) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(THEME_STORAGE_KEY, choice);
-  // Mirror the choice into the URL so the current view stays shareable
-  // without forcing a reload.
-  const params = new URLSearchParams(window.location.search);
-  params.set("theme", choice);
-  window.history.replaceState(null, "", `${window.location.pathname}?${params}`);
-}
-
-// The bundled wallpapers, offered as a gallery in Settings > Appearance so a
-// visitor can pick one (overriding the appearance default until reset).
-const WALLPAPERS = [
-  { src: "/macos-wallpaper.jpg", label: "Tahoe Day" },
-  { src: "/macos-wallpaper-dark.jpg", label: "Tahoe Dark" },
-  { src: "/windows-wallpaper.jpg", label: "Bloom Light" },
-  { src: "/windows-wallpaper-dark.jpg", label: "Bloom Dark" },
-  // Ubuntu 25.10 "Resolute Raccoon" wallpapers, Canonical's official set
-  // (CC-BY-SA). See apps/playground/public/CREDITS.md.
-  { src: "/ubuntu-wallpaper.png", label: "Resolute Raccoon" },
-  { src: "/ubuntu-wallpaper-dark.png", label: "Resolute Raccoon Dark" },
-  { src: "/ubuntu-wallpaper-light.png", label: "Resolute Raccoon Light" },
-  { src: "/ubuntu-wallpaper-blank.png", label: "Resolute Raccoon Plain" },
-];
-
-function buildTheme(choice: ThemeChoice): OsTheme {
-  if (choice === "windows") {
-    return createWindowsTheme({
-      wallpaperSrc: "/windows-wallpaper.jpg",
-      darkWallpaperSrc: "/windows-wallpaper-dark.jpg",
-      wallpaperOptions: WALLPAPERS,
-    });
-  }
-  if (choice === "ubuntu") {
-    return createUbuntuTheme({
-      // Ubuntu's base look is dark; light mode gets the colorful variant.
-      wallpaperSrc: "/ubuntu-wallpaper-dark.png",
-      lightWallpaperSrc: "/ubuntu-wallpaper.png",
-      wallpaperOptions: WALLPAPERS,
-      // The real Yaru Show Applications glyph (recolored to the foreground).
-      launcherIconSrc: "/yaru/show-apps.svg",
-    });
-  }
-  return createMacosTheme({
-    wallpaperSrc: "/macos-wallpaper.jpg",
-    darkWallpaperSrc: "/macos-wallpaper-dark.jpg",
-    wallpaperOptions: WALLPAPERS,
-    // Show Tahoe's Liquid Glass refraction where supported (Chromium); other
-    // browsers fall back to the blur.
-    liquidGlass: true,
-  });
-}
+const apps: OsApp[] = applyDemoIcons([helloApp, ...exampleApps], ASSET_BASE);
 
 export default function App() {
-  const [themeChoice, setThemeChoice] = useState<ThemeChoice>(readInitialThemeChoice);
-  const theme = useMemo<OsTheme>(() => buildTheme(themeChoice), [themeChoice]);
+  const [themeChoice, setThemeChoice] =
+    useState<DemoThemeChoice>(readInitialThemeChoice);
+  const theme = useMemo<OsTheme>(
+    () => buildDemoTheme(themeChoice, ASSET_BASE),
+    [themeChoice],
+  );
 
-  const handleThemeChange = (choice: ThemeChoice) => {
+  const handleThemeChange = (choice: DemoThemeChoice) => {
     setThemeChoice(choice);
     persistThemeChoice(choice);
   };

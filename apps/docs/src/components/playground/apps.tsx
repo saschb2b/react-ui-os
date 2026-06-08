@@ -1,11 +1,18 @@
-import type { ComponentType, CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import type { App } from "@react-ui-os/core";
 import { notify } from "@react-ui-os/core";
 import { registerStatusItem, registerSystemWindow } from "@react-ui-os/desktop";
 import { useDesktopContext } from "@react-ui-os/desktop";
-import { exampleApps } from "@react-ui-os/example-apps";
+import { applyDemoIcons, applyDemoSettingsIcon } from "@react-ui-os/demo";
+import { exampleApps, HelloFluentIcon } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
+
+// The docs serves its public/ under the /react-ui-os/ deploy base, so every
+// shared-config asset path is prefixed with it.
+const ASSET_BASE = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
 
 // Demo status item: a small "online" dot in the menu bar tray. Real
 // products would surface battery, sync state, or a current track here.
@@ -43,6 +50,9 @@ registerSystemWindow("recents", {
   content: RecentsFolder,
   appearsAsDesktopIcon: (storage) => hasRecents(storage),
 });
+
+// Give the built-in Settings window its per-theme icons (shared config).
+applyDemoSettingsIcon(ASSET_BASE);
 
 const demoButton: CSSProperties = {
   border: "1px solid rgba(255,255,255,0.18)",
@@ -114,46 +124,19 @@ function HelloContent({ focused }: { focused: boolean }) {
   );
 }
 
-// Ubuntu's Yaru app icons (colorful), selected when the theme's iconStyle is
-// "gnome". Bundled in the demo only (CC-BY-SA, see public/CREDITS.md), prefixed
-// with the docs base path so they resolve on the /react-ui-os sub-path deploy.
-const ICON_BASE = import.meta.env.BASE_URL.endsWith("/")
-  ? import.meta.env.BASE_URL
-  : `${import.meta.env.BASE_URL}/`;
-const UBUNTU_ICON_SRC: Record<string, string> = {
-  hello: "hello",
-  notes: "notes",
-  calculator: "calculator",
-  clock: "clock",
-  calendar: "calendar",
-  reminders: "reminders",
-  sketch: "sketch",
-  terminal: "terminal",
-};
-
-function pngIcon(src: string): ComponentType<{ size?: number }> {
-  return function PngIcon({ size = 24 }: { size?: number }) {
-    return (
-      <img src={src} width={size} height={size} alt="" style={{ display: "block" }} />
-    );
-  };
-}
-
 // The docs demo carries its own Hello window (with the "Fire a toast" button
-// above), then shares the real app suite with the playground so both surfaces
-// stay in sync (including the per-theme icons). See @react-ui-os/example-apps.
+// above), then shares the real app suite and the per-theme icon wiring with the
+// playground via @react-ui-os/demo, so the two surfaces cannot drift.
 const helloApp: App = {
   id: "hello",
   name: "Hello",
   tagline: "Try the library",
   accent: "#6b8afd",
+  // Same Fluent fallback as the playground, so the Windows dock shows a Hello
+  // icon even where the local win11 pack is absent (a clean checkout, the docs).
+  icons: { fluent: HelloFluentIcon },
   content: HelloContent,
   defaultBounds: { w: 560, h: 380 },
 };
 
-export const docsApps: App[] = [helloApp, ...exampleApps].map((app) => {
-  const key = UBUNTU_ICON_SRC[app.id];
-  return key
-    ? { ...app, icons: { ...app.icons, gnome: pngIcon(`${ICON_BASE}yaru/${key}.png`) } }
-    : app;
-});
+export const docsApps: App[] = applyDemoIcons([helloApp, ...exampleApps], ASSET_BASE);

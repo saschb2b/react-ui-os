@@ -65,6 +65,9 @@ importers:
       '@react-ui-os/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@react-ui-os/demo':
+        specifier: workspace:*
+        version: link:../../packages/demo
       '@react-ui-os/desktop':
         specifier: workspace:*
         version: link:../../packages/desktop
@@ -111,6 +114,9 @@ importers:
       '@react-ui-os/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@react-ui-os/demo':
+        specifier: workspace:*
+        version: link:../../packages/demo
       '@react-ui-os/desktop':
         specifier: workspace:*
         version: link:../../packages/desktop
@@ -193,6 +199,34 @@ importers:
       vitest:
         specifier: ^3.0.0
         version: 3.2.4(@types/debug@4.1.13)(@types/node@24.12.4)(lightningcss@1.32.0)(msw@2.14.6(@types/node@24.12.4)(typescript@6.0.3))(yaml@2.9.0)
+
+  packages/demo:
+    dependencies:
+      '@react-ui-os/core':
+        specifier: workspace:*
+        version: link:../core
+      '@react-ui-os/desktop':
+        specifier: workspace:*
+        version: link:../desktop
+      '@react-ui-os/theme-macos':
+        specifier: workspace:*
+        version: link:../theme-macos
+      '@react-ui-os/theme-ubuntu':
+        specifier: workspace:*
+        version: link:../theme-ubuntu
+      '@react-ui-os/theme-windows':
+        specifier: workspace:*
+        version: link:../theme-windows
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.15
+      react:
+        specifier: ^19.0.0
+        version: 19.2.6
+      typescript:
+        specifier: ^6.0.0
+        version: 6.0.3
 
   packages/desktop:
     dependencies:

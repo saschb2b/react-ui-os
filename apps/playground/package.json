@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@react-ui-os/core": "workspace:*",
+    "@react-ui-os/demo": "workspace:*",
     "@react-ui-os/desktop": "workspace:*",
     "@react-ui-os/example-apps": "workspace:*",
     "@react-ui-os/icons": "workspace:*",
