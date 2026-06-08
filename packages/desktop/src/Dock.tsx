@@ -433,7 +433,12 @@ export function Dock() {
           padding: metrics.dockPadding,
           border: `1px solid ${theme.palette.border}`,
           borderRadius: theme.shape.dockTileRadius + metrics.dockPadding - 4,
-          boxShadow: "0 12px 32px -8px rgba(0,0,0,0.45)",
+          // Tahoe's Liquid Glass dock carries a specular highlight on its top
+          // edge (the light catching the glass), over the drop shadow. A thin
+          // neutral inset line, not a glow.
+          // Source: https://appleinsider.com/articles/25/06/11/liquid-glass-is-more-than-skin-deep-on-macos-tahoe
+          boxShadow:
+            "inset 0 1px 0 rgba(255,255,255,0.5), 0 12px 32px -8px rgba(0,0,0,0.45)",
           ...(isLeft
             ? {
                 left: metrics.dockEdgeOffset,

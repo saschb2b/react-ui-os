@@ -51,18 +51,21 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
     font: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
     palette: {
       // Light appearance, matching the Tahoe Day wallpaper in the reference.
-      // Surfaces are a light vibrancy material (translucent so the wallpaper
-      // tints them through the blur); text is Apple's near-black label color.
+      // Surfaces are Tahoe's Liquid Glass material: more translucent than Big
+      // Sur vibrancy so the wallpaper tints through, over the heavier blur and
+      // saturation below. Text is Apple's near-black label color.
       background: "#f4f5f7",
-      surface: "rgba(246, 247, 249, 0.72)",
+      surface: "rgba(246, 247, 249, 0.62)",
       textPrimary: "#1d1d1f",
       textSecondary: "rgba(0, 0, 0, 0.55)",
       accent,
       border: "rgba(0, 0, 0, 0.12)",
     },
     shape: {
-      windowRadius: 12,
-      dockTileRadius: 14,
+      // Tahoe rounded windows, toolbars, and the dock's icon frames further
+      // than the Big Sur era; nudge the window and dock-tile radii up to match.
+      windowRadius: 16,
+      dockTileRadius: 18,
       small: 6,
     },
     motion: {
@@ -84,8 +87,10 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       contextMenuDurationMs: 120,
     },
     blur: {
-      surface: "blur(20px) saturate(160%)",
-      spotlight: "blur(28px) saturate(160%)",
+      // Liquid Glass reads heavier and more vivid than Big Sur vibrancy: more
+      // blur and saturation so the material tints to the content behind it.
+      surface: "blur(24px) saturate(180%)",
+      spotlight: "blur(30px) saturate(180%)",
     },
     elevation: {
       // Light appearance: macOS floats windows on a soft, wide shadow, far
@@ -124,7 +129,7 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       dark: {
         palette: {
           background: "#1e2129",
-          surface: "rgba(28, 30, 38, 0.78)",
+          surface: "rgba(28, 30, 38, 0.68)",
           textPrimary: "#f1f3f8",
           textSecondary: "rgba(241, 243, 248, 0.62)",
           border: "rgba(255, 255, 255, 0.1)",
