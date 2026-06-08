@@ -25,42 +25,50 @@
   font-size: 0.9em;
 }
 
-/* Landing hero: it is text-only (the live OS just below is the real hero), so
-   center it rather than leaving the right half empty, and pull it up so the
-   desktop sits near the top instead of below a tall, lopsided hero. */
-.hero {
-  justify-content: center;
-  padding-block: 1.25rem 1.5rem;
+/* Header (default + fallback): a clean frosted bar with a single hairline
+   separator. One border only, so no double line. */
+.header {
+  background: color-mix(in srgb, var(--sl-color-black) 80%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid var(--sl-color-gray-5);
 }
 
-.hero .stack {
-  text-align: center;
-  align-items: center;
+/* Where scroll-driven animations are supported, the header blends into the page
+   at the very top (frosted glass over a flat background reads as nothing, and a
+   border there just looks like a stray line), then frosts in with a separator
+   and soft shadow once content scrolls under it, the way the macOS and iOS bars
+   do. Pure CSS, no JS; unsupported browsers keep the clean frosted bar above. */
+@supports (animation-timeline: scroll()) {
+  .header {
+    background: transparent;
+    border-bottom-color: transparent;
+    box-shadow: 0 6px 24px -16px transparent;
+    animation: rui-header-frost linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 90px;
+  }
+  @keyframes rui-header-frost {
+    to {
+      background: color-mix(in srgb, var(--sl-color-black) 80%, transparent);
+      border-bottom-color: var(--sl-color-gray-5);
+      box-shadow: 0 6px 24px -16px rgba(0, 0, 0, 0.7);
+    }
+  }
 }
 
-.hero h1 {
-  letter-spacing: -0.02em;
+/* The wordmark, tightened to match the hero's confident type. */
+.site-title {
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-.hero .tagline {
-  max-width: 54ch;
-  margin-inline: auto;
-  color: var(--sl-color-gray-2);
+/* The search trigger and theme toggle as rounded pills, echoing the hero's
+   segmented control and buttons. */
+site-search button {
+  border-radius: 999px;
 }
 
-.hero .actions {
-  justify-content: center;
-}
-
-/* Caption that sits under the landing-page live demo. Pulled up close to the
-   embed it annotates and muted so it reads as a hint, not body copy. */
-.demo-caption {
-  margin-top: -0.75rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--sl-color-gray-3);
-}
-
-.demo-caption kbd {
-  font-size: 0.78em;
+starlight-theme-select select {
+  border-radius: 999px;
 }
