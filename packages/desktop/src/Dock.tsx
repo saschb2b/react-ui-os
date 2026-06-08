@@ -624,6 +624,10 @@ function launcherGlyphFor(launcher: OsTheme["chrome"]["launcher"]): LauncherGlyp
   return "dots";
 }
 
+// The Windows 11 logo blue (Microsoft "Default blue", #0078d4). Fixed brand
+// color: the Start logo is always this regardless of the theme accent.
+const WINDOWS_LOGO_BLUE = "#0078d4";
+
 /**
  * Launcher button glyph. Original drawings, not traced from vendor artwork:
  *
@@ -636,9 +640,12 @@ function LauncherGlyph({ icon, size = 16 }: { icon: LauncherGlyphName; size?: nu
   if (icon === "windows") {
     // The Windows 11 logo: four sharp-cornered squares with a thin gap (~5% of
     // the mark), matching the proportions of the official four-pane mark rather
-    // than the wide-gap rounded version we had.
+    // than the wide-gap rounded version we had. The color is the fixed Windows
+    // brand blue, not the theme accent: the logo has one color regardless of the
+    // user's accent (a deliberate exception to the read-tokens rule, since this
+    // is brand identity, not theme look).
     return (
-      <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      <svg width={size} height={size} viewBox="0 0 16 16" fill={WINDOWS_LOGO_BLUE} aria-hidden>
         <rect x="1" y="1" width="6.6" height="6.6" />
         <rect x="8.4" y="1" width="6.6" height="6.6" />
         <rect x="1" y="8.4" width="6.6" height="6.6" />
