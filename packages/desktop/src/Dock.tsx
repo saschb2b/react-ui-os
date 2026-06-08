@@ -63,6 +63,24 @@ const SMOOTH_TAU = 0.05;
 // strip past the clock; a click toggles minimize-all.
 const SHOW_DESKTOP_WIDTH = 12;
 
+// Tahoe's floating dock is far more translucent than a window surface. Sampling
+// the real dock over a deep-blue wallpaper showed only a ~0.2 light tint (mostly
+// the blurred wallpaper showing through), where our window surface sits ~0.62.
+// Render the floating dock at 0.6x the surface alpha so it reads as clear glass
+// while windows keep their readable opacity. Derived from the active surface, so
+// it follows the light/dark appearance. Hex (opaque) surfaces are left as-is.
+function dockGlassFromSurface(surface: string): string {
+  const m = /rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)/.exec(
+    surface,
+  );
+  const [, r, g, b, a] = m ?? [];
+  if (r === undefined || g === undefined || b === undefined || a === undefined) {
+    return surface;
+  }
+  const alpha = Math.round(parseFloat(a) * 0.6 * 100) / 100;
+  return `rgba(${r}, ${g}, ${b}, ${String(alpha)})`;
+}
+
 // How close to the screen edge (px) the pointer must come to reveal an
 // auto-hidden bar. A thin strip matches Windows "slam to the edge" reveal.
 const AUTO_HIDE_EDGE = 3;
@@ -377,7 +395,9 @@ export function Dock() {
     boxSizing: "border-box",
     display: "flex",
     flexDirection: isLeft ? "column" : "row",
-    backgroundColor: theme.palette.surface,
+    backgroundColor: isBar
+      ? theme.palette.surface
+      : dockGlassFromSurface(theme.palette.surface),
     backdropFilter: theme.blur.surface,
     WebkitBackdropFilter: theme.blur.surface,
     overflow: "visible",
