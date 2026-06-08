@@ -25,22 +25,32 @@
   font-size: 0.9em;
 }
 
-/* Header (default + fallback): a clean frosted bar with a single hairline
-   separator. One border only, so no double line. */
-.header {
+/* Top nav bar. Scope strictly to the <header> element: an inner bar <div> and
+   every code block's <figcaption> also carry a .header class, so a bare .header
+   rule drew a second separator line (the double line) and frosted the code
+   blocks. Default + fallback is a clean frosted bar with one hairline. */
+header.header {
   background: color-mix(in srgb, var(--sl-color-black) 80%, transparent);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   backdrop-filter: blur(16px) saturate(180%);
   border-bottom: 1px solid var(--sl-color-gray-5);
 }
 
-/* Where scroll-driven animations are supported, the header blends into the page
-   at the very top (frosted glass over a flat background reads as nothing, and a
-   border there just looks like a stray line), then frosts in with a separator
-   and soft shadow once content scrolls under it, the way the macOS and iOS bars
+/* The inner bar div is also .header; never let it draw its own separator, so
+   there is exactly one line whatever the framework defaults to. */
+header.header > .header {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Where scroll-driven animations are supported, the bar blends into the page at
+   the very top (frosted glass over a flat background reads as nothing, and a
+   border there just looks like a stray line), then frosts in with one separator
+   and a soft shadow once content scrolls under it, the way macOS and iOS bars
    do. Pure CSS, no JS; unsupported browsers keep the clean frosted bar above. */
 @supports (animation-timeline: scroll()) {
-  .header {
+  header.header {
     background: transparent;
     border-bottom-color: transparent;
     box-shadow: 0 6px 24px -16px transparent;
