@@ -17,6 +17,7 @@
     "@babel/preset-typescript": "^7.29.7",
     "@types/node": "^22.10.0",
     "babel-plugin-react-compiler": "^1.0.0",
+    "@eslint/js": "^9.18.0",
     "@typescript-eslint/eslint-plugin": "^8.60.0",
     "@typescript-eslint/parser": "^8.60.0",
     "eslint": "^9.18.0",
