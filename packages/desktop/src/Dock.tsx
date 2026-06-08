@@ -33,6 +33,7 @@ import {
   getMenuBarHeight,
 } from "./util/layout";
 import { resolveAppIcon } from "./util/app-icon";
+import { planShowDesktop } from "./util/show-desktop";
 import { useIsomorphicLayoutEffect } from "./util/use-isomorphic-layout-effect";
 import { useReducedMotion } from "./util/use-reduced-motion";
 import { useViewportMode } from "./util/viewport-mode";
@@ -693,26 +694,14 @@ function ShowDesktopButton() {
   const stashRef = useRef<string[]>([]);
 
   const handleClick = () => {
-    const active = state.activeWorkspaceId;
-    const visible = windows.filter(
-      (w) => w.workspaceId === active && w.state !== "minimized",
-    );
-    if (visible.length > 0) {
-      visible.forEach((w) => minimizeWindow(w.id));
-      stashRef.current = visible.map((w) => w.id);
-      return;
-    }
-    // Desktop already clear: restore the stash, or everything still minimized
-    // here if there is no stash (the user minimized by hand).
-    const minimized = windows.filter(
-      (w) => w.workspaceId === active && w.state === "minimized",
-    );
-    const live = new Set(minimized.map((w) => w.id));
-    const ids = stashRef.current.length > 0 ? stashRef.current : minimized.map((w) => w.id);
-    ids.forEach((id) => {
-      if (live.has(id)) restoreWindow(id);
+    const plan = planShowDesktop(windows, state.activeWorkspaceId, stashRef.current);
+    plan.minimize.forEach((id) => {
+      minimizeWindow(id);
     });
-    stashRef.current = [];
+    plan.restore.forEach((id) => {
+      restoreWindow(id);
+    });
+    stashRef.current = plan.nextStash;
   };
 
   const hover = `${theme.palette.textPrimary}14`;
