@@ -260,9 +260,11 @@ export function Dock() {
   const trailingPad =
     align === "center"
       ? 0
-      : isBar && (launcherTrailing || showTray)
-        ? LAUNCHER_SLOT
-        : FREE_EDGE;
+      : launcherTrailing
+        ? base + 12
+        : isBar && showTray
+          ? LAUNCHER_SLOT
+          : FREE_EDGE;
   // Map leading/trailing onto the long axis: top/bottom for a left bar,
   // left/right for a bottom bar.
   const barPadding = isLeft
@@ -454,8 +456,8 @@ export function Dock() {
       onContextMenu={taskbarMenu ? handleBarContextMenu : undefined}
       style={navStyle}
     >
-      {launcherInline && <StartButton inline vertical={isLeft} />}
-      {launcherInline && taskView && <TaskViewButton />}
+      {launcherInline && <StartButton inline vertical={isLeft} tile={base} />}
+      {launcherInline && taskView && <TaskViewButton tile={base} />}
       {apps.map((app, i) => (
         <DockTile
           key={app.id}
@@ -511,7 +513,7 @@ export function Dock() {
           {focusedApp.name}
         </span>
       ) : null}
-      {launcherTrailing && <StartButton vertical={isLeft} trailing />}
+      {launcherTrailing && <StartButton vertical={isLeft} trailing tile={base} />}
       {showTray && (
         <TaskbarTray vertical={isLeft} trailingInset={showDesktop ? SHOW_DESKTOP_WIDTH : 0} />
       )}
@@ -532,13 +534,18 @@ function StartButton({
   vertical,
   trailing = false,
   inline = false,
+  tile = 32,
 }: {
   vertical: boolean;
   trailing?: boolean;
   inline?: boolean;
+  tile?: number;
 }) {
   const theme = useTheme();
   const hover = `${theme.palette.textPrimary}14`;
+  // Real Ubuntu / Windows make the launcher a full dock item, the same size as
+  // the app tiles, so size the button and its glyph to match the run.
+  const glyph = Math.round(tile * (theme.chrome.dockIconScale ?? 0.5));
   return (
     <button
       type="button"
@@ -565,8 +572,8 @@ function StartButton({
                   ? { right: 8, top: "50%", transform: "translateY(-50%)" }
                   : { left: 8, top: "50%", transform: "translateY(-50%)" }),
             }),
-        width: 32,
-        height: 32,
+        width: tile,
+        height: tile,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -580,6 +587,7 @@ function StartButton({
     >
       <LauncherGlyph
         icon={theme.chrome.launcherIcon ?? launcherGlyphFor(theme.chrome.launcher)}
+        size={glyph}
       />
     </button>
   );
@@ -602,10 +610,10 @@ function launcherGlyphFor(launcher: OsTheme["chrome"]["launcher"]): LauncherGlyp
  *   "ubuntu"   the Ubuntu Circle of Friends (current Ubuntu's Show Apps mark)
  *   "dots"     a neutral 2x2 grid (the macOS / generic launcher)
  */
-function LauncherGlyph({ icon }: { icon: LauncherGlyphName }) {
+function LauncherGlyph({ icon, size = 16 }: { icon: LauncherGlyphName; size?: number }) {
   if (icon === "windows") {
     return (
-      <svg width={17} height={17} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
         <rect x="1.4" y="1.4" width="5.7" height="5.7" rx="0.6" />
         <rect x="8.9" y="1.4" width="5.7" height="5.7" rx="0.6" />
         <rect x="1.4" y="8.9" width="5.7" height="5.7" rx="0.6" />
@@ -615,7 +623,7 @@ function LauncherGlyph({ icon }: { icon: LauncherGlyphName }) {
   }
   if (icon === "grid") {
     return (
-      <svg width={16} height={16} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
         {[3, 8, 13].map((cy) =>
           [3, 8, 13].map((cx) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="1.5" />),
         )}
@@ -625,7 +633,7 @@ function LauncherGlyph({ icon }: { icon: LauncherGlyphName }) {
   if (icon === "ubuntu") {
     // The Ubuntu Circle of Friends: three "heads" on a ring, 120 degrees apart.
     return (
-      <svg width={17} height={17} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+      <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
         <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" strokeWidth="1.3" />
         <circle cx="8" cy="3" r="1.75" />
         <circle cx="3.67" cy="10.5" r="1.75" />
@@ -634,7 +642,7 @@ function LauncherGlyph({ icon }: { icon: LauncherGlyphName }) {
     );
   }
   return (
-    <svg width={16} height={16} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor" aria-hidden>
       <rect x="1" y="1" width="6" height="6" rx="1.5" />
       <rect x="9" y="1" width="6" height="6" rx="1.5" />
       <rect x="1" y="9" width="6" height="6" rx="1.5" />
@@ -649,9 +657,10 @@ function LauncherGlyph({ icon }: { icon: LauncherGlyphName }) {
  * (Win+Tab). The glyph is two stacked window outlines, the Windows mark.
  * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
  */
-function TaskViewButton() {
+function TaskViewButton({ tile = 32 }: { tile?: number }) {
   const theme = useTheme();
   const hover = `${theme.palette.textPrimary}14`;
+  const glyph = Math.round(tile * (theme.chrome.dockIconScale ?? 0.5));
   return (
     <button
       type="button"
@@ -666,12 +675,12 @@ function TaskViewButton() {
         e.currentTarget.style.background = "transparent";
       }}
       style={{
-        // Rides in the leading cluster just after Start, so the whole group
-        // centers together.
+        // Rides in the leading cluster just after Start, sized to the taskbar
+        // tile so the whole group reads as one row.
         position: "relative",
         flexShrink: 0,
-        width: 32,
-        height: 32,
+        width: tile,
+        height: tile,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -683,7 +692,7 @@ function TaskViewButton() {
         transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
       }}
     >
-      <svg width={18} height={18} viewBox="0 0 18 18" fill="none" aria-hidden>
+      <svg width={glyph} height={glyph} viewBox="0 0 18 18" fill="none" aria-hidden>
         <rect x="4.5" y="2.5" width="11" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
         <rect
           x="2.5"
