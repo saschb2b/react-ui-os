@@ -62,9 +62,13 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       border: "rgba(0, 0, 0, 0.12)",
     },
     shape: {
-      // Tahoe rounded windows, toolbars, and the dock's icon frames further
-      // than the Big Sur era; nudge the window and dock-tile radii up to match.
-      windowRadius: 16,
+      // Tahoe's window corner radius is non-uniform: plain titled windows stay
+      // modest, but windows with a toolbar/sidebar (most apps, like ours) expand
+      // to ~24px. 22 sits just under that, reading clearly Tahoe-round without
+      // the extreme corner that pushes the resize target off-window.
+      // Sources: lapcatsoftware.com/articles/2026/3/1.html; mjtsai.com/blog/2025/10/16.
+      windowRadius: 22,
+      // Dock icon frames are softened too; no public px, so an approximation.
       dockTileRadius: 18,
       small: 6,
     },
@@ -89,6 +93,9 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
     blur: {
       // Liquid Glass reads heavier and more vivid than Big Sur vibrancy: more
       // blur and saturation so the material tints to the content behind it.
+      // Apple does not publish material blur/tint values (they live in the
+      // compositor; NSGlassEffectView exposes only cornerRadius and tintColor),
+      // so these are calibrated by eye against the reference, not exact specs.
       surface: "blur(24px) saturate(180%)",
       spotlight: "blur(30px) saturate(180%)",
     },

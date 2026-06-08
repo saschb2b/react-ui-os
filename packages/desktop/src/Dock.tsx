@@ -432,7 +432,10 @@ export function Dock() {
           gap,
           padding: metrics.dockPadding,
           border: `1px solid ${theme.palette.border}`,
-          borderRadius: theme.shape.dockTileRadius + metrics.dockPadding - 4,
+          // Concentric corners (Apple's .containerConcentric rule): the
+          // container radius is the tile radius plus its padding, so the gap to
+          // the tiles is uniform all the way around the corner.
+          borderRadius: theme.shape.dockTileRadius + metrics.dockPadding,
           // Tahoe's Liquid Glass dock carries a specular highlight on its top
           // edge (the light catching the glass), over the drop shadow. A thin
           // neutral inset line, not a glow.
