@@ -12,6 +12,7 @@ import {
 import { notify, useWindowManager } from "@react-ui-os/core";
 import { useApps, useTheme } from "../desktop-context";
 import { resolveAppIcon } from "../util/app-icon";
+import { SpacesBar } from "../spaces-bar";
 import { getDockReservation } from "../util/layout";
 import { nextCascadeIndex, pickInitialBounds } from "../util/initial-bounds";
 import { useReducedMotion } from "../util/use-reduced-motion";
@@ -282,6 +283,7 @@ function GridView({
   surfaceStyle: CSSProperties;
 }) {
   const theme = useTheme();
+  const { state, windows, switchWorkspace, addWorkspace } = useWindowManager();
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
   const { moveSelection, activate, activateSelected, close } = launcher;
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -379,6 +381,20 @@ function GridView({
           fontSize: 15,
           flexShrink: 0,
         }}
+      />
+      {/* The GNOME overview keeps the workspace thumbnails above the app grid;
+          clicking one switches to that space and dismisses the overview. */}
+      <SpacesBar
+        workspaces={state.workspaces}
+        activeId={state.activeWorkspaceId}
+        onSwitch={(id) => {
+          switchWorkspace(id);
+          close();
+        }}
+        onAdd={addWorkspace}
+        windows={windows}
+        wallpaperSrc={theme.wallpaper.src}
+        theme={theme}
       />
       <div
         id={GRID_LISTBOX_ID}
