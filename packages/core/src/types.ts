@@ -286,6 +286,14 @@ export interface OsThemeChrome {
    */
   menuBarStyle?: "translucent" | "transparent";
   /**
+   * Opt-in Liquid Glass refraction (Tahoe). When on, supported browsers warp the
+   * backdrop with an SVG displacement filter instead of only blurring it. This
+   * is **Chromium-only** (Safari/Firefox do not expose SVG filters in
+   * `backdrop-filter`) and is feature-detected at runtime: unsupported browsers
+   * and SSR fall back to the plain blur. Off by default; experimental.
+   */
+  liquidGlass?: boolean;
+  /**
    * Icon style this theme requests for app icons (e.g. `"fluent"` on Windows,
    * `"macos"`, `"gnome"`). An app's `icons[iconStyle]` is used when present,
    * otherwise its default `icon`. Optional; when unset every app uses `icon`.

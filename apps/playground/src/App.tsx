@@ -291,6 +291,9 @@ function buildTheme(choice: ThemeChoice): OsTheme {
     wallpaperSrc: "/macos-wallpaper.jpg",
     darkWallpaperSrc: "/macos-wallpaper-dark.jpg",
     wallpaperOptions: WALLPAPERS,
+    // Show Tahoe's Liquid Glass refraction where supported (Chromium); other
+    // browsers fall back to the blur.
+    liquidGlass: true,
   });
 }
 

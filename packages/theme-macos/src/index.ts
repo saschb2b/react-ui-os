@@ -25,6 +25,12 @@ export interface MacosThemeOptions {
    * the list (the same paths it passes for `wallpaperSrc`).
    */
   wallpaperOptions?: { src: string; label: string }[];
+  /**
+   * Opt into Tahoe's Liquid Glass refraction on supported (Chromium) browsers;
+   * others fall back to the blur. Off by default; experimental. See
+   * `OsThemeChrome.liquidGlass`.
+   */
+  liquidGlass?: boolean;
 }
 
 /**
@@ -127,6 +133,8 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
       // macOS uses its default SF-style glyphs (the app's `icon`); apps may add
       // an `icons.macos` variant.
       iconStyle: "macos",
+      // Tahoe Liquid Glass refraction, opt-in (Chromium-only, blur fallback).
+      liquidGlass: options.liquidGlass ?? false,
     },
     // Follow the OS color scheme by default; the user can force Light or Dark
     // from Settings > Appearance.

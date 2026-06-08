@@ -85,6 +85,25 @@ function dockGlassFromSurface(surface: string): string {
 // auto-hidden bar. A thin strip matches Windows "slam to the edge" reveal.
 const AUTO_HIDE_EDGE = 3;
 
+// SVG filters in `backdrop-filter` (the Liquid Glass refraction) are Chromium-
+// only; elsewhere the property is dropped entirely, taking the blur with it. So
+// detect after mount (SSR and the first client render stay on the blur, no
+// hydration mismatch) and only then upgrade. Errs toward the blur fallback.
+function useBackdropDisplacementSupported(): boolean {
+  const [ok, setOk] = useState(false);
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+    const uaData = (navigator as { userAgentData?: { brands?: { brand: string }[] } })
+      .userAgentData;
+    const brands = uaData?.brands ?? [];
+    const chromium =
+      brands.some((b) => /Chromium|Chrome|Edge/i.test(b.brand)) ||
+      /Chrome\//.test(navigator.userAgent);
+    setOk(chromium);
+  }, []);
+  return ok;
+}
+
 /**
  * App dock. Direction follows `theme.chrome.dockPosition`:
  *
@@ -107,6 +126,13 @@ export function Dock() {
   const isLeft = position === "left";
   const isBar = theme.chrome.dockStyle === "bar";
   const base = getDockTileSize(theme, mode);
+  // Liquid Glass refraction on the floating dock, when opted in and supported;
+  // otherwise the plain blur. A lighter blur lets the displacement read.
+  const displacementOk = useBackdropDisplacementSupported();
+  const liquidGlass = !isBar && Boolean(theme.chrome.liquidGlass) && displacementOk;
+  const dockBackdrop = liquidGlass
+    ? "blur(3px) url(#rui-liquid-glass) saturate(180%)"
+    : theme.blur.surface;
   // Bar thickness (Windows taskbar height / Ubuntu dock width) and top-bar
   // height both follow the theme's per-platform sizing.
   const barThickness = getBarThickness(theme, mode);
@@ -398,8 +424,8 @@ export function Dock() {
     backgroundColor: isBar
       ? theme.palette.surface
       : dockGlassFromSurface(theme.palette.surface),
-    backdropFilter: theme.blur.surface,
-    WebkitBackdropFilter: theme.blur.surface,
+    backdropFilter: dockBackdrop,
+    WebkitBackdropFilter: dockBackdrop,
     overflow: "visible",
     zIndex: 1200,
     userSelect: "none",
@@ -488,6 +514,31 @@ export function Dock() {
       onContextMenu={taskbarMenu ? handleBarContextMenu : undefined}
       style={navStyle}
     >
+      {theme.chrome.liquidGlass ? (
+        <svg
+          aria-hidden
+          width="0"
+          height="0"
+          style={{ position: "absolute", width: 0, height: 0, pointerEvents: "none" }}
+        >
+          <filter id="rui-liquid-glass" x="0" y="0" width="100%" height="100%">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.01 0.012"
+              numOctaves="2"
+              seed="4"
+              result="noise"
+            />
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale="20"
+              xChannelSelector="R"
+              yChannelSelector="G"
+            />
+          </filter>
+        </svg>
+      ) : null}
       {launcherInline && <StartButton inline vertical={isLeft} tile={base} />}
       {launcherInline && taskView && <TaskViewButton tile={base} />}
       {apps.map((app, i) => (

@@ -472,6 +472,12 @@
           "description": "Top menu bar material. `\"translucent\"` (default) paints the bar with the\ntheme surface and blur; `\"transparent\"` makes it invisible (no fill, blur,\nor hairline) so the wallpaper shows through, the macOS Tahoe default.\nIgnored unless `menuBar` is `\"top\"`."
         },
         {
+          "name": "liquidGlass",
+          "type": "boolean",
+          "optional": true,
+          "description": "Opt-in Liquid Glass refraction (Tahoe). When on, supported browsers warp the\nbackdrop with an SVG displacement filter instead of only blurring it. This\nis **Chromium-only** (Safari/Firefox do not expose SVG filters in\n`backdrop-filter`) and is feature-detected at runtime: unsupported browsers\nand SSR fall back to the plain blur. Off by default; experimental."
+        },
+        {
           "name": "iconStyle",
           "type": "string",
           "optional": true,
