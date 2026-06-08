@@ -466,6 +466,12 @@
           "description": "Top menu bar height in px, per platform: macOS 24, the GNOME top bar ~30.\nOptional, defaults to 24. Ignored unless `menuBar` is `\"top\"`."
         },
         {
+          "name": "menuBarStyle",
+          "type": "\"translucent\" | \"transparent\"",
+          "optional": true,
+          "description": "Top menu bar material. `\"translucent\"` (default) paints the bar with the\ntheme surface and blur; `\"transparent\"` makes it invisible (no fill, blur,\nor hairline) so the wallpaper shows through, the macOS Tahoe default.\nIgnored unless `menuBar` is `\"top\"`."
+        },
+        {
           "name": "iconStyle",
           "type": "string",
           "optional": true,
