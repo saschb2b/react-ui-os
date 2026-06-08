@@ -323,6 +323,14 @@ export interface OsTheme {
   wallpaper: OsThemeWallpaper;
   chrome: OsThemeChrome;
   /**
+   * Base CSS font-family for the desktop chrome. Each OS clone sets its
+   * platform stack: the SF/system stack on macOS, Segoe UI on Windows, the
+   * Ubuntu font on Ubuntu. The consumer is responsible for actually loading any
+   * non-system webfont (a `@font-face` or a font-host link). Optional; defaults
+   * to a neutral system stack.
+   */
+  font?: string;
+  /**
    * Preferred appearance. "auto" (the recommended default) follows the OS
    * color scheme via `prefers-color-scheme`; "light"/"dark" force one. The
    * desktop resolves this and, when the result is dark, overlays

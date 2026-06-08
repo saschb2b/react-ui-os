@@ -831,7 +831,7 @@ function TaskbarTray({
           justifyContent: "center",
           gap: 1,
           color: theme.palette.textPrimary,
-          fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+          fontFamily: "inherit",
           fontVariantNumeric: "tabular-nums",
           lineHeight: 1.2,
           transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
@@ -1097,7 +1097,7 @@ function DockTile({
       ) : (
         <span
           style={{
-            fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+            fontFamily: "inherit",
             fontWeight: 700,
             fontSize: Math.round(size * (glyphScale - 0.1)),
             textShadow: bar ? undefined : "0 1px 2px rgba(0,0,0,0.4)",
@@ -1169,7 +1169,7 @@ function DockTile({
             color: "#fff",
             fontSize: 10,
             fontWeight: 700,
-            fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+            fontFamily: "inherit",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

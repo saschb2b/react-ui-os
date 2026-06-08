@@ -50,6 +50,9 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
   return {
     id: "ubuntu",
     name: "Ubuntu",
+    // The Ubuntu font (Ubuntu Font Licence). The consumer loads the webfont;
+    // see the playground's index.html.
+    font: '"Ubuntu", "Ubuntu Sans", system-ui, sans-serif',
     palette: {
       // Yaru dark: a near-black desktop, dark gray translucent chrome, white
       // text, and the orange accent.

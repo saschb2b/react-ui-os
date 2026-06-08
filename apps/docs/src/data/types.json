@@ -137,6 +137,12 @@
           "optional": false
         },
         {
+          "name": "font",
+          "type": "string",
+          "optional": true,
+          "description": "Base CSS font-family for the desktop chrome. Each OS clone sets its\nplatform stack: the SF/system stack on macOS, Segoe UI on Windows, the\nUbuntu font on Ubuntu. The consumer is responsible for actually loading any\nnon-system webfont (a `@font-face` or a font-host link). Optional; defaults\nto a neutral system stack."
+        },
+        {
           "name": "appearance",
           "type": "ThemeAppearance",
           "optional": true,

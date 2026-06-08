@@ -109,7 +109,7 @@ export function MenuBar({ brand }: { brand?: string }) {
         WebkitBackdropFilter: theme.blur.surface,
         borderBottom: `1px solid ${theme.palette.border}`,
         color: theme.palette.textPrimary,
-        fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+        fontFamily: "inherit",
         fontSize: 12,
         zIndex: 10,
         userSelect: "none",

@@ -47,6 +47,8 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
   return {
     id: "windows",
     name: "Windows",
+    // Windows 11's UI font.
+    font: '"Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif',
     palette: {
       background: "#f3f3f3",
       surface: "rgba(243, 243, 243, 0.82)",

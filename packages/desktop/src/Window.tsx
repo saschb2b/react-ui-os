@@ -911,7 +911,7 @@ function TitleLabel({
   return (
     <span
       style={{
-        fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+        fontFamily: "inherit",
         fontSize: 12,
         // macOS centers a medium-weight title; Windows and minimal chrome
         // left-align a regular-weight one and let it truncate.

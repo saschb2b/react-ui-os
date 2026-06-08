@@ -47,6 +47,8 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
   return {
     id: "macos",
     name: "macOS",
+    // San Francisco on Apple hardware, the system stack elsewhere.
+    font: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
     palette: {
       // Light appearance, matching the Tahoe Day wallpaper in the reference.
       // Surfaces are a light vibrancy material (translucent so the wallpaper

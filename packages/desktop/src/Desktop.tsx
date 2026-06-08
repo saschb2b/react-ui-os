@@ -50,7 +50,7 @@ export function Desktop({ apps, theme, brand, storage, children }: DesktopProps)
           position: "fixed",
           inset: 0,
           overflow: "hidden",
-          fontFamily: "system-ui, -apple-system, Segoe UI, sans-serif",
+          fontFamily: theme.font ?? "system-ui, -apple-system, Segoe UI, sans-serif",
         }}
       >
         <Wallpaper />
