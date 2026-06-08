@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ComponentType } from "react";
 import type { App as OsApp, OsTheme } from "@react-ui-os/core";
 import {
   Desktop,
@@ -103,18 +103,42 @@ function HelloContent({ focused }: { focused: boolean }) {
   );
 }
 
-const apps: OsApp[] = [
-  {
-    id: "hello",
-    name: "Hello",
-    tagline: "Start here",
-    accent: "#6b8afd",
-    icons: { fluent: HelloFluentIcon },
-    content: HelloContent,
-    defaultBounds: { w: 580, h: 460 },
-  },
-  ...exampleApps,
-];
+const helloApp: OsApp = {
+  id: "hello",
+  name: "Hello",
+  tagline: "Start here",
+  accent: "#6b8afd",
+  icons: { fluent: HelloFluentIcon },
+  content: HelloContent,
+  defaultBounds: { w: 580, h: 460 },
+};
+
+// Ubuntu's own Yaru app icons (colorful), selected when the theme's iconStyle is
+// "gnome". Bundled in this demo only (CC-BY-SA, not in the published packages);
+// see public/CREDITS.md.
+const UBUNTU_ICON_SRC: Record<string, string> = {
+  hello: "/yaru/hello.png",
+  notes: "/yaru/notes.png",
+  calculator: "/yaru/calculator.png",
+  clock: "/yaru/clock.png",
+  calendar: "/yaru/calendar.png",
+  reminders: "/yaru/reminders.png",
+  sketch: "/yaru/sketch.png",
+  terminal: "/yaru/terminal.png",
+};
+
+function yaruIcon(src: string): ComponentType<{ size?: number }> {
+  return function YaruIcon({ size = 24 }: { size?: number }) {
+    return (
+      <img src={src} width={size} height={size} alt="" style={{ display: "block" }} />
+    );
+  };
+}
+
+const apps: OsApp[] = [helloApp, ...exampleApps].map((app) => {
+  const src = UBUNTU_ICON_SRC[app.id];
+  return src ? { ...app, icons: { ...app.icons, gnome: yaruIcon(src) } } : app;
+});
 
 const THEME_STORAGE_KEY = "rui-os:playground-theme";
 
