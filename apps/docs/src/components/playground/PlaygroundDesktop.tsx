@@ -236,6 +236,31 @@ export default function PlaygroundDesktop() {
     persistThemeChoice(choice);
   };
 
+  // Let the embedding page (the landing's OS switcher) morph the live desktop
+  // via postMessage, so a visitor can flip macOS/Windows/Ubuntu from the page
+  // chrome and watch the whole thing transform. Also report the current look
+  // back so the landing's pills stay in sync with in-canvas switches.
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      const data = e.data as { type?: string; theme?: string } | null;
+      if (
+        data?.type === "rui:set-theme" &&
+        typeof data.theme === "string" &&
+        isThemeChoice(data.theme)
+      ) {
+        handleThemeChange(data.theme);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    return () => {
+      window.removeEventListener("message", onMessage);
+    };
+  }, []);
+
+  useEffect(() => {
+    window.parent.postMessage({ type: "rui:theme", theme: themeChoice }, "*");
+  }, [themeChoice]);
+
   return (
     <Desktop apps={docsApps} theme={theme}>
       <DemoActivator />

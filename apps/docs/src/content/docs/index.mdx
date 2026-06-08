@@ -3,42 +3,33 @@ title: react-ui-os
 description: A React component library that ships a working OS-style desktop in one line.
 template: splash
 hero:
-  tagline: A working desktop OS in one React component. Apps are data, themes are token bags, and macOS, Windows, and Ubuntu are cloned down to the chrome.
+  tagline: A real desktop OS in one React component. Clone macOS, Windows, or Ubuntu down to the chrome, fill it with your own apps, and ship it. Try it right here, it's live.
   # Starlight emits these as plain <a href> without the configured `base`,
   # so the path must include /react-ui-os/ explicitly. If the base ever
   # changes (custom domain), update both entries to match.
   actions:
-    - text: Read the docs
-      link: /react-ui-os/introduction/
-      icon: right-arrow
-      variant: primary
     - text: Quickstart
       link: /react-ui-os/quickstart/
+      icon: right-arrow
+      variant: primary
+    - text: Read the docs
+      link: /react-ui-os/introduction/
       icon: open-book
       variant: minimal
-    - text: Open playground
-      link: /react-ui-os/playground
-      icon: external
+    - text: GitHub
+      link: https://github.com/saschb2b/react-ui-os
+      icon: github
       variant: minimal
 ---
 
-import LivePreview from "~/components/LivePreview.astro";
+import LandingOS from "~/components/LandingOS.astro";
 import ThemeGallery from "~/components/ThemeGallery.astro";
 
-<LivePreview label="react-ui-os" height="600px" wide />
+<LandingOS />
 
-<p class="demo-caption">
-  Live, not a screenshot. Switch macOS, Windows, or Ubuntu at the top, drag and resize the
-  windows, and press <kbd>Cmd-K</kbd> or <kbd>Ctrl-K</kbd> for Spotlight.
-</p>
+## Everything above, from one tag
 
-## Three clones, one skeleton
-
-The same apps, window manager, and keyboard shortcuts run under every theme. macOS, Windows, and Ubuntu each mirror their platform down to the window controls, the dock, the menu bar, and the motion. Switch live in the demo above, or open any one on its own.
-
-<ThemeGallery />
-
-## The desktop in one tag
+The wallpaper, the dock, the draggable and resizable windows, Spotlight, Settings, the per-platform chrome you just switched between: all of it is one component.
 
 ```tsx
 import { Desktop } from "@react-ui-os/desktop";
@@ -49,14 +40,38 @@ const apps = [{ id: "notes", name: "Notes", content: () => <h1>Hello, desktop.</
 <Desktop apps={apps} theme={macosTheme} />;
 ```
 
-Wallpaper, dock, draggable and resizable windows with traffic lights, focus tracking, the minimize-to-dock genie, Cmd-K Spotlight, Cmd-, Settings: all from that tag. Register one app object and it lights up the dock, the menu bar, Spotlight, and the keyboard shortcuts at once. The library composes the system; you describe the apps.
+Register one app object and it lights up the dock, the menu bar, Spotlight, and the keyboard shortcuts at once. You describe the apps; the library composes the system.
 
-## Prebuilt apps
+## Faithful to each platform, not approximated
 
-You don't have to build every app. Prebuilt ones live in a registry; install one with the CLI and the source lands in your codebase, yours to edit.
+The same apps and window manager run under every theme, but each one is its platform, not a coat of paint.
+
+- **macOS** has the traffic lights, the genie minimize, the floating dock with cursor magnification, and Tahoe's Liquid Glass.
+- **Windows** has the caption buttons, the flush taskbar, and the Start menu.
+- **Ubuntu** has the Yaru dock, the Circle of Friends launcher, and the centered clock.
+
+Motion timings, corner radii, and chrome dimensions are taken from the real platforms, cited in the code, not tuned by feel. Open any one full-screen:
+
+<ThemeGallery />
+
+## A real desktop, not a mockup
+
+The apps actually work. Notes persist across reloads, the calculator computes, the terminal runs commands. Windows drag at 60fps, resize from any edge, snap to halves and quarters, and minimize with the genie. Spotlight finds apps, settings, and files. It behaves like an OS because it is one, held in React state.
+
+## Build your own
+
+A portfolio that boots like a Mac. An internal console that feels like a real desktop. A product demo, an onboarding sandbox, a teaching tool. You write an app as a single object, or start from a prebuilt one in the App Store and edit the source in your codebase.
 
 ```bash
 npx @react-ui-os/cli add notes
 ```
 
 [Browse the App Store](/app-store/) or [publish your own](/app-store/publish/).
+
+## Get started
+
+```bash
+npm install @react-ui-os/desktop @react-ui-os/theme-macos
+```
+
+Drop in the one tag above and you have a desktop. The [Quickstart](/quickstart/) takes it from there.
