@@ -25,13 +25,31 @@
   font-size: 0.9em;
 }
 
-/* Hero landing: align with the desktop aesthetic without overpowering. */
+/* Landing hero: it is text-only (the live OS just below is the real hero), so
+   center it rather than leaving the right half empty, and pull it up so the
+   desktop sits near the top instead of below a tall, lopsided hero. */
 .hero {
-  padding-bottom: 24px;
+  justify-content: center;
+  padding-block: 1.25rem 1.5rem;
+}
+
+.hero .stack {
+  text-align: center;
+  align-items: center;
 }
 
 .hero h1 {
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+}
+
+.hero .tagline {
+  max-width: 54ch;
+  margin-inline: auto;
+  color: var(--sl-color-gray-2);
+}
+
+.hero .actions {
+  justify-content: center;
 }
 
 /* Caption that sits under the landing-page live demo. Pulled up close to the
