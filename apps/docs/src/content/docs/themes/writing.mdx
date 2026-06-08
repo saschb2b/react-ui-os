@@ -102,6 +102,35 @@ Some rules of thumb from `theme-macos` and `theme-ubuntu`:
 - **One blur value for surface, one for Spotlight.** Spotlight typically wants a deeper blur because it floats over everything.
 - **`palette.border` at `rgba(255,255,255,0.08-0.10)`.** Hairlines should feel intentional but not bright.
 
+## Sizing the chrome to a platform
+
+A clone usually wants its platform's real chrome metrics, not the defaults. Optional `chrome` tokens size the dock and top bar; a `"bar"` dock derives its thickness from the tile size, so a larger-icon dock becomes a wider bar.
+
+```ts
+chrome: {
+  dockStyle: "bar",
+  dockTileSize: 40,   // the dock tile / taskbar button (macOS 56, Windows 40, Ubuntu 56)
+  dockIconScale: 0.6, // the icon as a fraction of the tile
+  menuBarHeight: 30,  // the top bar height (macOS 24, the GNOME bar ~30)
+},
+```
+
+With these, Windows lands 24px icons in a 48px taskbar and Ubuntu ~46px icons in a ~64px dock. All three are optional; omit them to keep the shared defaults. Compact viewports shrink the tiles in step.
+
+## Fonts and per-platform icons
+
+`theme.font` sets the platform's UI font stack, applied at the desktop root so the chrome inherits it. The consumer still loads any non-system webfont (a `@font-face` rule or a font-host link), the same asset-ownership split as wallpapers.
+
+```ts
+font: '"Ubuntu", "Ubuntu Sans", system-ui, sans-serif',
+```
+
+`chrome.iconStyle` (`"fluent"`, `"macos"`, `"gnome"`, or your own key) declares which icon variant the theme wants. An app that ships an `icons[style]` entry renders its platform-native icon under that theme; otherwise it falls back to its default `icon`. This is how one app carries a Fluent icon on Windows and an SF-style glyph on macOS without a component ever branching on the theme.
+
+```ts
+chrome: { iconStyle: "fluent" }
+```
+
 ## Publishing
 
 Themes are tiny, single-file packages. The Ubuntu theme is ~175 lines. A minimal `package.json`:
