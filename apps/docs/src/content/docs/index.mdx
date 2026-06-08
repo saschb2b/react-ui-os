@@ -3,7 +3,7 @@ title: react-ui-os
 description: A React component library that ships a working OS-style desktop in one line.
 template: splash
 hero:
-  tagline: A working OS-style desktop in one React component. Apps as data. Themes as token bags. Spotlight, Settings, and a Finder-style file explorer included.
+  tagline: A working desktop OS in one React component. Apps are data, themes are token bags, and macOS, Windows, and Ubuntu are cloned down to the chrome.
   # Starlight emits these as plain <a href> without the configured `base`,
   # so the path must include /react-ui-os/ explicitly. If the base ever
   # changes (custom domain), update both entries to match.
@@ -12,6 +12,10 @@ hero:
       link: /react-ui-os/introduction/
       icon: right-arrow
       variant: primary
+    - text: Quickstart
+      link: /react-ui-os/quickstart/
+      icon: open-book
+      variant: minimal
     - text: Open playground
       link: /react-ui-os/playground
       icon: external
@@ -21,24 +25,20 @@ hero:
 import LivePreview from "~/components/LivePreview.astro";
 import ThemeGallery from "~/components/ThemeGallery.astro";
 
-<LivePreview label="react-ui-os playground" height="560px" />
+<LivePreview label="react-ui-os" height="600px" wide />
 
 <p class="demo-caption">
-  Live, not a screenshot. Switch the look at the top, drag and resize the windows, and
-  press <kbd>Cmd-K</kbd> or <kbd>Ctrl-K</kbd> for Spotlight.
+  Live, not a screenshot. Switch macOS, Windows, or Ubuntu at the top, drag and resize the
+  windows, and press <kbd>Cmd-K</kbd> or <kbd>Ctrl-K</kbd> for Spotlight.
 </p>
 
-## Three looks, one skeleton
+## Three clones, one skeleton
 
-The same apps, window manager, and keyboard shortcuts under every theme. macOS, Windows, and Ubuntu each mirror their platform's chrome down to the window controls, the dock, and the menu bar. Switch live in the demo above, or open any look on its own.
+The same apps, window manager, and keyboard shortcuts run under every theme. macOS, Windows, and Ubuntu each mirror their platform down to the window controls, the dock, the menu bar, and the motion. Switch live in the demo above, or open any one on its own.
 
 <ThemeGallery />
 
-## Why this exists
-
-Most React UI libraries ship fifty components and let you wire them. That instinct produces tidy webapps. It does not produce a coherent OS feeling, because nobody wants to wire fifty pieces into a desktop and keep them consistent. **react-ui-os inverts the contract.** You register apps. The library composes the system. One object describing an app lights up the dock, the menu bar, Spotlight, and the keyboard shortcuts at once.
-
-## What you get in one tag
+## The desktop in one tag
 
 ```tsx
 import { Desktop } from "@react-ui-os/desktop";
@@ -49,11 +49,11 @@ const apps = [{ id: "notes", name: "Notes", content: () => <h1>Hello, desktop.</
 <Desktop apps={apps} theme={macosTheme} />;
 ```
 
-Wallpaper. Dock. Draggable resizable windows with macOS-style traffic lights. Focus tracking. Minimize-to-dock genie animation. Cmd-K Spotlight. Cmd-, Settings. All from that one tag.
+Wallpaper, dock, draggable and resizable windows with traffic lights, focus tracking, the minimize-to-dock genie, Cmd-K Spotlight, Cmd-, Settings: all from that tag. Register one app object and it lights up the dock, the menu bar, Spotlight, and the keyboard shortcuts at once. The library composes the system; you describe the apps.
 
-## App Store
+## Prebuilt apps
 
-You do not have to build every app. Prebuilt ones live in a registry; install one with the CLI and the files land in your codebase, yours to edit.
+You don't have to build every app. Prebuilt ones live in a registry; install one with the CLI and the source lands in your codebase, yours to edit.
 
 ```bash
 npx @react-ui-os/cli add notes
