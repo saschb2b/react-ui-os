@@ -114,6 +114,11 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       // Windows 11 taskbar: 24px icons in a 40px button, a 48px-tall bar.
       dockTileSize: 40,
       dockIconScale: 0.6,
+      // "Show smaller taskbar buttons" defaults to shrinking only when the
+      // icon run would overflow the bar, the Windows default. "Always" gives
+      // the compact 32px taskbar.
+      // Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
+      dockSmallButtons: "when-full",
       // Apps that ship a Fluent icon variant use it here.
       iconStyle: "fluent",
     },
@@ -230,6 +235,18 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
         options: [
           { value: "bar", label: "Taskbar" },
           { value: "floating", label: "Floating" },
+        ],
+      },
+      "chrome.dockSmallButtons": {
+        kind: "select",
+        section: "Taskbar",
+        label: "Show smaller taskbar buttons",
+        description:
+          "Smaller icons and a shorter taskbar, for more vertical space for your apps.",
+        options: [
+          { value: "when-full", label: "When taskbar is full" },
+          { value: "always", label: "Always" },
+          { value: "never", label: "Never" },
         ],
       },
       "chrome.dockAutoHide": {

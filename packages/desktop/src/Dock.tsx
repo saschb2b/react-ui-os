@@ -29,8 +29,11 @@ import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import {
   getBarThickness,
   getChromeMetrics,
+  getDockIconScale,
   getDockTileSize,
   getMenuBarHeight,
+  shouldShrinkWhenFull,
+  SMALL_TILE_RATIO,
 } from "./util/layout";
 import { resolveAppIcon } from "./util/app-icon";
 import { planShowDesktop } from "./util/show-desktop";
@@ -62,6 +65,12 @@ const SMOOTH_TAU = 0.05;
 // Width of the Windows "Show desktop" corner sliver. Windows 11 keeps it a thin
 // strip past the clock; a click toggles minimize-all.
 const SHOW_DESKTOP_WIDTH = 12;
+
+// Long-axis estimate of the tray (clock plus a few status items), used only to
+// decide the "when taskbar is full" small-button threshold; being off by a few
+// px shifts the trigger by a fraction of one icon.
+const TRAY_ALLOWANCE = 150;
+const TRAY_ALLOWANCE_VERTICAL = 80;
 
 // Tahoe's floating dock is far more translucent than a window surface. Sampling
 // the real dock over a deep-blue wallpaper showed only a ~0.2 light tint (mostly
@@ -130,7 +139,6 @@ export function Dock() {
   const isTop = position === "top";
   const vertical = isLeft || isRight;
   const isBar = theme.chrome.dockStyle === "bar";
-  const base = getDockTileSize(theme, mode);
   // Liquid Glass refraction on the floating dock, when opted in and supported;
   // otherwise the plain blur. A lighter blur lets the displacement read.
   const displacementOk = useBackdropDisplacementSupported();
@@ -143,10 +151,73 @@ export function Dock() {
   const barThickness = getBarThickness(theme, mode);
   const menuBarH = getMenuBarHeight(theme);
   const gap = isBar ? 4 : metrics.dockGap;
-  const span = base + gap;
   const count = apps.length;
   const mag = theme.motion.dockMagnification ?? MAG_SCALE;
   const reducedMotion = useReducedMotion();
+
+  const topMenuBar = theme.chrome.menuBar === "top";
+  // When a top menu bar already owns the clock and status tray (the GNOME
+  // layout: top bar plus a left dock), the dock drops its own tray and moves
+  // the launcher to the trailing edge, where Ubuntu's "Show Applications" grid
+  // sits. The Windows register (bottom bar, no menu bar) keeps both.
+  const showTray = isBar && !topMenuBar;
+  const launcherTrailing = isBar && isLeft && topMenuBar;
+  // The Windows "Show desktop" sliver lives in the bar's far trailing corner:
+  // past the clock on a horizontal taskbar, at the very bottom of a vertical
+  // one (where Windows keeps it when the taskbar is docked to a side edge).
+  // When present, the tray shifts inward to leave the corner clear.
+  const showDesktop = isBar && (theme.chrome.showDesktopButton ?? false);
+  // The Task View button sits beside the launcher in the leading cluster,
+  // whichever edge the bar is on.
+  const taskView =
+    isBar && !launcherTrailing && (theme.chrome.taskViewButton ?? false);
+  const taskbarMenu = isBar && (theme.chrome.taskbarContextMenu ?? false);
+  // Windows rides the launcher (and Task View) inside the icon run, so the
+  // whole cluster centers together; Ubuntu pins its launcher to the trailing
+  // edge.
+  const launcherInline = isBar && !launcherTrailing;
+
+  // "Show smaller taskbar buttons". "always" is already folded into
+  // getDockTileSize (and the bar thickness / work area with it); "when-full"
+  // keeps the bar height and drops the buttons to small only while the icon
+  // run at full size would overflow the bar's long axis, so the viewport
+  // length is tracked across resizes. SSR and the first client render stay at
+  // full size.
+  const fullTile = getDockTileSize(theme, mode);
+  const smallMode = isBar ? (theme.chrome.dockSmallButtons ?? "never") : "never";
+  const [viewLen, setViewLen] = useState<number | null>(null);
+  useEffect(() => {
+    if (smallMode !== "when-full") return;
+    const update = () => {
+      setViewLen(vertical ? window.innerHeight : window.innerWidth);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+    };
+  }, [smallMode, vertical]);
+  const clusterLen =
+    (launcherInline ? fullTile + gap : 0) +
+    (launcherInline && taskView ? fullTile + gap : 0) +
+    (launcherTrailing ? fullTile + 12 : 0) +
+    (showTray ? (vertical ? TRAY_ALLOWANCE_VERTICAL : TRAY_ALLOWANCE) : 0) +
+    (showDesktop ? SHOW_DESKTOP_WIDTH : 0) +
+    16;
+  const whenFullSmall =
+    smallMode === "when-full" &&
+    viewLen !== null &&
+    shouldShrinkWhenFull({
+      count,
+      tile: fullTile,
+      gap,
+      fixed: clusterLen,
+      available: viewLen,
+    });
+  const small = smallMode === "always" || whenFullSmall;
+  const base = whenFullSmall ? Math.round(fullTile * SMALL_TILE_RATIO) : fullTile;
+  const iconScale = getDockIconScale(theme, small);
+  const span = base + gap;
   // Auto-hide: the bar tucks off the edge and slides back only while the
   // pointer is at that edge or over the bar (the Windows taskbar behavior).
   const autoHide = isBar && (theme.chrome.dockAutoHide ?? false);
@@ -280,39 +351,18 @@ export function Dock() {
 
   const crossSize = base + metrics.dockPadding * 2 + 2;
 
-  const topMenuBar = theme.chrome.menuBar === "top";
-  // When a top menu bar already owns the clock and status tray (the GNOME
-  // layout: top bar plus a left dock), the dock drops its own tray and moves
-  // the launcher to the trailing edge, where Ubuntu's "Show Applications" grid
-  // sits. The Windows register (bottom bar, no menu bar) keeps both.
-  const showTray = isBar && !topMenuBar;
-  const launcherTrailing = isBar && isLeft && topMenuBar;
-  // The Windows "Show desktop" sliver lives in the bar's far trailing corner:
-  // past the clock on a horizontal taskbar, at the very bottom of a vertical
-  // one (where Windows keeps it when the taskbar is docked to a side edge).
-  // When present, the tray shifts inward to leave the corner clear.
-  const showDesktop = isBar && (theme.chrome.showDesktopButton ?? false);
-  // The Task View button sits beside the launcher in the leading cluster,
-  // whichever edge the bar is on.
-  const taskView =
-    isBar && !launcherTrailing && (theme.chrome.taskViewButton ?? false);
-  const taskbarMenu = isBar && (theme.chrome.taskbarContextMenu ?? false);
-
   // Bar-dock icon alignment along the long axis. macOS / Windows 11 center;
   // GNOME / Ubuntu and Windows 10 pack from the start. When not centered, the
   // run is inset so it clears the absolutely-positioned launcher and tray; a
-  // free edge keeps a small breathing gap.
+  // free edge keeps a small breathing gap. Only an edge-pinned launcher (or
+  // the trailing tray) needs the run inset to clear it; with the cluster
+  // inline the leading side just wants a breathing gap when packed from the
+  // start.
   const align = theme.chrome.dockAlign ?? "center";
   const barJustify =
     align === "start" ? "flex-start" : align === "end" ? "flex-end" : "center";
   const LAUNCHER_SLOT = 44;
   const FREE_EDGE = 8;
-  // Windows rides the launcher (and Task View) inside the icon run, so the whole
-  // cluster centers together; Ubuntu pins its launcher to the trailing edge.
-  // Only an edge-pinned launcher (or the trailing tray) needs the run inset to
-  // clear it; with the cluster inline the leading side just wants a breathing
-  // gap when packed from the start.
-  const launcherInline = isBar && !launcherTrailing;
   const leadingPad = align === "center" ? 0 : FREE_EDGE;
   const trailingPad =
     align === "center"
@@ -584,8 +634,12 @@ export function Dock() {
           </filter>
         </svg>
       ) : null}
-      {launcherInline && <StartButton inline vertical={vertical} tile={base} />}
-      {launcherInline && taskView && <TaskViewButton tile={base} />}
+      {launcherInline && (
+        <StartButton inline vertical={vertical} tile={base} iconScale={iconScale} />
+      )}
+      {launcherInline && taskView && (
+        <TaskViewButton tile={base} iconScale={iconScale} />
+      )}
       {apps.map((app, i) => (
         <DockTile
           key={app.id}
@@ -594,6 +648,7 @@ export function Dock() {
           bar={isBar}
           size={Math.round(sizes[i] ?? base)}
           base={base}
+          iconScale={iconScale}
         />
       ))}
       {showLabel && focusedApp ? (
@@ -651,7 +706,9 @@ export function Dock() {
           {focusedApp.name}
         </span>
       ) : null}
-      {launcherTrailing && <StartButton vertical={vertical} trailing tile={base} />}
+      {launcherTrailing && (
+        <StartButton vertical={vertical} trailing tile={base} iconScale={iconScale} />
+      )}
       {showTray && (
         <TaskbarTray
           vertical={vertical}
@@ -676,17 +733,19 @@ function StartButton({
   trailing = false,
   inline = false,
   tile = 32,
+  iconScale,
 }: {
   vertical: boolean;
   trailing?: boolean;
   inline?: boolean;
   tile?: number;
+  iconScale?: number;
 }) {
   const theme = useTheme();
   const hover = `${theme.palette.textPrimary}14`;
   // Real Ubuntu / Windows make the launcher a full dock item, the same size as
   // the app tiles, so size the button and its glyph to match the run.
-  const glyph = Math.round(tile * (theme.chrome.dockIconScale ?? 0.5));
+  const glyph = Math.round(tile * (iconScale ?? theme.chrome.dockIconScale ?? 0.5));
   return (
     <button
       type="button"
@@ -863,10 +922,16 @@ function LauncherGlyph({
  * (Win+Tab). The glyph is two stacked window outlines, the Windows mark.
  * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
  */
-function TaskViewButton({ tile = 32 }: { tile?: number }) {
+function TaskViewButton({
+  tile = 32,
+  iconScale,
+}: {
+  tile?: number;
+  iconScale?: number;
+}) {
   const theme = useTheme();
   const hover = `${theme.palette.textPrimary}14`;
-  const glyph = Math.round(tile * (theme.chrome.dockIconScale ?? 0.5));
+  const glyph = Math.round(tile * (iconScale ?? theme.chrome.dockIconScale ?? 0.5));
   return (
     <button
       type="button"
@@ -1177,12 +1242,14 @@ function DockTile({
   bar,
   size,
   base,
+  iconScale,
 }: {
   app: App;
   position: OsTheme["chrome"]["dockPosition"];
   bar: boolean;
   size: number;
   base: number;
+  iconScale?: number;
 }) {
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
@@ -1290,8 +1357,9 @@ function DockTile({
   const accent = app.accent ?? theme.palette.accent;
   // Icon size as a fraction of the tile, per platform: Windows ~0.6 (24px in a
   // 40px tile), Ubuntu ~0.82 (icons nearly fill the dock), macOS ~0.6. Full-art
-  // icons fill a little more than a stroke glyph.
-  const glyphScale = theme.chrome.dockIconScale ?? 0.5;
+  // icons fill a little more than a stroke glyph. Small-button mode hands in a
+  // compensated scale (Windows shrinks icons less than buttons).
+  const glyphScale = iconScale ?? theme.chrome.dockIconScale ?? 0.5;
   const artScale = Math.min(glyphScale + 0.2, 0.92);
   const Art = app.iconArt;
   const Icon = resolveAppIcon(app, theme);

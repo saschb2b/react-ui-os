@@ -50,6 +50,8 @@ All four edges follow the movable Windows taskbar (Insider builds, May 2026). Th
 
 The work area reserves the dock's thickness either way, so maximized windows stop above a taskbar just as they stop above a floating dock. The [Windows theme](/themes/overview/) ships `"bar"`; every other theme uses `"floating"`.
 
+`chrome.dockSmallButtons` is the Windows "Show smaller taskbar buttons" control. `"always"` compacts the bar to its small register (48px to 32px on the Windows theme, with 16px icons) and gives the space back to the work area; `"when-full"` (the Windows default) keeps the bar height and drops to small buttons only while the icon run would overflow; `"never"` keeps full size.
+
 ## Alignment
 
 `theme.chrome.dockAlign` sets where a `"bar"` dock packs its app icons along its long axis. The floating pill ignores it (the pill always hugs its icons).

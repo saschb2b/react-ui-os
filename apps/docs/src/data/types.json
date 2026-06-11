@@ -455,6 +455,12 @@
           "description": "Resting size in px of a dock tile/button, set per platform to match its\nreference: the floating macOS dock tile (~56), the Windows taskbar button\n(~40, for 24px icons), or the Ubuntu dock tile (~56, for ~46px icons). A\n`\"bar\"` dock derives its thickness (taskbar height / dock width) from this.\nOptional; defaults to the viewport metric for the dock form, and compact\nviewports shrink it."
         },
         {
+          "name": "dockSmallButtons",
+          "type": "\"always\" | \"when-full\" | \"never\"",
+          "optional": true,
+          "description": "The Windows \"Show smaller taskbar buttons\" control (Settings >\nPersonalization > Taskbar > Taskbar behaviors). `\"always\"` is the compact\ntaskbar: smaller icons and a shorter bar (48 -> 32px on Windows), so the\nwork area grows. `\"when-full\"` keeps the bar height and drops to small\nbuttons only while the icon run would overflow the bar, the Windows\ndefault. `\"never\"` (the library default) keeps full size. Ignored by the\nfloating dock.\nSource: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/"
+        },
+        {
           "name": "dockIconScale",
           "type": "number",
           "optional": true,

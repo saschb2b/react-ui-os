@@ -278,6 +278,17 @@ export interface OsThemeChrome {
    */
   dockTileSize?: number;
   /**
+   * The Windows "Show smaller taskbar buttons" control (Settings >
+   * Personalization > Taskbar > Taskbar behaviors). `"always"` is the compact
+   * taskbar: smaller icons and a shorter bar (48 -> 32px on Windows), so the
+   * work area grows. `"when-full"` keeps the bar height and drops to small
+   * buttons only while the icon run would overflow the bar, the Windows
+   * default. `"never"` (the library default) keeps full size. Ignored by the
+   * floating dock.
+   * Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
+   */
+  dockSmallButtons?: "always" | "when-full" | "never";
+  /**
    * Icon glyph size as a fraction of the tile (0..1). Windows taskbar icons sit
    * near 0.6 (24px in a 40px tile); Ubuntu dock icons nearly fill the tile
    * (~0.82); macOS ~0.6. Optional, defaults to 0.5.

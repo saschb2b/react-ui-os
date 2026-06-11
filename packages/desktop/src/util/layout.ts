@@ -89,6 +89,15 @@ const COMPACT_TILE_RATIO = 0.83;
 // Breathing room on each side of a bar tile, so the bar's thickness exceeds the
 // tile (a 40px Windows tile in a 48px bar; a 56px Ubuntu tile in a 64px dock).
 const BAR_TILE_MARGIN = 4;
+// The Windows small taskbar drops the bar from 48 to 32px (the legacy
+// TaskbarSi "small" height), which through the 4px tile margins is a 40 -> 24px
+// button: ratio 0.6. Icons shrink less, 24 -> 16px, so a small button carries
+// its icon at a larger fraction (16/24 vs 24/40); the compensation factor
+// scales a theme's dockIconScale the same way.
+// Sources: https://www.windowscentral.com/microsoft/windows-11/how-to-use-smaller-icons-in-the-taskbar-for-windows-11 ;
+// https://www.tomshardware.com/how-to/change-taskbar-icon-size-windows-11
+export const SMALL_TILE_RATIO = 0.6;
+const SMALL_ICON_COMPENSATION = 16 / 24 / (24 / 40);
 
 /**
  * Resting size of a dock tile/button. A theme sets `chrome.dockTileSize` to its
@@ -102,12 +111,51 @@ export function getDockTileSize(
 ): number {
   const metrics = getChromeMetrics(mode);
   const override = theme.chrome.dockTileSize;
-  if (override !== undefined) {
-    return Math.round(mode === "compact" ? override * COMPACT_TILE_RATIO : override);
-  }
-  return theme.chrome.dockStyle === "bar"
-    ? metrics.taskbarTileSize
-    : metrics.dockTileSize;
+  const tile =
+    override !== undefined
+      ? mode === "compact"
+        ? override * COMPACT_TILE_RATIO
+        : override
+      : theme.chrome.dockStyle === "bar"
+        ? metrics.taskbarTileSize
+        : metrics.dockTileSize;
+  // "Show smaller taskbar buttons: Always" compacts the bar's buttons (and
+  // through getBarThickness the bar itself, so the work area grows). The
+  // "when-full" mode is decided live in the Dock from the icon run's length
+  // and never changes the reservation.
+  const small =
+    theme.chrome.dockStyle === "bar" && theme.chrome.dockSmallButtons === "always";
+  return Math.round(small ? tile * SMALL_TILE_RATIO : tile);
+}
+
+/**
+ * Icon glyph fraction of a dock tile. Small-button mode compensates the
+ * theme's scale upward because Windows shrinks icons (24 -> 16px) less than it
+ * shrinks the buttons around them (40 -> 24px).
+ */
+export function getDockIconScale(theme: OsTheme, small: boolean): number {
+  const scale = theme.chrome.dockIconScale ?? 0.5;
+  return small ? Math.min(scale * SMALL_ICON_COMPENSATION, 1) : scale;
+}
+
+/**
+ * The "Show smaller taskbar buttons: When taskbar is full" trigger: true when
+ * the icon run at full size would overflow the bar's long axis. Measured at
+ * full size on purpose, so the answer cannot oscillate with its own result.
+ */
+export function shouldShrinkWhenFull(opts: {
+  /** App count in the icon run. */
+  count: number;
+  /** Full-size tile, from getDockTileSize. */
+  tile: number;
+  /** Gap between tiles along the run. */
+  gap: number;
+  /** Long-axis px consumed by the launcher cluster, tray, and padding. */
+  fixed: number;
+  /** Long-axis px the bar spans (viewport width or height). */
+  available: number;
+}): boolean {
+  return opts.count * (opts.tile + opts.gap) + opts.fixed > opts.available;
 }
 
 /**
@@ -119,9 +167,12 @@ export function getBarThickness(
   theme: OsTheme,
   mode: ViewportMode = getViewportMode(),
 ): number {
-  // Derive from the tile when the theme sizes its dock; otherwise keep the
-  // viewport metric so un-tokenized bar themes are unchanged.
-  if (theme.chrome.dockTileSize === undefined) {
+  // Derive from the tile when the theme sizes its dock (or compacts it with
+  // small buttons); otherwise keep the viewport metric so un-tokenized bar
+  // themes are unchanged.
+  const smallAlways =
+    theme.chrome.dockStyle === "bar" && theme.chrome.dockSmallButtons === "always";
+  if (theme.chrome.dockTileSize === undefined && !smallAlways) {
     return getChromeMetrics(mode).taskbarSize;
   }
   return getDockTileSize(theme, mode) + BAR_TILE_MARGIN * 2;

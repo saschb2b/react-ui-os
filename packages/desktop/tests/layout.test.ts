@@ -3,10 +3,12 @@ import type { OsTheme } from "@react-ui-os/core";
 import {
   getBarThickness,
   getChromeMetrics,
+  getDockIconScale,
   getDockReservation,
   getDockTileSize,
   getMenuBarHeight,
   getWorkArea,
+  shouldShrinkWhenFull,
 } from "../src/util/layout";
 
 function themeWith(chrome: Partial<OsTheme["chrome"]>): OsTheme {
@@ -72,6 +74,56 @@ describe("getDockTileSize", () => {
     const regular = getDockTileSize(themeWith({ dockTileSize: 56 }), "regular");
     const compact = getDockTileSize(themeWith({ dockTileSize: 56 }), "compact");
     expect(compact).toBeLessThan(regular);
+  });
+});
+
+describe("small taskbar buttons", () => {
+  const small = themeWith({
+    dockStyle: "bar",
+    dockTileSize: 40,
+    dockSmallButtons: "always",
+  });
+
+  it("drops the Windows button from 40 to 24px when always-small", () => {
+    expect(getDockTileSize(small, "regular")).toBe(24);
+  });
+
+  it("drops the Windows bar from 48 to 32px when always-small", () => {
+    expect(getBarThickness(small, "regular")).toBe(32);
+  });
+
+  it("keeps full size for when-full and never (the bar decides live)", () => {
+    for (const mode of ["when-full", "never"] as const) {
+      const t = themeWith({
+        dockStyle: "bar",
+        dockTileSize: 40,
+        dockSmallButtons: mode,
+      });
+      expect(getDockTileSize(t, "regular")).toBe(40);
+      expect(getBarThickness(t, "regular")).toBe(48);
+    }
+  });
+
+  it("ignores the setting on a floating dock", () => {
+    const t = themeWith({
+      dockStyle: "floating",
+      dockTileSize: 56,
+      dockSmallButtons: "always",
+    });
+    expect(getDockTileSize(t, "regular")).toBe(56);
+  });
+
+  it("compensates the icon scale so 24px buttons carry 16px icons", () => {
+    const t = themeWith({ dockIconScale: 0.6 });
+    // 24 * 0.6667 = 16, the Windows small-taskbar icon size.
+    expect(Math.round(24 * getDockIconScale(t, true))).toBe(16);
+    expect(getDockIconScale(t, false)).toBe(0.6);
+  });
+
+  it("shrinks when the full-size run would overflow, not before", () => {
+    const fits = { count: 10, tile: 40, gap: 4, fixed: 200, available: 1280 };
+    expect(shouldShrinkWhenFull(fits)).toBe(false);
+    expect(shouldShrinkWhenFull({ ...fits, count: 30 })).toBe(true);
   });
 });
 
