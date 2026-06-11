@@ -433,7 +433,7 @@ export function Dock() {
     position: "fixed",
     boxSizing: "border-box",
     display: "flex",
-    flexDirection: isLeft ? "column" : "row",
+    flexDirection: vertical ? "column" : "row",
     backgroundColor: isBar
       ? theme.palette.surface
       : dockGlassFromSurface(theme.palette.surface),

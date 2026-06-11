@@ -57,10 +57,14 @@ export function NotificationCenter() {
 
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
-  // The sheet stops at the chrome edges the way the Windows notification
-  // center stops at the taskbar: it slides in beside a right taskbar and sits
-  // below or above a top/bottom one.
-  const dock = getDockReservation(theme);
+  // A taskbar bounds the sheet the way the Windows notification center stops
+  // at the taskbar: it slides in beside a right bar and sits below or above a
+  // top/bottom one. A floating dock does not: the macOS panel hugs the screen
+  // edge and overlays the dock.
+  const isBar = theme.chrome.dockStyle === "bar";
+  const dock = isBar
+    ? getDockReservation(theme)
+    : { top: 0, right: 0, bottom: 0, left: 0 };
   const topGutter =
     (theme.chrome.menuBar === "top" ? metrics.menuBarHeight : 0) + dock.top;
 
@@ -86,7 +90,11 @@ export function NotificationCenter() {
     color: theme.palette.textPrimary,
     boxShadow: "-20px 0 50px -20px rgba(0,0,0,0.55)",
     zIndex: 1200,
-    transform: open ? "translateX(0)" : "translateX(100%)",
+    // The closed slide must clear the right inset too, or a sheet sitting
+    // beside a right taskbar leaves a sliver of itself on screen.
+    transform: open
+      ? "translateX(0)"
+      : `translateX(calc(100% + ${String(dock.right)}px))`,
     // Under reduced motion the sheet appears and dismisses without sliding.
     transition: reducedMotion
       ? "none"

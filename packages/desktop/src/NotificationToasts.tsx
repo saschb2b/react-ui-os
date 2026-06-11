@@ -28,9 +28,13 @@ export function NotificationToasts() {
   const { active } = useNotifications();
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
-  // The stack clears the menu bar and any dock edge it would otherwise cover
-  // (a top or right taskbar reserves its strip here).
-  const dock = getDockReservation(theme);
+  // The stack clears the menu bar and any taskbar edge it would otherwise
+  // cover (a top or right bar reserves its strip here). A floating dock takes
+  // no inset: macOS banners hug the top-right corner whatever the dock does.
+  const dock =
+    theme.chrome.dockStyle === "bar"
+      ? getDockReservation(theme)
+      : { top: 0, right: 0, bottom: 0, left: 0 };
   const dockGutter =
     (theme.chrome.menuBar === "top" ? metrics.menuBarHeight : 0) + dock.top + 12;
 
