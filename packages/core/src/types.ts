@@ -321,6 +321,43 @@ export interface OsThemeChrome {
    */
   iconStyle?: string;
   /**
+   * Start menu size, the May 2026 Insider "Small or Large" choice (Settings >
+   * Personalization > Start). Small is the 6-column grid, large the 8-column
+   * one of the redesigned Windows 11 Start. Optional, defaults to "small".
+   * Read by the `"menu"` launcher only.
+   * Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
+   */
+  startMenuSize?: "small" | "large";
+  /**
+   * Show the Start menu's Pinned section. When off, the menu opens straight
+   * into the All apps list (when that is shown). Optional, defaults to true.
+   * One of the independent section toggles from the May 2026 Insider post.
+   */
+  startMenuPinned?: boolean;
+  /**
+   * Show the Start menu's Recent section (recently used apps and files).
+   * Optional, defaults to true.
+   */
+  startMenuRecent?: boolean;
+  /**
+   * Show recently used files inside the Recent section. The separate file
+   * control from the May 2026 post: turning it off hides file rows without
+   * hiding recently used apps. Optional, defaults to true. Ignored when
+   * `startMenuRecent` is false.
+   */
+  startMenuRecentFiles?: boolean;
+  /**
+   * Show the Start menu's All apps list (and the button leading to it).
+   * Optional, defaults to true.
+   */
+  startMenuAllApps?: boolean;
+  /**
+   * Show the user name and profile picture in the Start menu footer. The
+   * May 2026 privacy option hides them while keeping the power button.
+   * Optional, defaults to true.
+   */
+  startMenuProfile?: boolean;
+  /**
    * Glyph drawn on the dock launcher button, overriding the default derived from
    * `launcher`. `"windows"` is the four-pane Start mark, `"grid"` the GNOME
    * 9-dot app grid, `"dots"` the neutral 2x2, and `"ubuntu"` the Ubuntu Circle

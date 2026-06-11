@@ -119,6 +119,15 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       // the compact 32px taskbar.
       // Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
       dockSmallButtons: "when-full",
+      // Start menu personalization defaults, the May 2026 Insider controls
+      // (Settings > Personalization > Start). Explicit so the Settings
+      // toggles reflect the effective state.
+      startMenuSize: "small",
+      startMenuPinned: true,
+      startMenuRecent: true,
+      startMenuRecentFiles: true,
+      startMenuAllApps: true,
+      startMenuProfile: true,
       // Apps that ship a Fluent icon variant use it here.
       iconStyle: "fluent",
     },
@@ -254,6 +263,49 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
         section: "Taskbar",
         label: "Automatically hide the taskbar",
         description: "Slide the taskbar away until you point at the screen edge.",
+      },
+      // The Start section mirrors Settings > Personalization > Start as
+      // announced in the May 2026 Insider post: a size choice, independent
+      // section toggles, the separate file control, and the profile privacy
+      // option.
+      // Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
+      "chrome.startMenuSize": {
+        kind: "select",
+        section: "Start",
+        label: "Start menu size",
+        description: "The small 6-column grid or the large 8-column one.",
+        options: [
+          { value: "small", label: "Small" },
+          { value: "large", label: "Large" },
+        ],
+      },
+      "chrome.startMenuPinned": {
+        kind: "toggle",
+        section: "Start",
+        label: "Show Pinned section",
+        description: "With Pinned off, Start opens the All apps list.",
+      },
+      "chrome.startMenuRecent": {
+        kind: "toggle",
+        section: "Start",
+        label: "Show Recent section",
+        description: "Recently used apps and files.",
+      },
+      "chrome.startMenuRecentFiles": {
+        kind: "toggle",
+        section: "Start",
+        label: "Show recently used files in Start",
+        description: "Turn off file suggestions without hiding recently used apps.",
+      },
+      "chrome.startMenuAllApps": {
+        kind: "toggle",
+        section: "Start",
+        label: "Show All apps list",
+      },
+      "chrome.startMenuProfile": {
+        kind: "toggle",
+        section: "Start",
+        label: "Show my name and profile picture in Start",
       },
       "chrome.windowControls": {
         kind: "select",

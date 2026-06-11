@@ -547,10 +547,16 @@ function LauncherTile({
 
 const MENU_LISTBOX_ID = "rui-launcher-menu";
 // Windows 11's Start menu pins six icons per row in a fixed-width floating
-// panel (the classic 100%-scale size is ~640px wide).
-// Source: https://www.neowin.net/guides/how-to-resize-the-start-menu-in-windows-11/
-const MENU_COLUMNS = 6;
-const MENU_WIDTH = 600;
+// panel (the classic 100%-scale size is ~640x720). The redesigned Start comes
+// in a 6-column and an 8-column register, and the May 2026 controls expose
+// the choice as "Small or Large": small is the classic-width 6-column panel,
+// large scales the width with the extra columns and takes the classic height.
+// Sources: https://www.neowin.net/guides/how-to-resize-the-start-menu-in-windows-11/ ;
+// https://www.windowscentral.com/microsoft/windows-11/whats-in-the-new-start-menu-on-windows-11-for-versions-25h2-and-24h2
+const MENU_SIZES = {
+  small: { width: 600, height: 600, columns: 6 },
+  large: { width: 800, height: 720, columns: 8 },
+} as const;
 // The Recent region (Windows 11's renamed Recommended) is a 2-column grid of
 // six slots; up to four go to recently used apps, files fill the rest.
 const RECENT_SLOTS = 6;
@@ -578,7 +584,17 @@ function MenuView({
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
   const { moveSelection, activate, activateSelected, close } = launcher;
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [showAllApps, setShowAllApps] = useState(false);
+  // The May 2026 Start personalization: independent section toggles, a
+  // small/large size, and the option to hide the profile chip.
+  // Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
+  const pinnedOn = theme.chrome.startMenuPinned ?? true;
+  const allAppsOn = theme.chrome.startMenuAllApps ?? true;
+  const recentOn = theme.chrome.startMenuRecent ?? true;
+  const recentFilesOn = theme.chrome.startMenuRecentFiles ?? true;
+  const profileOn = theme.chrome.startMenuProfile ?? true;
+  const menuSize = MENU_SIZES[theme.chrome.startMenuSize ?? "small"];
+  // With Pinned hidden the menu opens straight into the All apps list.
+  const [showAllApps, setShowAllApps] = useState(!pinnedOn && allAppsOn);
 
   useEffect(() => {
     const id = window.setTimeout(() => {
@@ -592,7 +608,8 @@ function MenuView({
   const searching = query.trim().length > 0;
   // The listbox is a grid in the pinned / search views and a single column in
   // the All apps list, so vertical arrows step by the right amount.
-  const cols = showAllApps ? 1 : MENU_COLUMNS;
+  const cols = showAllApps ? 1 : menuSize.columns;
+  const showListbox = searching || showAllApps || pinnedOn;
   const onKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     switch (e.key) {
       case "ArrowRight":
@@ -613,11 +630,13 @@ function MenuView({
         break;
       case "Enter":
         e.preventDefault();
-        activateSelected();
+        // No activation while the list is hidden (every section toggled off),
+        // or Enter would launch an invisible selection.
+        if (showListbox) activateSelected();
         break;
       case "Escape":
         e.preventDefault();
-        if (showAllApps) setShowAllApps(false);
+        if (showAllApps && pinnedOn) setShowAllApps(false);
         else close();
         break;
       default:
@@ -637,7 +656,7 @@ function MenuView({
       zByApp.set(w.payload.appId, Math.max(zByApp.get(w.payload.appId) ?? 0, w.z));
     }
   }
-  const recentApps = results
+  const recentApps = (recentOn ? results : [])
     .filter((r) => r.kind === "app" && zByApp.has(r.app.id))
     .sort((a, b) => {
       const za = a.kind === "app" ? (zByApp.get(a.app.id) ?? 0) : 0;
@@ -658,7 +677,8 @@ function MenuView({
       result: r,
       subtitle: "Recently used",
     })),
-    ...listRecentItems()
+    // The separate file control: off hides the file rows, apps stay.
+    ...(recentOn && recentFilesOn ? listRecentItems() : [])
       .slice(0, Math.max(0, RECENT_SLOTS - recentApps.length))
       .map((f) => ({
         key: `rec-file:${f.sourceId}:${f.id}`,
@@ -704,7 +724,7 @@ function MenuView({
       : (document
           .querySelector('[data-rui-dock] [aria-label="Open launcher"]')
           ?.getBoundingClientRect() ?? null);
-  const width = Math.min(MENU_WIDTH, vw - 2 * gap);
+  const width = Math.min(menuSize.width, vw - 2 * gap);
   let anchor: CSSProperties;
   let menuOrigin: string;
   let available: number;
@@ -736,7 +756,7 @@ function MenuView({
   }
   // A tall, fixed panel like the Windows 11 menu (which keeps its size and lets
   // the pinned grid breathe), clamped to the viewport on short screens.
-  const height = Math.min(600, available);
+  const height = Math.min(menuSize.height, available);
 
   const listbox = (
     <div
@@ -748,7 +768,7 @@ function MenuView({
           ? { display: "flex", flexDirection: "column", gap: 2 }
           : {
               display: "grid",
-              gridTemplateColumns: `repeat(${String(MENU_COLUMNS)}, 1fr)`,
+              gridTemplateColumns: `repeat(${String(menuSize.columns)}, 1fr)`,
               gap: 4,
               justifyItems: "center",
               alignContent: "start",
@@ -876,7 +896,9 @@ function MenuView({
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              setShowAllApps(false);
+              // Searching returns to the grid; with Pinned hidden the All
+              // apps list is the resting view, so stay there instead.
+              if (pinnedOn) setShowAllApps(false);
             }}
             placeholder="Search for apps, settings, and documents"
             style={{
@@ -906,17 +928,37 @@ function MenuView({
             gap: 6,
           }}
         >
-          <MenuSectionHeader
-            label={searching ? "Results" : showAllApps ? "All apps" : "Pinned"}
-            action={
-              searching
-                ? undefined
-                : showAllApps
-                  ? { label: "Back", onClick: () => setShowAllApps(false), back: true }
-                  : { label: "All apps", onClick: () => setShowAllApps(true) }
-            }
-          />
-          {listbox}
+          {showListbox ? (
+            <>
+              <MenuSectionHeader
+                label={searching ? "Results" : showAllApps ? "All apps" : "Pinned"}
+                action={
+                  searching
+                    ? undefined
+                    : showAllApps
+                      ? // Without a Pinned section there is nothing to go back to.
+                        pinnedOn
+                        ? {
+                            label: "Back",
+                            onClick: () => {
+                              setShowAllApps(false);
+                            },
+                            back: true,
+                          }
+                        : undefined
+                      : allAppsOn
+                        ? {
+                            label: "All apps",
+                            onClick: () => {
+                              setShowAllApps(true);
+                            },
+                          }
+                        : undefined
+                }
+              />
+              {listbox}
+            </>
+          ) : null}
 
           {!searching && !showAllApps && recentRows.length > 0 ? (
             <>
@@ -949,34 +991,38 @@ function MenuView({
             flexShrink: 0,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            // The privacy option hides the name and picture; the power button
+            // stays, holding the trailing corner as on Windows.
+            justifyContent: profileOn ? "space-between" : "flex-end",
             padding: "8px 14px",
             borderTop: `1px solid ${theme.palette.border}`,
             background: `${theme.palette.textPrimary}08`,
           }}
         >
-          <MenuFooterButton aria-label="Account" onClick={openSettings}>
-            <span
-              aria-hidden
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                background: theme.palette.accent,
-                color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <svg width={16} height={16} viewBox="0 0 16 16" fill="currentColor">
-                <circle cx="8" cy="5" r="3" />
-                <path d="M2.5 14a5.5 5.5 0 0 1 11 0z" />
-              </svg>
-            </span>
-            <span style={{ fontSize: 13, fontWeight: 500 }}>User</span>
-          </MenuFooterButton>
+          {profileOn ? (
+            <MenuFooterButton aria-label="Account" onClick={openSettings}>
+              <span
+                aria-hidden
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: "50%",
+                  background: theme.palette.accent,
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <svg width={16} height={16} viewBox="0 0 16 16" fill="currentColor">
+                  <circle cx="8" cy="5" r="3" />
+                  <path d="M2.5 14a5.5 5.5 0 0 1 11 0z" />
+                </svg>
+              </span>
+              <span style={{ fontSize: 13, fontWeight: 500 }}>User</span>
+            </MenuFooterButton>
+          ) : null}
           <PowerButton onAction={close} />
         </div>
       </div>

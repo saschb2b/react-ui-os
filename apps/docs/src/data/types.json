@@ -491,6 +491,42 @@
           "description": "Icon style this theme requests for app icons (e.g. `\"fluent\"` on Windows,\n`\"macos\"`, `\"gnome\"`). An app's `icons[iconStyle]` is used when present,\notherwise its default `icon`. Optional; when unset every app uses `icon`."
         },
         {
+          "name": "startMenuSize",
+          "type": "\"small\" | \"large\"",
+          "optional": true,
+          "description": "Start menu size, the May 2026 Insider \"Small or Large\" choice (Settings >\nPersonalization > Start). Small is the 6-column grid, large the 8-column\none of the redesigned Windows 11 Start. Optional, defaults to \"small\".\nRead by the `\"menu\"` launcher only.\nSource: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/"
+        },
+        {
+          "name": "startMenuPinned",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the Start menu's Pinned section. When off, the menu opens straight\ninto the All apps list (when that is shown). Optional, defaults to true.\nOne of the independent section toggles from the May 2026 Insider post."
+        },
+        {
+          "name": "startMenuRecent",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the Start menu's Recent section (recently used apps and files).\nOptional, defaults to true."
+        },
+        {
+          "name": "startMenuRecentFiles",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show recently used files inside the Recent section. The separate file\ncontrol from the May 2026 post: turning it off hides file rows without\nhiding recently used apps. Optional, defaults to true. Ignored when\n`startMenuRecent` is false."
+        },
+        {
+          "name": "startMenuAllApps",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the Start menu's All apps list (and the button leading to it).\nOptional, defaults to true."
+        },
+        {
+          "name": "startMenuProfile",
+          "type": "boolean",
+          "optional": true,
+          "description": "Show the user name and profile picture in the Start menu footer. The\nMay 2026 privacy option hides them while keeping the power button.\nOptional, defaults to true."
+        },
+        {
           "name": "launcherIcon",
           "type": "\"windows\" | \"grid\" | \"dots\" | \"ubuntu\"",
           "optional": true,
