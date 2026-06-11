@@ -701,6 +701,65 @@
       "kind": "alias",
       "description": "A Spotlight source returns the current set of results for a given query.\nReceives the raw query string (lowercased, trimmed) and returns the rows\nto merge into the Spotlight panel. Returning an empty array when the\nquery doesn't apply is the convention.",
       "aliasOf": "(query: string) => SpotlightResult[]"
+    },
+    "RecentItem": {
+      "name": "RecentItem",
+      "package": "@react-ui-os/desktop",
+      "sourceFile": "packages/desktop/src/recents.ts",
+      "kind": "interface",
+      "description": "One row in the Start menu's \"Recent\" section. Windows 11's redesigned Start\nrenames \"Recommended\" to \"Recent\" and fills it with recently installed apps\nand recently used files. The apps half comes from the window manager's own\nrecency; these sources contribute the files half: notes, documents,\ndownloads, presets, whatever the consumer's apps touch and persist.\nSource: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/",
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "optional": false,
+          "description": "Stable id within the source; the menu keys rows by source id plus this."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "optional": false,
+          "description": "Visible row label, e.g. the document title."
+        },
+        {
+          "name": "timestamp",
+          "type": "number",
+          "optional": false,
+          "description": "Epoch ms of last use. The section orders newest first."
+        },
+        {
+          "name": "kindLabel",
+          "type": "string",
+          "optional": true,
+          "description": "Type label under the name (\"Note\", \"Download\")."
+        },
+        {
+          "name": "accent",
+          "type": "string",
+          "optional": true,
+          "description": "Accent color tinting the row's tile gradient."
+        },
+        {
+          "name": "icon",
+          "type": "ReactNode",
+          "optional": true,
+          "description": "Optional icon node rendered inside the tile."
+        },
+        {
+          "name": "onActivate",
+          "type": "() => void",
+          "optional": false,
+          "description": "What to do when the row is activated (Enter or click)."
+        }
+      ]
+    },
+    "RecentsSource": {
+      "name": "RecentsSource",
+      "package": "@react-ui-os/desktop",
+      "sourceFile": "packages/desktop/src/recents.ts",
+      "kind": "alias",
+      "description": "A recents source returns its current items each time the Start menu opens.\nRead your own store inside the function so the rows are always fresh; the\nregistry never caches results.",
+      "aliasOf": "() => RecentItem[]"
     }
   }
 }

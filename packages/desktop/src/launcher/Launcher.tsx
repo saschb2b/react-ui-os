@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
@@ -14,6 +15,11 @@ import { useApps, useTheme } from "../desktop-context";
 import { resolveAppIcon } from "../util/app-icon";
 import { SpacesBar } from "../spaces-bar";
 import { getDockReservation, getMenuBarHeight } from "../util/layout";
+import {
+  countRecentsSources,
+  listRecentItems,
+  subscribeRecentsSources,
+} from "../recents";
 import { nextCascadeIndex, pickInitialBounds } from "../util/initial-bounds";
 import { useReducedMotion } from "../util/use-reduced-motion";
 import { useSurfaceTransition } from "../util/use-surface-transition";
@@ -545,6 +551,10 @@ const MENU_LISTBOX_ID = "rui-launcher-menu";
 // Source: https://www.neowin.net/guides/how-to-resize-the-start-menu-in-windows-11/
 const MENU_COLUMNS = 6;
 const MENU_WIDTH = 600;
+// The Recent region (Windows 11's renamed Recommended) is a 2-column grid of
+// six slots; up to four go to recently used apps, files fill the rest.
+const RECENT_SLOTS = 6;
+const RECENT_APP_SLOTS = 4;
 function menuOptionId(index: number): string {
   return `rui-launcher-menu-option-${String(index)}`;
 }
@@ -615,23 +625,57 @@ function MenuView({
     }
   };
 
-  // Recommended mirrors Windows 11's "recently added and frequently used":
-  // the apps with open windows, most-recently-focused first (window z is the
-  // recency order the manager already maintains).
+  // The "Recent" section, Windows 11's renamed Recommended: recently used
+  // apps lead (the May 2026 post keeps apps "visible as the primary discovery
+  // method") and recently used files contributed via registerRecentsSource
+  // fill the remaining slots, newest first. Six slots, the 2x3 grid of the
+  // Windows Recommended region.
+  // Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
   const zByApp = new Map<string, number>();
   for (const w of windows) {
     if (w.payload.kind === "app") {
       zByApp.set(w.payload.appId, Math.max(zByApp.get(w.payload.appId) ?? 0, w.z));
     }
   }
-  const recommended = results
+  const recentApps = results
     .filter((r) => r.kind === "app" && zByApp.has(r.app.id))
     .sort((a, b) => {
       const za = a.kind === "app" ? (zByApp.get(a.app.id) ?? 0) : 0;
       const zb = b.kind === "app" ? (zByApp.get(b.app.id) ?? 0) : 0;
       return zb - za;
     })
-    .slice(0, 4);
+    .slice(0, RECENT_APP_SLOTS);
+  // Re-render when a recents source registers; the items themselves are read
+  // fresh on every open since the menu mounts per open.
+  useSyncExternalStore(subscribeRecentsSources, countRecentsSources, () => 0);
+  const recentRows: Array<{
+    key: string;
+    result: LauncherResult;
+    subtitle: string;
+  }> = [
+    ...recentApps.map((r) => ({
+      key: `rec:${r.key}`,
+      result: r,
+      subtitle: "Recently used",
+    })),
+    ...listRecentItems()
+      .slice(0, Math.max(0, RECENT_SLOTS - recentApps.length))
+      .map((f) => ({
+        key: `rec-file:${f.sourceId}:${f.id}`,
+        result: {
+          kind: "external" as const,
+          key: `rec-file:${f.sourceId}:${f.id}`,
+          name: f.name,
+          accent: f.accent,
+          icon: f.icon,
+          kindLabel: f.kindLabel,
+          onActivate: f.onActivate,
+        },
+        subtitle: f.kindLabel
+          ? `${f.kindLabel} · ${relativeTime(f.timestamp)}`
+          : relativeTime(f.timestamp),
+      })),
+  ];
 
   const openSettings = () => {
     const payload = { kind: "system" as const, systemId: "settings" };
@@ -874,10 +918,10 @@ function MenuView({
           />
           {listbox}
 
-          {!searching && !showAllApps && recommended.length > 0 ? (
+          {!searching && !showAllApps && recentRows.length > 0 ? (
             <>
               <div style={{ height: 6 }} />
-              <MenuSectionHeader label="Recommended" />
+              <MenuSectionHeader label="Recent" />
               <div
                 style={{
                   display: "grid",
@@ -885,11 +929,11 @@ function MenuView({
                   gap: 4,
                 }}
               >
-                {recommended.map((result) => (
+                {recentRows.map(({ key, result, subtitle }) => (
                   <MenuRow
-                    key={`rec:${result.key}`}
+                    key={key}
                     result={result}
-                    subtitle="Recently used"
+                    subtitle={subtitle}
                     onActivate={() => {
                       activate(result);
                     }}
@@ -1415,6 +1459,21 @@ function EmptyState({ query }: { query: string }) {
       </span>
     </div>
   );
+}
+
+/**
+ * Short recency label under a Recent file row, the Windows style ("12m ago",
+ * "2h ago", "Yesterday"); older items fall back to the locale date.
+ */
+function relativeTime(ts: number): string {
+  const mins = Math.floor((Date.now() - ts) / 60_000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${String(mins)}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${String(hours)}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Yesterday";
+  return new Date(ts).toLocaleDateString();
 }
 
 function HintChip({ keys, label }: { keys: string; label: string }) {

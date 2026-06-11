@@ -1,0 +1,65 @@
+---
+title: registerRecentsSource
+description: Contribute recently used files to the Start menu's Recent section. A source is a function returning its current recent items.
+sidebar:
+  order: 6
+---
+
+import TypeTable from "~/components/TypeTable.astro";
+
+`registerRecentsSource` feeds the Start menu's **Recent** section, the Windows 11 region that lists recently used apps and recently used files. The apps half comes from the window manager's own recency; sources contribute the files half: notes, documents, downloads, presets, whatever your apps touch and persist. Only the `"menu"` launcher (the Windows Start menu) renders the section; in the other launchers a registered source is simply never queried.
+
+## Import
+
+```tsx
+import { registerRecentsSource } from "@react-ui-os/desktop";
+import type { RecentsSource, RecentItem } from "@react-ui-os/desktop";
+```
+
+## Signature
+
+```ts
+function registerRecentsSource(id: string, source: RecentsSource): () => void;
+```
+
+### `RecentsSource`
+
+<TypeTable name="RecentsSource" />
+
+### `RecentItem`
+
+<TypeTable name="RecentItem" hideDescription />
+
+`id` is a stable key: registering twice with the same id replaces the previous source, so it is safe to call from a component that re-mounts. The returned function unregisters the source; call it in the cleanup of the `useEffect` that registered.
+
+## How items render
+
+The section holds six slots in a two-column grid, the Windows Recommended layout. Recently used apps lead; source items fill the remaining slots, newest `timestamp` first across all sources. Each row shows the `icon` (or the name's first letter) on an accent tile, the `name`, and a subtitle built from `kindLabel` plus a relative time ("Note · 2h ago").
+
+```tsx
+useEffect(() => {
+  return registerRecentsSource("notes", () =>
+    listNotes(storage)
+      .slice(0, 4)
+      .map((note) => ({
+        id: note.id,
+        name: noteTitle(note) || "New Note",
+        timestamp: note.updatedAt,
+        kindLabel: "Note",
+        accent: "#f59e0b",
+        onActivate: () => openWindow({ kind: "app", appId: "notes" }),
+      })),
+  );
+}, [storage, openWindow]);
+```
+
+Read your own store inside the source function: it is queried fresh each time the Start menu opens, never cached.
+
+## Error safety
+
+A throwing source is dropped for that call instead of taking down the Start menu, the same guard [Spotlight sources](/api/registerspotlightsource/) get. Errors are logged to the console in development.
+
+## See also
+
+- [Spotlight](/components/spotlight/): the launcher surfaces, including the Start menu register.
+- [registerSpotlightSource](/api/registerspotlightsource/): the same plug-in shape for the search results.

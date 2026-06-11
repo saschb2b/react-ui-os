@@ -93,6 +93,13 @@ export {
   subscribeSpotlightSources,
 } from "./spotlight-sources";
 export type { SpotlightSource, SpotlightResult } from "./spotlight-sources";
+export {
+  registerRecentsSource,
+  listRecentItems,
+  countRecentsSources,
+  subscribeRecentsSources,
+} from "./recents";
+export type { RecentItem, RecentsSource, RecentEntry } from "./recents";
 export { Settings } from "./Settings";
 export { requestSettingsSection } from "./settings-nav";
 export { FileExplorer } from "./FileExplorer";

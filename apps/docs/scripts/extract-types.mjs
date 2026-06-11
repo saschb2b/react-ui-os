@@ -126,6 +126,16 @@ const targets = [
     sourceFile: "packages/desktop/src/spotlight-sources.ts",
     package: "@react-ui-os/desktop",
   },
+  {
+    name: "RecentItem",
+    sourceFile: "packages/desktop/src/recents.ts",
+    package: "@react-ui-os/desktop",
+  },
+  {
+    name: "RecentsSource",
+    sourceFile: "packages/desktop/src/recents.ts",
+    package: "@react-ui-os/desktop",
+  },
 ];
 
 function readJsDoc(node) {

@@ -13,6 +13,13 @@ import {
   type SpotlightResult,
 } from "../src/spotlight-sources";
 import {
+  countRecentsSources,
+  listRecentItems,
+  registerRecentsSource,
+  subscribeRecentsSources,
+  type RecentItem,
+} from "../src/recents";
+import {
   getSystemWindow,
   listSystemWindows,
   registerSystemWindow,
@@ -93,6 +100,53 @@ describe("status items", () => {
     track(subscribeStatusItems(listener));
     track(registerStatusItem({ id: "notify", icon: null }));
     expect(listener).toHaveBeenCalled();
+  });
+});
+
+describe("recents sources", () => {
+  const item = (id: string, timestamp: number): RecentItem => ({
+    id,
+    name: id,
+    timestamp,
+    onActivate: () => {},
+  });
+
+  it("merges every source's items newest first, tagged with the source id", () => {
+    track(registerRecentsSource("a", () => [item("old", 100), item("new", 300)]));
+    track(registerRecentsSource("b", () => [item("mid", 200)]));
+    const merged = listRecentItems();
+    expect(merged.map((r) => r.id)).toEqual(["new", "mid", "old"]);
+    expect(merged.map((r) => r.sourceId)).toEqual(["a", "b", "a"]);
+  });
+
+  it("replaces a source when the same id re-registers", () => {
+    track(registerRecentsSource("dup", () => [item("first", 1)]));
+    track(registerRecentsSource("dup", () => [item("second", 2)]));
+    expect(listRecentItems().map((r) => r.id)).toEqual(["second"]);
+  });
+
+  it("drops a throwing source instead of failing the merge", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    track(
+      registerRecentsSource("bad", () => {
+        throw new Error("boom");
+      }),
+    );
+    track(registerRecentsSource("good", () => [item("ok", 1)]));
+    expect(listRecentItems().map((r) => r.id)).toEqual(["ok"]);
+    warn.mockRestore();
+  });
+
+  it("counts sources and notifies subscribers on registration changes", () => {
+    const listener = vi.fn();
+    track(subscribeRecentsSources(listener));
+    const before = countRecentsSources();
+    const unsub = registerRecentsSource("counted", () => []);
+    expect(countRecentsSources()).toBe(before + 1);
+    expect(listener).toHaveBeenCalledTimes(1);
+    unsub();
+    expect(countRecentsSources()).toBe(before);
+    expect(listener).toHaveBeenCalledTimes(2);
   });
 });
 
