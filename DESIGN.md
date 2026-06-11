@@ -51,7 +51,7 @@ The mood layer. `src` is optional; without it, `palette.background` fills the de
 The structural variants. This is where the OS spectrum gets honest.
 
 - `windowControls`: `"traffic-lights"` (macOS), `"windows"` (close on right, min/max left of it), `"gnome"` (round symbolic min/max/close on the right, the Adwaita/Yaru look), `"minimal"` (one close glyph, nothing else).
-- `dockPosition`: `"bottom"`, `"left"`, `"hidden"`.
+- `dockPosition`: `"top"`, `"bottom"`, `"left"`, `"right"`, `"hidden"`. All four edges, the way Windows moves its taskbar; flyouts and edge-hugging surfaces follow the chosen edge.
 - `dockStyle`: `"floating"` (macOS pill), `"bar"` (flush taskbar / GNOME panel).
 - `dockAlign`: `"center"` (macOS / Windows 11), `"start"` (GNOME / Windows 10), `"end"`. Bar docks only.
 - `launcher`: `"spotlight"` (macOS palette), `"grid"` (GNOME app grid), `"menu"` (Windows Start menu).

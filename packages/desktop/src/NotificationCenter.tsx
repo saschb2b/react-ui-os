@@ -10,7 +10,7 @@ import {
 } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
 import { NOTIFICATION_CENTER_TOGGLE_EVENT } from "./events";
-import { getChromeMetrics } from "./util/layout";
+import { getChromeMetrics, getDockReservation } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
 import { useReducedMotion } from "./util/use-reduced-motion";
 
@@ -57,7 +57,12 @@ export function NotificationCenter() {
 
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
-  const topGutter = theme.chrome.menuBar === "top" ? metrics.menuBarHeight : 0;
+  // The sheet stops at the chrome edges the way the Windows notification
+  // center stops at the taskbar: it slides in beside a right taskbar and sits
+  // below or above a top/bottom one.
+  const dock = getDockReservation(theme);
+  const topGutter =
+    (theme.chrome.menuBar === "top" ? metrics.menuBarHeight : 0) + dock.top;
 
   const backdrop: CSSProperties = {
     position: "fixed",
@@ -70,8 +75,8 @@ export function NotificationCenter() {
   const sheet: CSSProperties = {
     position: "fixed",
     top: topGutter,
-    right: 0,
-    bottom: 0,
+    right: dock.right,
+    bottom: dock.bottom,
     width: 360,
     maxWidth: "calc(100vw - 24px)",
     background: theme.palette.surface,

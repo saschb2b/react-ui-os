@@ -187,7 +187,7 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
         section: "Taskbar",
         label: "Taskbar alignment",
         description:
-          "Center the icons (Windows 11) or pack them to the left (Windows 10).",
+          "Center the icons (Windows 11) or pack them to the start of the bar: left on a horizontal taskbar, top on a vertical one (Windows 10).",
         options: [
           { value: "center", label: "Center" },
           { value: "start", label: "Left" },
@@ -205,14 +205,21 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
         label: "Show desktop",
         description: "Select the far corner of the taskbar to show the desktop.",
       },
+      // All four edges, the May 2026 Insider "taskbar position" control. Order
+      // follows the classic "Taskbar location on screen" dropdown. Hiding the
+      // bar is its own toggle below ("Automatically hide the taskbar"), as on
+      // Windows.
+      // Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
       "chrome.dockPosition": {
         kind: "select",
         section: "Taskbar",
         label: "Taskbar position",
+        description: "Dock the taskbar to any edge of the screen.",
         options: [
-          { value: "bottom", label: "Bottom" },
           { value: "left", label: "Left" },
-          { value: "hidden", label: "Hidden" },
+          { value: "top", label: "Top" },
+          { value: "right", label: "Right" },
+          { value: "bottom", label: "Bottom" },
         ],
       },
       "chrome.dockStyle": {

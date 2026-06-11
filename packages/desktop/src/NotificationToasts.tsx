@@ -9,7 +9,7 @@ import {
   type NotificationItem,
 } from "@react-ui-os/core";
 import { useApps, useTheme } from "./desktop-context";
-import { getChromeMetrics } from "./util/layout";
+import { getChromeMetrics, getDockReservation } from "./util/layout";
 import { useReducedMotion } from "./util/use-reduced-motion";
 import { useViewportMode } from "./util/viewport-mode";
 
@@ -28,7 +28,11 @@ export function NotificationToasts() {
   const { active } = useNotifications();
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
-  const dockGutter = theme.chrome.menuBar === "top" ? metrics.menuBarHeight + 12 : 12;
+  // The stack clears the menu bar and any dock edge it would otherwise cover
+  // (a top or right taskbar reserves its strip here).
+  const dock = getDockReservation(theme);
+  const dockGutter =
+    (theme.chrome.menuBar === "top" ? metrics.menuBarHeight : 0) + dock.top + 12;
 
   if (active.length === 0) return null;
 
@@ -40,7 +44,7 @@ export function NotificationToasts() {
       style={{
         position: "fixed",
         top: dockGutter,
-        right: 12,
+        right: dock.right + 12,
         display: "flex",
         flexDirection: "column",
         gap: 10,

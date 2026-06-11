@@ -20,7 +20,7 @@ import {
 import { useDesktopMarquee } from "./use-desktop-marquee";
 import { nextIconIndex } from "./util/desktop-icon-nav";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
-import { getChromeMetrics } from "./util/layout";
+import { getChromeMetrics, getDockReservation } from "./util/layout";
 import { useViewportMode } from "./util/viewport-mode";
 
 interface VisibleIcon {
@@ -159,8 +159,14 @@ export function DesktopIcons() {
 
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
+  // Icons clear the menu bar and any dock edge they hug (a top or right
+  // taskbar reserves its strip here).
+  const dock = getDockReservation(theme);
   const topInset =
-    (theme.chrome.menuBar === "top" ? metrics.menuBarHeight : 0) + EDGE_INSET;
+    (theme.chrome.menuBar === "top" ? metrics.menuBarHeight : 0) +
+    dock.top +
+    EDGE_INSET;
+  const rightInset = dock.right + EDGE_INSET;
 
   const handleKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     if (visible.length === 0) return;
@@ -215,7 +221,7 @@ export function DesktopIcons() {
           style={{
             position: "fixed",
             top: topInset,
-            right: EDGE_INSET,
+            right: rightInset,
             display: "flex",
             flexDirection: "column",
             gap: ICON_GAP,

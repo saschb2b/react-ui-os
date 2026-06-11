@@ -32,8 +32,12 @@ The dock honors `theme.chrome.dockPosition`:
 | Value      | Layout                                                                                 |
 | ---------- | -------------------------------------------------------------------------------------- |
 | `"bottom"` | Horizontal pill centered at the bottom edge; magnified icons grow upward.              |
+| `"top"`    | Horizontal run at the top edge; magnified icons grow downward.                         |
 | `"left"`   | Vertical rail centered on the left edge; magnified icons grow inward.                  |
+| `"right"`  | Vertical rail centered on the right edge; magnified icons grow inward.                 |
 | `"hidden"` | Returns `null`. Apps are reachable via Spotlight, keyboard shortcuts, or `openWindow`. |
+
+All four edges follow the movable Windows taskbar (Insider builds, May 2026). The Start-style launcher, notification surfaces, and desktop icons track the chosen edge so nothing overlaps the bar.
 
 ## Form
 

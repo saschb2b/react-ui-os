@@ -150,23 +150,22 @@ export function getDockReservation(theme: OsTheme): {
   }
   const metrics = getChromeMetrics();
   // The taskbar form sits flush to the edge, so it reserves its own thickness
-  // with no surrounding gap. The floating dock adds its edge offset.
+  // with no surrounding gap. The floating dock adds its edge offset (twice on
+  // a vertical edge: the gap to the edge plus a matching inner gap).
   const barThickness = getBarThickness(theme);
   const floatFootprint = getDockTileSize(theme) + metrics.dockPadding * 2;
-  if (theme.chrome.dockPosition === "left") {
-    return {
-      top: 0,
-      right: 0,
-      bottom: 0,
-      left: isBar ? barThickness : floatFootprint + metrics.dockEdgeOffset * 2,
-    };
+  const position = theme.chrome.dockPosition;
+  const reservation = { top: 0, right: 0, bottom: 0, left: 0 };
+  if (position === "left" || position === "right") {
+    reservation[position] = isBar
+      ? barThickness
+      : floatFootprint + metrics.dockEdgeOffset * 2;
+  } else {
+    reservation[position] = isBar
+      ? barThickness
+      : floatFootprint + metrics.dockEdgeOffset;
   }
-  return {
-    top: 0,
-    right: 0,
-    bottom: isBar ? barThickness : floatFootprint + metrics.dockEdgeOffset,
-    left: 0,
-  };
+  return reservation;
 }
 
 /**

@@ -168,14 +168,22 @@ export interface OsThemeChrome {
    * buttons on the right; `"minimal"` is a single close affordance.
    */
   windowControls: "traffic-lights" | "windows" | "gnome" | "minimal";
-  dockPosition: "bottom" | "left" | "hidden";
+  /**
+   * Screen edge the dock or taskbar sits on. All four edges are supported:
+   * Windows moves its taskbar to any edge (Insider builds, May 2026:
+   * https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/)
+   * and the macOS Dock offers left, bottom, and right. Flyout surfaces (the
+   * Start-style launcher, toasts, the notification center, desktop icons)
+   * follow the chosen edge so nothing overlaps the bar.
+   */
+  dockPosition: "top" | "bottom" | "left" | "right" | "hidden";
   /**
    * Dock form. `"floating"` is the macOS dock: a centered rounded pill that
    * hovers above the edge with a gap. `"bar"` is the Windows taskbar / GNOME
-   * panel shape: a flat bar flush to the edge, spanning the full width (bottom)
-   * or height (left), square corners, an accent underline under running apps.
-   * Optional, defaults to `"floating"`. Ignored when `dockPosition` is
-   * `"hidden"`.
+   * panel shape: a flat bar flush to the edge, spanning the full width
+   * (top/bottom) or height (left/right), square corners, an accent underline
+   * under running apps. Optional, defaults to `"floating"`. Ignored when
+   * `dockPosition` is `"hidden"`.
    */
   dockStyle?: "floating" | "bar";
   /**
@@ -192,10 +200,11 @@ export interface OsThemeChrome {
   /**
    * How a `"bar"` dock packs its app icons along its long axis. `"center"`
    * (default) is the macOS / Windows 11 placement; `"start"` packs them at the
-   * top (left dock) or left (bottom dock), the GNOME / Ubuntu and Windows 10
-   * placement, leaving the launcher at the far end; `"end"` packs them at the
-   * far end. Ignored by the `"floating"` dock, whose pill always hugs its
-   * icons. Windows 11 exposes the same lever as "Taskbar alignment".
+   * top (vertical dock) or left (horizontal dock), the GNOME / Ubuntu and
+   * Windows 10 placement, leaving the launcher at the far end; `"end"` packs
+   * them at the far end. Ignored by the `"floating"` dock, whose pill always
+   * hugs its icons. Windows 11 exposes the same lever as "Taskbar alignment";
+   * the vertical taskbar offers top-aligned or centered the same way.
    */
   dockAlign?: "start" | "center" | "end";
   menuBar: "top" | "in-window" | "none";
@@ -224,20 +233,21 @@ export interface OsThemeChrome {
    */
   quickSettings?: boolean;
   /**
-   * When true, a thin sliver at the far trailing corner of a bottom `"bar"`
-   * dock acts as the Windows "Show desktop" button: one click minimizes every
+   * When true, a thin sliver at the far trailing corner of a `"bar"` dock
+   * acts as the Windows "Show desktop" button: one click minimizes every
    * window on the active workspace, a second click restores the ones it
-   * minimized. Mirrors the Win+D toggle. Optional, defaults to false. Ignored
-   * by the floating dock and the vertical (left) bar.
+   * minimized. Mirrors the Win+D toggle. The sliver sits past the clock on a
+   * horizontal bar and at the very bottom of a vertical one. Optional,
+   * defaults to false. Ignored by the floating dock.
    * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
    */
   showDesktopButton?: boolean;
   /**
-   * When true, a Task View button sits in the leading cluster of a bottom
-   * `"bar"` dock, beside the launcher. It opens the all-windows overview
-   * (Mission Control), the Windows 11 "Task View" taskbar button (Win+Tab).
-   * Optional, defaults to false. Ignored by the floating dock and the
-   * vertical (left) bar.
+   * When true, a Task View button sits in the leading cluster of a `"bar"`
+   * dock, beside the launcher. It opens the all-windows overview (Mission
+   * Control), the Windows 11 "Task View" taskbar button (Win+Tab). Optional,
+   * defaults to false. Ignored by the floating dock and by bars whose
+   * launcher is pinned to the trailing edge (the Ubuntu arrangement).
    * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
    */
   taskViewButton?: boolean;

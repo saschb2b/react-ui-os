@@ -13,7 +13,7 @@ import { notify, useWindowManager } from "@react-ui-os/core";
 import { useApps, useTheme } from "../desktop-context";
 import { resolveAppIcon } from "../util/app-icon";
 import { SpacesBar } from "../spaces-bar";
-import { getDockReservation } from "../util/layout";
+import { getDockReservation, getMenuBarHeight } from "../util/layout";
 import { nextCascadeIndex, pickInitialBounds } from "../util/initial-bounds";
 import { useReducedMotion } from "../util/use-reduced-motion";
 import { useSurfaceTransition } from "../util/use-surface-transition";
@@ -644,11 +644,14 @@ function MenuView({
 
   // Raise Start from its launcher button, not a fixed corner: Windows 11 opens
   // the menu above the Start button (so it tracks a centered or left-aligned
-  // taskbar) rather than centering a modal the way Spotlight does. Read the
-  // button's live rect and clamp the panel into the viewport.
+  // taskbar) rather than centering a modal the way Spotlight does. The panel
+  // follows the taskbar's edge: "when the taskbar is on the top, Start opens
+  // from the top" (Windows Insider, May 2026:
+  // https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/).
+  // Read the button's live rect and clamp the panel into the viewport.
   const reservation = getDockReservation(theme);
   const gap = 8;
-  const onLeft = theme.chrome.dockPosition === "left";
+  const dockPosition = theme.chrome.dockPosition;
   const vw = typeof window === "undefined" ? 1280 : window.innerWidth;
   const vh = typeof window === "undefined" ? 800 : window.innerHeight;
   const btn =
@@ -661,11 +664,23 @@ function MenuView({
   let anchor: CSSProperties;
   let menuOrigin: string;
   let available: number;
-  if (onLeft) {
-    // Beside the left dock, dropping down from the launcher button.
+  if (dockPosition === "left" || dockPosition === "right") {
+    // Beside the vertical dock, dropping down from the launcher button.
     const top = btn ? Math.max(gap, Math.min(btn.top, vh - gap - 220)) : gap;
-    anchor = { left: reservation.left + gap, top };
-    menuOrigin = "top left";
+    anchor =
+      dockPosition === "left"
+        ? { left: reservation.left + gap, top }
+        : { right: reservation.right + gap, top };
+    menuOrigin = dockPosition === "left" ? "top left" : "top right";
+    available = vh - top - gap;
+  } else if (dockPosition === "top") {
+    // Below the top taskbar (and the menu bar when one is shown), horizontally
+    // centered on the launcher button.
+    const centerX = btn ? btn.left + btn.width / 2 : vw / 2;
+    const left = Math.max(gap, Math.min(centerX - width / 2, vw - width - gap));
+    const top = getMenuBarHeight(theme) + reservation.top + gap;
+    anchor = { left, top };
+    menuOrigin = `${String(Math.round(centerX - left))}px 0px`;
     available = vh - top - gap;
   } else {
     // Above the bottom taskbar, horizontally centered on the launcher button.

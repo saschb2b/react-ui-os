@@ -107,8 +107,10 @@ function useBackdropDisplacementSupported(): boolean {
 /**
  * App dock. Direction follows `theme.chrome.dockPosition`:
  *
- *   "bottom"  horizontal pill centered at the bottom of the desktop
- *   "left"    vertical rail centered on the left edge
+ *   "bottom"  horizontal run flush to (bar) or centered above (pill) the bottom
+ *   "top"     horizontal run at the top edge (the movable Windows taskbar)
+ *   "left"    vertical rail on the left edge
+ *   "right"   vertical rail on the right edge
  *   "hidden"  returns null
  *
  * Hovering magnifies the icons under the cursor (the macOS fisheye) with a
@@ -124,6 +126,9 @@ export function Dock() {
   const position = theme.chrome.dockPosition;
 
   const isLeft = position === "left";
+  const isRight = position === "right";
+  const isTop = position === "top";
+  const vertical = isLeft || isRight;
   const isBar = theme.chrome.dockStyle === "bar";
   const base = getDockTileSize(theme, mode);
   // Liquid Glass refraction on the floating dock, when opted in and supported;
@@ -156,8 +161,8 @@ export function Dock() {
   const lastRef = useRef(0);
   // Latest geometry, refreshed every render so the animation loop (which is
   // created once) always reads current values.
-  const geomRef = useRef({ count, base, span, isLeft, mag });
-  geomRef.current = { count, base, span, isLeft, mag };
+  const geomRef = useRef({ count, base, span, vertical, mag });
+  geomRef.current = { count, base, span, vertical, mag };
 
   const tick = useCallback((ts: number) => {
     const dt = lastRef.current ? Math.min((ts - lastRef.current) / 1000, 0.05) : 0.016;
@@ -168,7 +173,7 @@ export function Dock() {
     const center =
       typeof window === "undefined"
         ? 0
-        : (g.isLeft ? window.innerHeight : window.innerWidth) / 2;
+        : (g.vertical ? window.innerHeight : window.innerWidth) / 2;
     const prev = sizesRef.current;
     let moving = false;
     const next: number[] = [];
@@ -246,7 +251,14 @@ export function Dock() {
       return;
     }
     const onMove = (e: PointerEvent) => {
-      const dist = isLeft ? e.clientX : window.innerHeight - e.clientY;
+      const dist =
+        position === "left"
+          ? e.clientX
+          : position === "right"
+            ? window.innerWidth - e.clientX
+            : position === "top"
+              ? e.clientY
+              : window.innerHeight - e.clientY;
       if (!revealedRef.current) {
         if (dist <= AUTO_HIDE_EDGE) setRevealed(true);
       } else if (dist > taskbarSize) {
@@ -262,7 +274,7 @@ export function Dock() {
       window.removeEventListener("pointermove", onMove);
       document.removeEventListener("mouseleave", onLeave);
     };
-  }, [autoHide, isLeft, taskbarSize]);
+  }, [autoHide, position, taskbarSize]);
 
   if (position === "hidden") return null;
 
@@ -275,14 +287,15 @@ export function Dock() {
   // sits. The Windows register (bottom bar, no menu bar) keeps both.
   const showTray = isBar && !topMenuBar;
   const launcherTrailing = isBar && isLeft && topMenuBar;
-  // The Windows "Show desktop" sliver lives in the far bottom-right corner, so
-  // it only applies to a horizontal bar. When present, the tray shifts inward
-  // to leave the corner clear.
-  const showDesktop = isBar && !isLeft && (theme.chrome.showDesktopButton ?? false);
-  // The Task View button sits beside the launcher in the leading cluster, so it
-  // only applies to a horizontal bar with the launcher at the leading edge.
+  // The Windows "Show desktop" sliver lives in the bar's far trailing corner:
+  // past the clock on a horizontal taskbar, at the very bottom of a vertical
+  // one (where Windows keeps it when the taskbar is docked to a side edge).
+  // When present, the tray shifts inward to leave the corner clear.
+  const showDesktop = isBar && (theme.chrome.showDesktopButton ?? false);
+  // The Task View button sits beside the launcher in the leading cluster,
+  // whichever edge the bar is on.
   const taskView =
-    isBar && !isLeft && !launcherTrailing && (theme.chrome.taskViewButton ?? false);
+    isBar && !launcherTrailing && (theme.chrome.taskViewButton ?? false);
   const taskbarMenu = isBar && (theme.chrome.taskbarContextMenu ?? false);
 
   // Bar-dock icon alignment along the long axis. macOS / Windows 11 center;
@@ -309,14 +322,14 @@ export function Dock() {
         : isBar && showTray
           ? LAUNCHER_SLOT
           : FREE_EDGE;
-  // Map leading/trailing onto the long axis: top/bottom for a left bar,
-  // left/right for a bottom bar.
-  const barPadding = isLeft
+  // Map leading/trailing onto the long axis: top/bottom for a vertical bar,
+  // left/right for a horizontal bar.
+  const barPadding = vertical
     ? `${String(leadingPad)}px 0 ${String(trailingPad)}px`
     : `0 ${String(trailingPad)}px 0 ${String(leadingPad)}px`;
 
   const handleMove = (e: ReactPointerEvent) => {
-    cursorRef.current = isLeft ? e.clientY : e.clientX;
+    cursorRef.current = vertical ? e.clientY : e.clientX;
     startLoop();
   };
   const handleLeave = () => {
@@ -370,7 +383,7 @@ export function Dock() {
   let floatIndex = -1;
   let floatDist = Infinity;
   if (!isBar && cursorNow !== null && typeof window !== "undefined") {
-    const center = (isLeft ? window.innerHeight : window.innerWidth) / 2;
+    const center = (vertical ? window.innerHeight : window.innerWidth) / 2;
     apps.forEach((_, i) => {
       const off = (i - (count - 1) / 2) * span;
       const d = Math.abs(cursorNow - center - off);
@@ -396,14 +409,14 @@ export function Dock() {
       const el = document.querySelector<HTMLElement>(`[data-dock-app-id="${app.id}"]`);
       if (!el) continue;
       const r = el.getBoundingClientRect();
-      const lo = isLeft ? r.top : r.left;
-      const hi = isLeft ? r.bottom : r.right;
+      const lo = vertical ? r.top : r.left;
+      const hi = vertical ? r.bottom : r.right;
       if (cursorNow >= lo && cursorNow <= hi) {
         barIndex = i;
         // Nav-relative center from the tile's own offset box, so the absolutely
         // positioned label lands on the icon regardless of where the nav sits
-        // (a left bar starts below the menu bar) or any transformed ancestor.
-        barLabelMain = isLeft
+        // (a side bar starts below the menu bar) or any transformed ancestor.
+        barLabelMain = vertical
           ? el.offsetTop + el.offsetHeight / 2
           : el.offsetLeft + el.offsetWidth / 2;
         break;
@@ -437,25 +450,42 @@ export function Dock() {
           gap,
           padding: barPadding,
           borderRadius: 0,
-          ...(isLeft
+          ...(vertical
             ? {
-                left: 0,
                 // Sit below the top menu bar when there is one, so the bar can
                 // span the full width above the dock (the GNOME arrangement).
                 top: topMenuBar ? menuBarH : 0,
                 bottom: 0,
                 width: barThickness,
-                borderRight: `1px solid ${theme.palette.border}`,
-                boxShadow: "1px 0 8px rgba(0,0,0,0.12)",
+                ...(isLeft
+                  ? {
+                      left: 0,
+                      borderRight: `1px solid ${theme.palette.border}`,
+                      boxShadow: "1px 0 8px rgba(0,0,0,0.12)",
+                    }
+                  : {
+                      right: 0,
+                      borderLeft: `1px solid ${theme.palette.border}`,
+                      boxShadow: "-1px 0 8px rgba(0,0,0,0.12)",
+                    }),
               }
-            : {
-                left: 0,
-                right: 0,
-                bottom: 0,
-                height: barThickness,
-                borderTop: `1px solid ${theme.palette.border}`,
-                boxShadow: "0 -1px 8px rgba(0,0,0,0.12)",
-              }),
+            : isTop
+              ? {
+                  left: 0,
+                  right: 0,
+                  top: topMenuBar ? menuBarH : 0,
+                  height: barThickness,
+                  borderBottom: `1px solid ${theme.palette.border}`,
+                  boxShadow: "0 1px 8px rgba(0,0,0,0.12)",
+                }
+              : {
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: barThickness,
+                  borderTop: `1px solid ${theme.palette.border}`,
+                  boxShadow: "0 -1px 8px rgba(0,0,0,0.12)",
+                }),
           // Auto-hide slide. Reuse the genie translate timing: same character,
           // a system surface moving on and off the screen edge.
           ...(autoHide
@@ -464,7 +494,11 @@ export function Dock() {
                   ? "none"
                   : isLeft
                     ? "translateX(-100%)"
-                    : "translateY(100%)",
+                    : isRight
+                      ? "translateX(100%)"
+                      : isTop
+                        ? "translateY(-100%)"
+                        : "translateY(100%)",
                 transition: reducedMotion
                   ? undefined
                   : `transform ${String(theme.motion.genieDurationMs)}ms ${theme.motion.genieEasing}`,
@@ -474,7 +508,14 @@ export function Dock() {
         }
       : {
           // Floating macOS pill: centered, offset from the edge, rounded.
-          alignItems: isLeft ? "flex-start" : "flex-end",
+          // Icons hug the screen edge so magnified tiles grow inward.
+          alignItems: vertical
+            ? isLeft
+              ? "flex-start"
+              : "flex-end"
+            : isTop
+              ? "flex-start"
+              : "flex-end",
           gap,
           padding: metrics.dockPadding,
           border: `1px solid ${theme.palette.border}`,
@@ -488,15 +529,19 @@ export function Dock() {
           // Source: https://appleinsider.com/articles/25/06/11/liquid-glass-is-more-than-skin-deep-on-macos-tahoe
           boxShadow:
             "inset 0 1px 0 rgba(255,255,255,0.5), 0 12px 32px -8px rgba(0,0,0,0.45)",
-          ...(isLeft
+          ...(vertical
             ? {
-                left: metrics.dockEdgeOffset,
+                ...(isLeft
+                  ? { left: metrics.dockEdgeOffset }
+                  : { right: metrics.dockEdgeOffset }),
                 top: "50%",
                 transform: "translateY(-50%)",
                 width: crossSize,
               }
             : {
-                bottom: metrics.dockEdgeOffset,
+                ...(isTop
+                  ? { top: metrics.dockEdgeOffset }
+                  : { bottom: metrics.dockEdgeOffset }),
                 left: "50%",
                 transform: "translateX(-50%)",
                 height: crossSize,
@@ -539,7 +584,7 @@ export function Dock() {
           </filter>
         </svg>
       ) : null}
-      {launcherInline && <StartButton inline vertical={isLeft} tile={base} />}
+      {launcherInline && <StartButton inline vertical={vertical} tile={base} />}
       {launcherInline && taskView && <TaskViewButton tile={base} />}
       {apps.map((app, i) => (
         <DockTile
@@ -556,27 +601,37 @@ export function Dock() {
           aria-hidden
           style={{
             position: "absolute",
+            // The label sits on the bar's inner side, away from the screen
+            // edge, whichever edge the bar is on.
             ...(isBar
-              ? isLeft
+              ? vertical
                 ? {
                     top: barLabelMain,
-                    left: barThickness + 8,
+                    ...(isLeft
+                      ? { left: barThickness + 8 }
+                      : { right: barThickness + 8 }),
                     transform: "translateY(-50%)",
                   }
                 : {
                     left: barLabelMain,
-                    bottom: barThickness + 8,
+                    ...(isTop
+                      ? { top: barThickness + 8 }
+                      : { bottom: barThickness + 8 }),
                     transform: "translateX(-50%)",
                   }
-              : isLeft
+              : vertical
                 ? {
                     top: labelOffset,
-                    left: metrics.dockPadding + focusedSize + 12,
+                    ...(isLeft
+                      ? { left: metrics.dockPadding + focusedSize + 12 }
+                      : { right: metrics.dockPadding + focusedSize + 12 }),
                     transform: "translateY(-50%)",
                   }
                 : {
                     left: labelOffset,
-                    bottom: metrics.dockPadding + focusedSize + 12,
+                    ...(isTop
+                      ? { top: metrics.dockPadding + focusedSize + 12 }
+                      : { bottom: metrics.dockPadding + focusedSize + 12 }),
                     transform: "translateX(-50%)",
                   }),
             pointerEvents: "none",
@@ -596,14 +651,14 @@ export function Dock() {
           {focusedApp.name}
         </span>
       ) : null}
-      {launcherTrailing && <StartButton vertical={isLeft} trailing tile={base} />}
+      {launcherTrailing && <StartButton vertical={vertical} trailing tile={base} />}
       {showTray && (
         <TaskbarTray
-          vertical={isLeft}
+          vertical={vertical}
           trailingInset={showDesktop ? SHOW_DESKTOP_WIDTH : 0}
         />
       )}
-      {showDesktop && <ShowDesktopButton />}
+      {showDesktop && <ShowDesktopButton vertical={vertical} />}
     </nav>
   );
 }
@@ -874,10 +929,11 @@ function TaskViewButton({ tile = 32 }: { tile?: number }) {
  * click restores the set it minimized (or, if the user minimized everything by
  * hand, all of them). Mirrors the Win+D toggle and the thin corner button
  * Windows 11 exposes via "Select the far corner of the taskbar to show the
- * desktop".
+ * desktop". On a vertical taskbar the sliver sits at the very bottom, where
+ * Windows keeps it when the bar is docked to a side edge.
  * Source: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07
  */
-function ShowDesktopButton() {
+function ShowDesktopButton({ vertical }: { vertical: boolean }) {
   const theme = useTheme();
   const { state, windows, minimizeWindow, restoreWindow } = useWindowManager();
   // The set we last minimized, so the next click restores exactly those.
@@ -908,14 +964,24 @@ function ShowDesktopButton() {
       }}
       style={{
         position: "absolute",
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: SHOW_DESKTOP_WIDTH,
+        ...(vertical
+          ? {
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: SHOW_DESKTOP_WIDTH,
+              borderTop: `1px solid ${theme.palette.border}`,
+            }
+          : {
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: SHOW_DESKTOP_WIDTH,
+              // A faint hairline on the leading edge marks the sliver, as
+              // Windows separates it from the clock with a thin divider.
+              borderLeft: `1px solid ${theme.palette.border}`,
+            }),
         border: "none",
-        // A faint hairline on the leading edge marks the sliver, as Windows
-        // separates it from the clock with a thin divider.
-        borderLeft: `1px solid ${theme.palette.border}`,
         background: "transparent",
         cursor: "pointer",
         padding: 0,
@@ -972,7 +1038,12 @@ function TaskbarTray({
         alignItems: "center",
         gap: 2,
         ...(vertical
-          ? { left: 0, right: 0, bottom: 6, flexDirection: "column" }
+          ? {
+              left: 0,
+              right: 0,
+              bottom: 6 + trailingInset,
+              flexDirection: "column",
+            }
           : { right: 6 + trailingInset, top: 0, bottom: 0 }),
       }}
     >
@@ -1108,7 +1179,7 @@ function DockTile({
   base,
 }: {
   app: App;
-  position: "bottom" | "left" | "hidden";
+  position: OsTheme["chrome"]["dockPosition"];
   bar: boolean;
   size: number;
   base: number;
@@ -1202,7 +1273,7 @@ function DockTile({
       );
       // Windows taskbar buttons do not bounce on launch; the macOS dock does.
       // macOS itself drops the bounce under reduced motion, so we do too.
-      if (!bar && !reducedMotion) bounce(buttonRef.current, position === "left");
+      if (!bar && !reducedMotion) bounce(buttonRef.current, position);
       return;
     }
     if (isMinimized) {
@@ -1228,7 +1299,7 @@ function DockTile({
   // replaces the accent squircle rather than sitting a glyph on top of it.
   const macosFullBleed =
     !bar && theme.chrome.iconStyle === "macos" && !!app.icons?.macos && !!Icon;
-  const isLeft = position === "left";
+  const verticalTile = position === "left" || position === "right";
   const dur = theme.motion.dockHoverDurationMs;
   // The taskbar button is a flat icon button (transparent, hover-highlighted,
   // brand-colored glyph); the floating dock tile is an accent-gradient squircle.
@@ -1298,6 +1369,7 @@ function DockTile({
         (bar ? (
           // Windows-style running indicator: an accent underline beneath the
           // icon, wider when focused, a short dim line when running unfocused.
+          // It hugs the tile's screen-edge side whichever edge the bar is on.
           <span
             aria-hidden
             style={{
@@ -1306,16 +1378,16 @@ function DockTile({
               backgroundColor: isFocused ? accent : theme.palette.textSecondary,
               opacity: isFocused ? 1 : 0.7,
               transition: `width ${String(dur)}ms ease, height ${String(dur)}ms ease, opacity ${String(dur)}ms ease`,
-              ...(isLeft
+              ...(verticalTile
                 ? {
-                    left: 0,
+                    ...(position === "left" ? { left: 0 } : { right: 0 }),
                     top: "50%",
                     transform: "translateY(-50%)",
                     width: 3,
                     height: isFocused ? 16 : 8,
                   }
                 : {
-                    bottom: 0,
+                    ...(position === "top" ? { top: 0 } : { bottom: 0 }),
                     left: "50%",
                     transform: "translateX(-50%)",
                     width: isFocused ? 16 : 8,
@@ -1324,13 +1396,23 @@ function DockTile({
             }}
           />
         ) : (
+          // The macOS running dot sits between the icon and the screen edge
+          // (below the icons on a bottom dock, beside them on a side dock).
           <span
             aria-hidden
             style={{
               position: "absolute",
-              ...(isLeft
-                ? { right: -6, top: "50%", transform: "translateY(-50%)" }
-                : { bottom: -6, left: "50%", transform: "translateX(-50%)" }),
+              ...(verticalTile
+                ? {
+                    ...(position === "left" ? { left: -6 } : { right: -6 }),
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }
+                : {
+                    ...(position === "top" ? { top: -6 } : { bottom: -6 }),
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                  }),
               width: 4,
               height: 4,
               borderRadius: "50%",
@@ -1372,13 +1454,25 @@ function DockTile({
   );
 }
 
-// macOS-style launch bounce when a dock click opens an app. Uses the Web
-// Animations API so it composes with the magnification (which drives the tile
-// size, not transform) and leaves no residual transform behind.
-function bounce(el: HTMLButtonElement | null, isLeft: boolean): void {
+// macOS-style launch bounce when a dock click opens an app. The hop moves away
+// from the docked edge, as the macOS dock bounces icons toward the screen
+// center. Uses the Web Animations API so it composes with the magnification
+// (which drives the tile size, not transform) and leaves no residual transform.
+function bounce(
+  el: HTMLButtonElement | null,
+  position: OsTheme["chrome"]["dockPosition"],
+): void {
   if (!el || typeof el.animate !== "function") return;
-  const up = isLeft ? "translateX(18px)" : "translateY(-18px)";
-  const up2 = isLeft ? "translateX(7px)" : "translateY(-7px)";
+  const hop = (px: number) =>
+    position === "left"
+      ? `translateX(${String(px)}px)`
+      : position === "right"
+        ? `translateX(${String(-px)}px)`
+        : position === "top"
+          ? `translateY(${String(px)}px)`
+          : `translateY(${String(-px)}px)`;
+  const up = hop(18);
+  const up2 = hop(7);
   const rest = "translate(0, 0)";
   el.animate(
     [

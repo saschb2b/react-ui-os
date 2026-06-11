@@ -119,6 +119,28 @@ describe("getDockReservation", () => {
     });
   });
 
+  it("reserves the top strip for a top dock", () => {
+    const r = getDockReservation(themeWith({ dockPosition: "top" }));
+    const m = getChromeMetrics("regular");
+    expect(r).toEqual({
+      top: m.dockHeight + m.dockEdgeOffset,
+      right: 0,
+      bottom: 0,
+      left: 0,
+    });
+  });
+
+  it("reserves the right gutter for a right dock", () => {
+    const r = getDockReservation(themeWith({ dockPosition: "right" }));
+    const m = getChromeMetrics("regular");
+    expect(r).toEqual({
+      top: 0,
+      right: m.dockWidth + m.dockEdgeOffset * 2,
+      bottom: 0,
+      left: 0,
+    });
+  });
+
   it("reserves nothing for a hidden dock", () => {
     expect(getDockReservation(themeWith({ dockPosition: "hidden" }))).toEqual({
       top: 0,
@@ -142,10 +164,29 @@ describe("getDockReservation", () => {
     expect(r.left).toBe(64);
   });
 
+  it("derives a top bar's strip from its tile token (movable Windows taskbar)", () => {
+    const r = getDockReservation(
+      themeWith({ dockPosition: "top", dockStyle: "bar", dockTileSize: 40 }),
+    );
+    expect(r).toEqual({ top: 48, right: 0, bottom: 0, left: 0 });
+  });
+
+  it("derives a right bar's gutter from its tile token", () => {
+    const r = getDockReservation(
+      themeWith({ dockPosition: "right", dockStyle: "bar", dockTileSize: 40 }),
+    );
+    expect(r).toEqual({ top: 0, right: 48, bottom: 0, left: 0 });
+  });
+
   it("reserves nothing for an auto-hiding bar (it overlays windows)", () => {
     expect(
       getDockReservation(
         themeWith({ dockPosition: "bottom", dockStyle: "bar", dockAutoHide: true }),
+      ),
+    ).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+    expect(
+      getDockReservation(
+        themeWith({ dockPosition: "top", dockStyle: "bar", dockAutoHide: true }),
       ),
     ).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
   });

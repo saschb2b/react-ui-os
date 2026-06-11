@@ -379,14 +379,15 @@
         },
         {
           "name": "dockPosition",
-          "type": "\"bottom\" | \"left\" | \"hidden\"",
-          "optional": false
+          "type": "\"top\" | \"bottom\" | \"left\" | \"right\" | \"hidden\"",
+          "optional": false,
+          "description": "Screen edge the dock or taskbar sits on. All four edges are supported:\nWindows moves its taskbar to any edge (Insider builds, May 2026:\nhttps://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/)\nand the macOS Dock offers left, bottom, and right. Flyout surfaces (the\nStart-style launcher, toasts, the notification center, desktop icons)\nfollow the chosen edge so nothing overlaps the bar."
         },
         {
           "name": "dockStyle",
           "type": "\"floating\" | \"bar\"",
           "optional": true,
-          "description": "Dock form. `\"floating\"` is the macOS dock: a centered rounded pill that\nhovers above the edge with a gap. `\"bar\"` is the Windows taskbar / GNOME\npanel shape: a flat bar flush to the edge, spanning the full width (bottom)\nor height (left), square corners, an accent underline under running apps.\nOptional, defaults to `\"floating\"`. Ignored when `dockPosition` is\n`\"hidden\"`."
+          "description": "Dock form. `\"floating\"` is the macOS dock: a centered rounded pill that\nhovers above the edge with a gap. `\"bar\"` is the Windows taskbar / GNOME\npanel shape: a flat bar flush to the edge, spanning the full width\n(top/bottom) or height (left/right), square corners, an accent underline\nunder running apps. Optional, defaults to `\"floating\"`. Ignored when\n`dockPosition` is `\"hidden\"`."
         },
         {
           "name": "launcher",
@@ -398,7 +399,7 @@
           "name": "dockAlign",
           "type": "\"start\" | \"center\" | \"end\"",
           "optional": true,
-          "description": "How a `\"bar\"` dock packs its app icons along its long axis. `\"center\"`\n(default) is the macOS / Windows 11 placement; `\"start\"` packs them at the\ntop (left dock) or left (bottom dock), the GNOME / Ubuntu and Windows 10\nplacement, leaving the launcher at the far end; `\"end\"` packs them at the\nfar end. Ignored by the `\"floating\"` dock, whose pill always hugs its\nicons. Windows 11 exposes the same lever as \"Taskbar alignment\"."
+          "description": "How a `\"bar\"` dock packs its app icons along its long axis. `\"center\"`\n(default) is the macOS / Windows 11 placement; `\"start\"` packs them at the\ntop (vertical dock) or left (horizontal dock), the GNOME / Ubuntu and\nWindows 10 placement, leaving the launcher at the far end; `\"end\"` packs\nthem at the far end. Ignored by the `\"floating\"` dock, whose pill always\nhugs its icons. Windows 11 exposes the same lever as \"Taskbar alignment\";\nthe vertical taskbar offers top-aligned or centered the same way."
         },
         {
           "name": "menuBar",
@@ -427,13 +428,13 @@
           "name": "showDesktopButton",
           "type": "boolean",
           "optional": true,
-          "description": "When true, a thin sliver at the far trailing corner of a bottom `\"bar\"`\ndock acts as the Windows \"Show desktop\" button: one click minimizes every\nwindow on the active workspace, a second click restores the ones it\nminimized. Mirrors the Win+D toggle. Optional, defaults to false. Ignored\nby the floating dock and the vertical (left) bar.\nSource: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07"
+          "description": "When true, a thin sliver at the far trailing corner of a `\"bar\"` dock\nacts as the Windows \"Show desktop\" button: one click minimizes every\nwindow on the active workspace, a second click restores the ones it\nminimized. Mirrors the Win+D toggle. The sliver sits past the clock on a\nhorizontal bar and at the very bottom of a vertical one. Optional,\ndefaults to false. Ignored by the floating dock.\nSource: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07"
         },
         {
           "name": "taskViewButton",
           "type": "boolean",
           "optional": true,
-          "description": "When true, a Task View button sits in the leading cluster of a bottom\n`\"bar\"` dock, beside the launcher. It opens the all-windows overview\n(Mission Control), the Windows 11 \"Task View\" taskbar button (Win+Tab).\nOptional, defaults to false. Ignored by the floating dock and the\nvertical (left) bar.\nSource: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07"
+          "description": "When true, a Task View button sits in the leading cluster of a `\"bar\"`\ndock, beside the launcher. It opens the all-windows overview (Mission\nControl), the Windows 11 \"Task View\" taskbar button (Win+Tab). Optional,\ndefaults to false. Ignored by the floating dock and by bars whose\nlauncher is pinned to the trailing edge (the Ubuntu arrangement).\nSource: https://support.microsoft.com/en-us/windows/customize-the-taskbar-in-windows-0657a50f-0cc7-dbfd-ae6b-05020b195b07"
         },
         {
           "name": "taskbarContextMenu",
