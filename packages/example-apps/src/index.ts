@@ -8,6 +8,9 @@ import { sketchApp } from "./sketch";
 import { terminalApp } from "./terminal";
 
 export { notesApp } from "./notes";
+// The Notes store, for hosts that surface notes outside the app itself
+// (the demo feeds the Start menu's Recent section from it).
+export { listNotes, noteTitle, type Note } from "./notes/notes-store";
 export { calculatorApp } from "./calculator";
 export { clockApp } from "./clock";
 export { calendarApp } from "./calendar";

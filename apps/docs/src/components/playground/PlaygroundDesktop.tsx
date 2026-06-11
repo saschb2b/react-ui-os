@@ -19,6 +19,7 @@ import {
   useTheme,
 } from "@react-ui-os/desktop";
 import { DocsSpotlightSource } from "./DocsSpotlightSource";
+import { StartRecents } from "./StartRecents";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
 
@@ -217,6 +218,7 @@ export default function PlaygroundDesktop() {
     <Desktop apps={docsApps} theme={theme}>
       <DemoActivator />
       <DocsSpotlightSource />
+      <StartRecents />
       {themeChoice === "ubuntu" && <UbuntuQuickSettings />}
       {!embedded && <ThemeSwitcher value={themeChoice} onChange={handleThemeChange} />}
     </Desktop>

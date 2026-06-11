@@ -19,6 +19,7 @@ import { exampleApps, HelloFluentIcon } from "@react-ui-os/example-apps";
 import { addRecent, hasRecents } from "./recents";
 import { RecentsFolder } from "./RecentsFolder";
 import { RecentsIcon } from "./RecentsIcon";
+import { StartRecents } from "./StartRecents";
 import { ThemeSwitcher } from "./ThemeSwitcher";
 import { UbuntuQuickSettings } from "./UbuntuQuickSettings";
 
@@ -147,6 +148,7 @@ export default function App() {
   return (
     <Desktop apps={apps} theme={theme}>
       {themeChoice === "ubuntu" && <UbuntuQuickSettings />}
+      <StartRecents />
       <ThemeSwitcher value={themeChoice} onChange={handleThemeChange} />
     </Desktop>
   );
