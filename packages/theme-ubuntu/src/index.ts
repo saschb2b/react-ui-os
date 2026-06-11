@@ -229,6 +229,9 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
           { value: "minimal", label: "Minimal" },
         ],
       },
+      // Ubuntu Settings > Appearance > "Position on screen" offers Left,
+      // Bottom, Right (Ubuntu Dock has no top option); "Hidden" stays as a
+      // library extra.
       "chrome.dockPosition": {
         kind: "select",
         section: "Layout",
@@ -236,6 +239,7 @@ export function createUbuntuTheme(options: UbuntuThemeOptions = {}): OsTheme {
         options: [
           { value: "left", label: "Left" },
           { value: "bottom", label: "Bottom" },
+          { value: "right", label: "Right" },
           { value: "hidden", label: "Hidden" },
         ],
       },

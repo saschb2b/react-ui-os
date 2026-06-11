@@ -253,14 +253,17 @@ export function createMacosTheme(options: MacosThemeOptions = {}): OsTheme {
         step: 0.05,
         unit: "×",
       },
+      // macOS System Settings > Desktop & Dock > "Position on screen" offers
+      // Left, Bottom, Right; "Hidden" stays as a library extra.
       "chrome.dockPosition": {
         kind: "select",
         section: "Layout",
         label: "Dock position",
         description: "Where the app dock sits on the desktop.",
         options: [
-          { value: "bottom", label: "Bottom" },
           { value: "left", label: "Left" },
+          { value: "bottom", label: "Bottom" },
+          { value: "right", label: "Right" },
           { value: "hidden", label: "Hidden" },
         ],
       },
