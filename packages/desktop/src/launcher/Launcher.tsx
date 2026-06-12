@@ -22,7 +22,10 @@ import {
 } from "../recents";
 import { nextCascadeIndex, pickInitialBounds } from "../util/initial-bounds";
 import { useReducedMotion } from "../util/use-reduced-motion";
-import { useSurfaceTransition } from "../util/use-surface-transition";
+import {
+  useSurfaceTransition,
+  type SurfacePhase,
+} from "../util/use-surface-transition";
 import { useLauncher, type LauncherResult, type LauncherState } from "./use-launcher";
 import { groupByCategory } from "./start-categories";
 
@@ -44,8 +47,16 @@ export function Launcher() {
   const launcher = useLauncher();
   // The same open/close transition every surface shares: grow in, and shrink
   // out instead of vanishing. Stays mounted through the close animation.
-  const { mounted, surfaceStyle } = useSurfaceTransition(launcher.open, {
-    durationMs: reducedMotion ? 0 : theme.motion.windowOpenDurationMs,
+  // The Start menu rises a distance from the taskbar edge, so it animates over
+  // a longer beat than the centered scale-fade the other launchers use.
+  const isMenu = theme.chrome.launcher === "menu";
+  const openMs = reducedMotion
+    ? 0
+    : isMenu
+      ? START_RISE_MS
+      : theme.motion.windowOpenDurationMs;
+  const { mounted, phase, surfaceStyle } = useSurfaceTransition(launcher.open, {
+    durationMs: openMs,
     easing: theme.motion.windowOpenEasing,
   });
   if (!mounted) return null;
@@ -53,7 +64,9 @@ export function Launcher() {
     case "grid":
       return <GridView launcher={launcher} surfaceStyle={surfaceStyle} />;
     case "menu":
-      return <MenuView launcher={launcher} surfaceStyle={surfaceStyle} />;
+      // The Start menu rises from the taskbar edge instead of the shared
+      // scale-fade, so it gets the phase rather than the ready-made style.
+      return <MenuView launcher={launcher} phase={phase} />;
     default:
       return <SpotlightView launcher={launcher} surfaceStyle={surfaceStyle} />;
   }
@@ -591,6 +604,10 @@ const MENU_SIZES = {
 // six slots; up to four go to recently used apps, files fill the rest.
 const RECENT_SLOTS = 6;
 const RECENT_APP_SLOTS = 4;
+// The Start menu's rise-and-sink entrance runs longer than a plain window open
+// so the slide reads clearly: the Windows Start flyout uses a decelerating
+// entrance around a quarter second, not the snappier window pop.
+const START_RISE_MS = 250;
 // The redesigned Start shows two rows of pins before "Show all" expands the
 // rest, and remembers the expansion across opens.
 // Source: https://kartikmehtablog.com/windows-11-25h2-new-start-menu/
@@ -611,14 +628,15 @@ function menuOptionId(index: number): string {
  */
 function MenuView({
   launcher,
-  surfaceStyle,
+  phase,
 }: {
   launcher: LauncherState;
-  surfaceStyle: CSSProperties;
+  phase: SurfacePhase;
 }) {
   const theme = useTheme();
   const apps = useApps();
   const { storage } = useDesktopContext();
+  const reducedMotion = useReducedMotion();
   const { state, openWindow, windows } = useWindowManager();
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
   const { moveSelection, activate, activateSelected, close } = launcher;
@@ -841,6 +859,28 @@ function MenuView({
   const heightFill = sizeKey === "large" ? 0.9 : 0.78;
   const height = Math.min(menuSize.height, Math.round(available * heightFill));
 
+  // Start rises from the taskbar edge on open and sinks back on close (the
+  // Windows entrance), so the slide offset points away from that edge: up from
+  // a bottom bar, down from a top bar, in from a side bar. ~48px reads as a
+  // clear rise without overshooting.
+  const RISE = 48;
+  const riseVars: CSSProperties =
+    dockPosition === "top"
+      ? { ["--rui-rise-y" as string]: `${String(-RISE)}px` }
+      : dockPosition === "left"
+        ? { ["--rui-rise-x" as string]: `${String(-RISE)}px` }
+        : dockPosition === "right"
+          ? { ["--rui-rise-x" as string]: `${String(RISE)}px` }
+          : { ["--rui-rise-y" as string]: `${String(RISE)}px` };
+  const riseStyle: CSSProperties = reducedMotion
+    ? {}
+    : {
+        ...riseVars,
+        animation: `${
+          phase === "closing" ? "rui-surface-sink" : "rui-surface-rise"
+        } ${String(START_RISE_MS)}ms ${theme.motion.windowOpenEasing} both`,
+      };
+
   // The Windows pinned tile: a bare 32px app icon over a hover highlight,
   // arranged in the section's 6- or 8-column grid.
   const listbox = (
@@ -924,7 +964,7 @@ function MenuView({
             theme.elevation?.windowFocused ?? "0 24px 60px -16px rgba(0,0,0,0.6)",
           overflow: "hidden",
           transformOrigin: menuOrigin,
-          ...surfaceStyle,
+          ...riseStyle,
         }}
       >
         <div style={{ position: "relative", flexShrink: 0, padding: "16px 20px 8px" }}>

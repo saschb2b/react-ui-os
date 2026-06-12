@@ -93,6 +93,20 @@ export function StyleInjector() {
         }
         to { opacity: 1; scale: 1; transform: translateY(0); }
       }
+      @keyframes rui-surface-rise {
+        from {
+          opacity: 0;
+          transform: translate(var(--rui-rise-x, 0px), var(--rui-rise-y, 0px)) scale(0.98);
+        }
+        to { opacity: 1; transform: translate(0px, 0px) scale(1); }
+      }
+      @keyframes rui-surface-sink {
+        from { opacity: 1; transform: translate(0px, 0px) scale(1); }
+        to {
+          opacity: 0;
+          transform: translate(var(--rui-rise-x, 0px), var(--rui-rise-y, 0px)) scale(0.98);
+        }
+      }
     `;
     document.head.appendChild(style);
   }, []);
