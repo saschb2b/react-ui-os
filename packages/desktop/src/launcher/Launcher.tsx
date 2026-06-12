@@ -1317,7 +1317,8 @@ function MenuAllSection({
               fontFamily: "inherit",
             }}
           >
-            {ALL_VIEW_LABELS[view]}
+            {/* Windows labels the All-apps view switcher "View: <mode>". */}
+            {`View: ${ALL_VIEW_LABELS[view]}`}
             <svg width={10} height={10} viewBox="0 0 10 10" fill="none" aria-hidden>
               <path
                 d="M2 3.5 5 6.5 8 3.5"
@@ -1443,34 +1444,41 @@ function MenuAllSection({
                 style={{
                   width: "100%",
                   boxSizing: "border-box",
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gridTemplateRows: "1fr 1fr",
-                  gap: 16,
-                  padding: 22,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                   minHeight: 152,
-                  placeItems: "center",
                   borderRadius: theme.shape.windowRadius + 2,
                   background: `${theme.palette.textPrimary}0d`,
                   border: `1px solid ${theme.palette.border}`,
                   transition: "background 120ms ease",
                 }}
               >
-                {cat.items.slice(0, 4).map((item) => (
-                  <span
-                    key={item.key}
-                    style={{
-                      width: 36,
-                      height: 36,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <ResultMiniIcon result={item} size={36} />
-                  </span>
-                ))}
+                {/* The four preview icons sit in a tight 2x2 cluster centered
+                    in the card, the Windows folder-preview look, rather than
+                    spread to the card's corners. */}
+                <span
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, 36px)",
+                    gridTemplateRows: "repeat(2, 36px)",
+                    gap: 8,
+                  }}
+                >
+                  {cat.items.slice(0, 4).map((item) => (
+                    <span
+                      key={item.key}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <ResultMiniIcon result={item} size={36} />
+                    </span>
+                  ))}
+                </span>
               </span>
               <span
                 style={{
