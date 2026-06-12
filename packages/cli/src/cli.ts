@@ -157,6 +157,28 @@ function resolveBaseDir(args: Args): string {
   return existsSync(join(process.cwd(), "src")) ? join("src", "os-apps") : "os-apps";
 }
 
+// Match the install hint to the project's tooling: the packageManager field
+// wins, then the lockfile, then the npm default.
+function detectInstallCommand(cwd: string): string {
+  try {
+    const pkgJson = JSON.parse(readFileSync(join(cwd, "package.json"), "utf8")) as {
+      packageManager?: string;
+    };
+    const pm = pkgJson.packageManager;
+    if (pm?.startsWith("pnpm")) return "pnpm add";
+    if (pm?.startsWith("yarn")) return "yarn add";
+    if (pm?.startsWith("bun")) return "bun add";
+    if (pm?.startsWith("npm")) return "npm install";
+  } catch {
+    // No package.json or unreadable; fall through to the lockfiles.
+  }
+  if (existsSync(join(cwd, "pnpm-lock.yaml"))) return "pnpm add";
+  if (existsSync(join(cwd, "yarn.lock"))) return "yarn add";
+  if (existsSync(join(cwd, "bun.lock")) || existsSync(join(cwd, "bun.lockb")))
+    return "bun add";
+  return "npm install";
+}
+
 const toPosix = (p: string) => p.split(/[\\/]/).join("/");
 
 // App ids and file names from a registry become filesystem paths under the
@@ -273,7 +295,7 @@ function add(args: Args, registry: Registry): number {
   if (added.length > 0 && !args.silent) {
     console.log("");
     console.log(bold("Install dependencies:"));
-    console.log(`  npm install ${[...deps].join(" ")}`);
+    console.log(`  ${detectInstallCommand(cwd)} ${[...deps].join(" ")}`);
     console.log("");
     console.log(bold("Register with the desktop:"));
     for (const app of added) {

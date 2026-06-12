@@ -84,6 +84,31 @@ describe("run (built-in registry)", () => {
     expect(existsSync(join(dir, "widgets", "clock", "index.tsx"))).toBe(true);
   });
 
+  it("matches the install hint to the project's package manager", async () => {
+    writeFileSync(join(dir, "pnpm-lock.yaml"), "", "utf8");
+    expect(await run(["add", "notes"])).toBe(0);
+    const out = vi
+      .mocked(console.log)
+      .mock.calls.map((c) => String(c[0]))
+      .join("\n");
+    expect(out).toContain("pnpm add @react-ui-os/core");
+  });
+
+  it("prefers the packageManager field over lockfiles", async () => {
+    writeFileSync(join(dir, "yarn.lock"), "", "utf8");
+    writeFileSync(
+      join(dir, "package.json"),
+      JSON.stringify({ packageManager: "bun@1.2.0" }),
+      "utf8",
+    );
+    expect(await run(["add", "notes"])).toBe(0);
+    const out = vi
+      .mocked(console.log)
+      .mock.calls.map((c) => String(c[0]))
+      .join("\n");
+    expect(out).toContain("bun add @react-ui-os/core");
+  });
+
   it("prints a copy-pasteable named-import register snippet", async () => {
     expect(await run(["add", "notes"])).toBe(0);
     const out = vi
