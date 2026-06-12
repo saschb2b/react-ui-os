@@ -9,6 +9,7 @@
     "directory": "packages/theme-windows"
   },
   "homepage": "https://saschb2b.github.io/react-ui-os",
+  "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.cjs",

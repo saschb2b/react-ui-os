@@ -9,6 +9,7 @@
     "directory": "packages/cli"
   },
   "homepage": "https://saschb2b.github.io/react-ui-os",
+  "license": "MIT",
   "type": "module",
   "bin": {
     "react-ui-os": "./dist/index.js"
