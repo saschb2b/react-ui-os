@@ -1176,6 +1176,22 @@ function MenuAllSection({
   // percentages (no viewport measurement, which would double-count the
   // dialog offset and push the card off-center).
   const [flyout, setFlyout] = useState<string | null>(null);
+  // Move focus into the flyout on open (so Esc works and a screen reader
+  // announces it) and back to the card that opened it on close.
+  const flyoutRef = useRef<HTMLDivElement | null>(null);
+  const flyoutTriggerRef = useRef<HTMLElement | null>(null);
+  const openFlyout = (category: string, trigger: HTMLElement) => {
+    flyoutTriggerRef.current = trigger;
+    setFlyout(category);
+  };
+  const closeFlyout = () => {
+    setFlyout(null);
+    flyoutTriggerRef.current?.focus();
+    flyoutTriggerRef.current = null;
+  };
+  useEffect(() => {
+    if (flyout) flyoutRef.current?.focus();
+  }, [flyout]);
   const sectionRefs = useRef(new Map<string, HTMLElement>());
   // The picker replaces the groups in place, so the jump target scrolls once
   // the groups are mounted again.
@@ -1358,8 +1374,8 @@ function MenuAllSection({
             <button
               key={cat.name}
               type="button"
-              onClick={() => {
-                setFlyout(cat.name);
+              onClick={(e) => {
+                openFlyout(cat.name, e.currentTarget);
               }}
               onMouseEnter={(e) => {
                 const tile = e.currentTarget.firstElementChild as HTMLElement | null;
@@ -1440,9 +1456,7 @@ function MenuAllSection({
               one for these fixed children). */}
           <div
             role="presentation"
-            onClick={() => {
-              setFlyout(null);
-            }}
+            onClick={closeFlyout}
             style={{
               position: "fixed",
               inset: 0,
@@ -1456,19 +1470,23 @@ function MenuAllSection({
             }}
           />
           <div
+            ref={flyoutRef}
             role="dialog"
+            aria-modal="true"
             aria-label={flyout}
+            tabIndex={-1}
             onKeyDown={(e) => {
               if (e.key === "Escape") {
                 // Close just the flyout, not the Start menu around it.
                 e.stopPropagation();
-                setFlyout(null);
+                closeFlyout();
               }
             }}
             style={{
               position: "fixed",
               left: "50%",
               top: "50%",
+              outline: "none",
               transform: "translate(-50%, -50%)",
               width: "min(86%, 620px)",
               maxHeight: "78%",
@@ -1520,6 +1538,7 @@ function MenuAllSection({
                   size={48}
                   plain
                   onActivate={() => {
+                    flyoutTriggerRef.current = null;
                     setFlyout(null);
                     onActivate(result);
                   }}
