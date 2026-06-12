@@ -24,6 +24,7 @@ import { nextCascadeIndex, pickInitialBounds } from "../util/initial-bounds";
 import { useReducedMotion } from "../util/use-reduced-motion";
 import { useSurfaceTransition } from "../util/use-surface-transition";
 import { useLauncher, type LauncherResult, type LauncherState } from "./use-launcher";
+import { groupByCategory } from "./start-categories";
 
 /**
  * The app launcher. Always mounted by `<Desktop>`; it owns its open/close state
@@ -1100,7 +1101,6 @@ const ALL_VIEW_LABELS: Record<StartAllView, string> = {
   grid: "Grid",
   list: "List",
 };
-const MIN_CATEGORY_APPS = 3;
 const ALL_ALPHABET = ["#", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"] as const;
 // Windows files apps whose names start outside A-Z under a leading "#".
 function letterOf(name: string): string {
@@ -1172,28 +1172,15 @@ function MenuAllSection({
 
   // Category grouping: a named category renders only with three or more
   // entries, everything else folds into Other (last). Items arrive sorted, so
-  // each category stays alphabetical.
-  const byCategory = new Map<string, LauncherResult[]>();
-  for (const item of items) {
-    const name = (item.kind !== "external" ? item.category : undefined) ?? "Other";
-    const list = byCategory.get(name) ?? [];
-    list.push(item);
-    byCategory.set(name, list);
-  }
-  const categories: Array<{ name: string; items: LauncherResult[] }> = [];
-  const other: LauncherResult[] = [];
-  for (const [name, list] of byCategory) {
-    if (name !== "Other" && list.length >= MIN_CATEGORY_APPS) {
-      categories.push({ name, items: list });
-    } else {
-      other.push(...list);
-    }
-  }
-  categories.sort((a, b) => a.name.localeCompare(b.name));
-  if (other.length > 0) {
-    other.sort((a, b) => a.name.localeCompare(b.name));
-    categories.push({ name: "Other", items: other });
-  }
+  // each category stays alphabetical. (External results have no category, so
+  // they always land in Other.)
+  const categories = groupByCategory(
+    items.map((item) => ({
+      result: item,
+      name: item.name,
+      category: item.kind !== "external" ? item.category : undefined,
+    })),
+  ).map((g) => ({ name: g.name, items: g.items.map((i) => i.result) }));
   const flyoutItems = flyout
     ? (categories.find((c) => c.name === flyout.category)?.items ?? [])
     : [];
