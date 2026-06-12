@@ -80,6 +80,16 @@ export function localIcon(
   src: string,
   Fallback?: ComponentType<{ size?: number }>,
 ): ComponentType<{ size?: number }> {
+  // Warm the cache the moment the icon is declared (module load, well before
+  // Start is first opened) so the first render usually already knows the
+  // result and shows the real image straight away rather than the fallback.
+  // Guarded for SSR; the result is shared through localIconStatus.
+  if (typeof window !== "undefined" && !localIconStatus.has(src)) {
+    const probe = new window.Image();
+    probe.onload = () => localIconStatus.set(src, "loaded");
+    probe.onerror = () => localIconStatus.set(src, "failed");
+    probe.src = src;
+  }
   return function LocalIcon({ size = 24 }: { size?: number }) {
     const [status, setStatus] = useState<"loading" | "loaded" | "failed">(
       () => localIconStatus.get(src) ?? "loading",
