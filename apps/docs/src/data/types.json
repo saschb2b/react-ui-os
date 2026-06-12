@@ -461,6 +461,12 @@
           "description": "The Windows \"Show smaller taskbar buttons\" control (Settings >\nPersonalization > Taskbar > Taskbar behaviors). `\"always\"` is the compact\ntaskbar: smaller icons and a shorter bar (48 -> 32px on Windows), so the\nwork area grows. `\"when-full\"` keeps the bar height and drops to small\nbuttons only while the icon run would overflow the bar, the Windows\ndefault. `\"never\"` (the library default) keeps full size. Ignored by the\nfloating dock.\nSource: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/"
         },
         {
+          "name": "dockCombineButtons",
+          "type": "\"always\" | \"when-full\" | \"never\"",
+          "optional": true,
+          "description": "The Windows \"Combine taskbar buttons and hide labels\" control. With\n`\"never\"`, every running app's button shows the app name beside its icon\nas a separate labeled button, including on a vertical taskbar, which\nwidens to fit the labeled rows (the May 2026 Insider behavior).\n`\"when-full\"` keeps labels until the run would overflow the bar, then\ndrops them (horizontal bars only; a vertical bar cannot grow and shrink\nits reservation dynamically, so it stays icon-only). `\"always\"` (the\ndefault) is the icon-only Windows 11 look. Ignored by the floating dock.\nSource: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/"
+        },
+        {
           "name": "dockIconScale",
           "type": "number",
           "optional": true,

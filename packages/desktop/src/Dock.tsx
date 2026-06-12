@@ -27,6 +27,7 @@ import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status
 import { requestSettingsSection } from "./settings-nav";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import {
+  DOCK_LABELED_BUTTON_MAX,
   getBarThickness,
   getChromeMetrics,
   getDockIconScale,
@@ -129,7 +130,7 @@ function useBackdropDisplacementSupported(): boolean {
 export function Dock() {
   const theme = useTheme();
   const apps = useApps();
-  const { state, openWindow } = useWindowManager();
+  const { state, openWindow, windows } = useWindowManager();
   const mode = useViewportMode();
   const metrics = getChromeMetrics(mode);
   const position = theme.chrome.dockPosition;
@@ -185,9 +186,10 @@ export function Dock() {
   // full size.
   const fullTile = getDockTileSize(theme, mode);
   const smallMode = isBar ? (theme.chrome.dockSmallButtons ?? "never") : "never";
+  const combine = isBar ? (theme.chrome.dockCombineButtons ?? "always") : "always";
   const [viewLen, setViewLen] = useState<number | null>(null);
   useEffect(() => {
-    if (smallMode !== "when-full") return;
+    if (smallMode !== "when-full" && combine !== "when-full") return;
     const update = () => {
       setViewLen(vertical ? window.innerHeight : window.innerWidth);
     };
@@ -196,7 +198,7 @@ export function Dock() {
     return () => {
       window.removeEventListener("resize", update);
     };
-  }, [smallMode, vertical]);
+  }, [smallMode, combine, vertical]);
   const clusterLen =
     (launcherInline ? fullTile + gap : 0) +
     (launcherInline && taskView ? fullTile + gap : 0) +
@@ -218,6 +220,26 @@ export function Dock() {
   const base = whenFullSmall ? Math.round(fullTile * SMALL_TILE_RATIO) : fullTile;
   const iconScale = getDockIconScale(theme, small);
   const span = base + gap;
+
+  // "Combine taskbar buttons and hide labels". "never" labels every running
+  // button; "when-full" keeps the labels until the labeled run would overflow
+  // the bar, then combines back to icons. Horizontal bars only for the
+  // dynamic mode: a vertical bar's width is part of the work-area
+  // reservation, so only the static "never" widens it (see getBarThickness).
+  const runningCount = isBar
+    ? apps.filter((app) =>
+        windows.some((w) => w.id === windowIdOf({ kind: "app", appId: app.id })),
+      ).length
+    : 0;
+  const labeledLen =
+    runningCount * (DOCK_LABELED_BUTTON_MAX + gap) +
+    (count - runningCount) * span +
+    clusterLen;
+  const labeled =
+    combine === "never" ||
+    (combine === "when-full" &&
+      !vertical &&
+      (viewLen === null || labeledLen <= viewLen));
   // Auto-hide: the bar tucks off the edge and slides back only while the
   // pointer is at that edge or over the bar (the Windows taskbar behavior).
   const autoHide = isBar && (theme.chrome.dockAutoHide ?? false);
@@ -476,8 +498,17 @@ export function Dock() {
 
   const focusedIndex = isBar ? barIndex : floatIndex;
   const focusedApp = focusedIndex >= 0 ? apps[focusedIndex] : undefined;
+  // No hover label over a button that already carries its name inline.
+  const hoveredIsLabeled =
+    labeled &&
+    focusedApp !== undefined &&
+    windows.some(
+      (w) => w.id === windowIdOf({ kind: "app", appId: focusedApp.id }),
+    );
   const showLabel =
-    focusedApp !== undefined && (isBar || floatDist < MAG_DISTANCE * 0.55);
+    focusedApp !== undefined &&
+    (isBar || floatDist < MAG_DISTANCE * 0.55) &&
+    !hoveredIsLabeled;
 
   const navStyle: CSSProperties = {
     position: "fixed",
@@ -649,6 +680,7 @@ export function Dock() {
           size={Math.round(sizes[i] ?? base)}
           base={base}
           iconScale={iconScale}
+          labeled={labeled}
         />
       ))}
       {showLabel && focusedApp ? (
@@ -1243,6 +1275,7 @@ function DockTile({
   size,
   base,
   iconScale,
+  labeled = false,
 }: {
   app: App;
   position: OsTheme["chrome"]["dockPosition"];
@@ -1250,6 +1283,7 @@ function DockTile({
   size: number;
   base: number;
   iconScale?: number;
+  labeled?: boolean;
 }) {
   const theme = useTheme();
   const reducedMotion = useReducedMotion();
@@ -1368,6 +1402,9 @@ function DockTile({
   const macosFullBleed =
     !bar && theme.chrome.iconStyle === "macos" && !!app.icons?.macos && !!Icon;
   const verticalTile = position === "left" || position === "right";
+  // Labels go on running buttons only: "each app window appears as a separate
+  // labeled button". Pinned-but-closed apps keep the bare icon.
+  const labeledButton = labeled && bar && !!win;
   const dur = theme.motion.dockHoverDurationMs;
   // The taskbar button is a flat icon button (transparent, hover-highlighted,
   // brand-colored glyph); the floating dock tile is an accent-gradient squircle.
@@ -1393,9 +1430,26 @@ function DockTile({
       style={{
         position: "relative",
         flexShrink: 0,
-        width: size,
-        height: size,
-        padding: 0,
+        // An uncombined, labeled running button widens for its name: up to
+        // the classic 160px on a horizontal bar, the full row on a vertical
+        // one. Idle (pinned-only) buttons stay icon-sized, as on Windows.
+        ...(labeledButton
+          ? {
+              width: verticalTile ? "100%" : undefined,
+              minWidth: size,
+              maxWidth: verticalTile ? undefined : DOCK_LABELED_BUTTON_MAX,
+              height: size,
+              padding: "0 10px 0 8px",
+              gap: 8,
+              justifyContent: "flex-start",
+              boxSizing: "border-box",
+            }
+          : {
+              width: size,
+              height: size,
+              padding: 0,
+              justifyContent: "center",
+            }),
         border: "none",
         borderRadius: radius,
         background:
@@ -1411,7 +1465,6 @@ function DockTile({
         color: bar ? accent : "#fff",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
         transition: bar ? `background ${String(dur)}ms ease` : undefined,
       }}
     >
@@ -1433,6 +1486,21 @@ function DockTile({
           {app.name.charAt(0).toUpperCase()}
         </span>
       )}
+      {labeledButton ? (
+        <span
+          style={{
+            minWidth: 0,
+            fontSize: 12,
+            fontFamily: "inherit",
+            color: theme.palette.textPrimary,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {app.name}
+        </span>
+      ) : null}
       {win &&
         (bar ? (
           // Windows-style running indicator: an accent underline beneath the

@@ -289,6 +289,18 @@ export interface OsThemeChrome {
    */
   dockSmallButtons?: "always" | "when-full" | "never";
   /**
+   * The Windows "Combine taskbar buttons and hide labels" control. With
+   * `"never"`, every running app's button shows the app name beside its icon
+   * as a separate labeled button, including on a vertical taskbar, which
+   * widens to fit the labeled rows (the May 2026 Insider behavior).
+   * `"when-full"` keeps labels until the run would overflow the bar, then
+   * drops them (horizontal bars only; a vertical bar cannot grow and shrink
+   * its reservation dynamically, so it stays icon-only). `"always"` (the
+   * default) is the icon-only Windows 11 look. Ignored by the floating dock.
+   * Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
+   */
+  dockCombineButtons?: "always" | "when-full" | "never";
+  /**
    * Icon glyph size as a fraction of the tile (0..1). Windows taskbar icons sit
    * near 0.6 (24px in a 40px tile); Ubuntu dock icons nearly fill the tile
    * (~0.82); macOS ~0.6. Optional, defaults to 0.5.

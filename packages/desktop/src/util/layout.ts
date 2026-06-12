@@ -98,6 +98,12 @@ const BAR_TILE_MARGIN = 4;
 // https://www.tomshardware.com/how-to/change-taskbar-icon-size-windows-11
 export const SMALL_TILE_RATIO = 0.6;
 const SMALL_ICON_COMPENSATION = 16 / 24 / (24 / 40);
+// Max width of an uncombined, labeled taskbar button. Windows manages button
+// widths through the MinWidth window metric (38-500); 160 is the classic
+// full-label width the taskbar settles on.
+// Sources: https://www.tenforums.com/tutorials/104754-change-width-taskbar-buttons-windows.html ;
+// https://winaero.com/change-taskbar-button-width-windows-10/
+export const DOCK_LABELED_BUTTON_MAX = 160;
 
 /**
  * Resting size of a dock tile/button. A theme sets `chrome.dockTileSize` to its
@@ -172,6 +178,18 @@ export function getBarThickness(
   // themes are unchanged.
   const smallAlways =
     theme.chrome.dockStyle === "bar" && theme.chrome.dockSmallButtons === "always";
+  // A vertical taskbar with uncombined, labeled buttons widens to fit a
+  // labeled row, the May 2026 vertical-taskbar behavior. Only the static
+  // "never" mode does this: the reservation is a pure function of the theme.
+  const vertical =
+    theme.chrome.dockPosition === "left" || theme.chrome.dockPosition === "right";
+  if (
+    theme.chrome.dockStyle === "bar" &&
+    vertical &&
+    theme.chrome.dockCombineButtons === "never"
+  ) {
+    return DOCK_LABELED_BUTTON_MAX + BAR_TILE_MARGIN * 2;
+  }
   if (theme.chrome.dockTileSize === undefined && !smallAlways) {
     return getChromeMetrics(mode).taskbarSize;
   }

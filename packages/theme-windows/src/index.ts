@@ -119,6 +119,9 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       // the compact 32px taskbar.
       // Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
       dockSmallButtons: "when-full",
+      // Combined, icon-only buttons, the Windows 11 default. "Never" shows
+      // each running window as a separate labeled button.
+      dockCombineButtons: "always",
       // Start menu personalization defaults, the May 2026 Insider controls
       // (Settings > Personalization > Start). Explicit so the Settings
       // toggles reflect the effective state.
@@ -255,6 +258,18 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
         options: [
           { value: "when-full", label: "When taskbar is full" },
           { value: "always", label: "Always" },
+          { value: "never", label: "Never" },
+        ],
+      },
+      "chrome.dockCombineButtons": {
+        kind: "select",
+        section: "Taskbar",
+        label: "Combine taskbar buttons and hide labels",
+        description:
+          "With Never, each open window appears as a separate labeled button; a vertical taskbar widens to fit them.",
+        options: [
+          { value: "always", label: "Always" },
+          { value: "when-full", label: "When taskbar is full" },
           { value: "never", label: "Never" },
         ],
       },

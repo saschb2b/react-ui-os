@@ -127,6 +127,39 @@ describe("small taskbar buttons", () => {
   });
 });
 
+describe("uncombined labeled buttons", () => {
+  it("widens a vertical bar to fit a labeled row (160 button + margins)", () => {
+    const t = themeWith({
+      dockStyle: "bar",
+      dockPosition: "left",
+      dockTileSize: 40,
+      dockCombineButtons: "never",
+    });
+    expect(getBarThickness(t, "regular")).toBe(168);
+    expect(getDockReservation(t).left).toBe(168);
+  });
+
+  it("keeps a horizontal bar's height (labels widen buttons, not the bar)", () => {
+    const t = themeWith({
+      dockStyle: "bar",
+      dockPosition: "bottom",
+      dockTileSize: 40,
+      dockCombineButtons: "never",
+    });
+    expect(getBarThickness(t, "regular")).toBe(48);
+  });
+
+  it("does not widen a vertical bar for the dynamic when-full mode", () => {
+    const t = themeWith({
+      dockStyle: "bar",
+      dockPosition: "right",
+      dockTileSize: 40,
+      dockCombineButtons: "when-full",
+    });
+    expect(getBarThickness(t, "regular")).toBe(48);
+  });
+});
+
 describe("getBarThickness", () => {
   it("keeps the viewport metric for a bar without a tile token", () => {
     const m = getChromeMetrics("regular");
