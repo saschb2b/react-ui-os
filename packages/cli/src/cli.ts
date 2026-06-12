@@ -481,7 +481,9 @@ function list(registry: Registry): number {
     );
   }
   console.log("");
-  console.log(`${dim("Add one with")} ${bold("react-ui-os add <id>")}`);
+  console.log(
+    `${dim("Inspect one with")} ${bold("react-ui-os info <id>")}${dim(", add it with")} ${bold("react-ui-os add <id>")}`,
+  );
   return 0;
 }
 
