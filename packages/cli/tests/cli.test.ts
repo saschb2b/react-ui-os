@@ -65,6 +65,19 @@ describe("run (built-in registry)", () => {
     expect(await run(["add"])).toBe(1);
   });
 
+  it("rejects options with a missing or flag-shaped value", async () => {
+    expect(await run(["add", "notes", "--dir"])).toBe(1);
+    expect(await run(["add", "notes", "--dir", "--force"])).toBe(1);
+    expect(await run(["list", "--registry"])).toBe(1);
+    expect(await run(["add", "notes", "--dir="])).toBe(1);
+    const err = vi
+      .mocked(console.error)
+      .mock.calls.map((c) => String(c[0]))
+      .join("\n");
+    expect(err).toContain("--dir needs a value");
+    expect(existsSync(join(dir, "--force"))).toBe(false);
+  });
+
   it("copies an app's files into os-apps and inlines real content", async () => {
     expect(await run(["add", "notes", "--silent"])).toBe(0);
     const index = join(dir, "os-apps", "notes", "index.tsx");

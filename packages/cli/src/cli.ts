@@ -80,16 +80,29 @@ function parseArgs(argv: string[]): Args {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === undefined) continue;
+    // The value following a flag, or the part after "=". Refusing a missing or
+    // flag-shaped value stops "--dir --force" from creating a directory named
+    // --force while silently dropping the force.
+    const value = (flag: string): string => {
+      const v = a.startsWith(`${flag}=`) ? a.slice(flag.length + 1) : argv[++i];
+      if (
+        v === undefined ||
+        v === "" ||
+        (!a.startsWith(`${flag}=`) && v.startsWith("-"))
+      ) {
+        throw new Error(`option ${flag} needs a value. Run with --help.`);
+      }
+      return v;
+    };
     if (a === "--help" || a === "-h") args.help = true;
     else if (a === "--version" || a === "-v") args.version = true;
     else if (a === "--force" || a === "-f") args.force = true;
     else if (a === "--silent" || a === "-s") args.silent = true;
-    else if (a === "--dir") args.dir = argv[++i];
-    else if (a.startsWith("--dir=")) args.dir = a.slice("--dir=".length);
-    else if (a === "--registry" || a === "-r") args.registry = argv[++i];
-    else if (a.startsWith("--registry=")) args.registry = a.slice("--registry=".length);
-    else if (a === "--out" || a === "-o") args.out = argv[++i];
-    else if (a.startsWith("--out=")) args.out = a.slice("--out=".length);
+    else if (a === "--dir" || a.startsWith("--dir=")) args.dir = value("--dir");
+    else if (a === "--registry" || a === "-r" || a.startsWith("--registry="))
+      args.registry = value("--registry");
+    else if (a === "--out" || a === "-o" || a.startsWith("--out="))
+      args.out = value("--out");
     else if (a.startsWith("-"))
       throw new Error(`Unknown option: ${a}. Run with --help.`);
     else if (args.command === undefined) args.command = a;
