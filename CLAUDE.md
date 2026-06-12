@@ -223,6 +223,7 @@ These library systems share the same shape: a **module-level vanilla store** + a
 | Status tray      | `registerStatusItem(...)`        | `<StatusItems>` inside `<MenuBar>`              | `desktop/status-items.ts`       |
 | Quick settings   | `registerQuickSetting(...)`      | `<QuickSettings>`                               | `desktop/quick-settings.ts`     |
 | Spotlight source | `registerSpotlightSource(...)`   | inside `<Launcher>`                             | `desktop/spotlight-sources.ts`  |
+| Start recents    | `registerRecentsSource(...)`     | inside `<Launcher>` (the `"menu"` register)     | `desktop/recents.ts`            |
 
 Reasons:
 
@@ -324,6 +325,7 @@ Call `registerSpotlightSource(id, query => results)` at module load or inside a 
 - **Phase 5.** Bundling via tsup. Docs site rebuilt on Astro Starlight. `SystemWindowArgs` for multi-instance system windows. `registerSpotlightSource` for arbitrary result kinds. CI + Pages deploy.
 - **Phase 6.** Vite 8 and TypeScript 6. React Compiler integrated across the playground, the tsup library builds (`tooling/react-compiler-esbuild.mjs`, so `dist` is pre-compiled), and the `eslint-plugin-react-hooks` 7 diagnostics. Redundant manual memoization removed where the compiler covers it.
 - **Phase 7.** OS-clone themes: macOS (`theme-macos` with the Tahoe wallpaper), Windows (`theme-windows`), and Ubuntu (`theme-ubuntu`), each modeled on its platform's chrome. The on-canvas theme switcher in both playgrounds. The earlier cinematic and SaaS themes were dropped to focus on faithful platform clones.
+- **Phase 8.** The May 2026 Windows taskbar and Start personalization set: `dockPosition` on all four edges (flyouts and edge-hugging surfaces follow), `dockSmallButtons` (the 32px compact taskbar), `dockCombineButtons` (uncombined labeled buttons; a vertical bar widens for them), the Start "Recent" section fed by the new `registerRecentsSource` registry, and the `startMenu*` tokens (size, section toggles, the separate file control, profile privacy).
 
 ## No AI slop
 

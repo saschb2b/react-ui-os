@@ -170,8 +170,7 @@ export function Dock() {
   const showDesktop = isBar && (theme.chrome.showDesktopButton ?? false);
   // The Task View button sits beside the launcher in the leading cluster,
   // whichever edge the bar is on.
-  const taskView =
-    isBar && !launcherTrailing && (theme.chrome.taskViewButton ?? false);
+  const taskView = isBar && !launcherTrailing && (theme.chrome.taskViewButton ?? false);
   const taskbarMenu = isBar && (theme.chrome.taskbarContextMenu ?? false);
   // Windows rides the launcher (and Task View) inside the icon run, so the
   // whole cluster centers together; Ubuntu pins its launcher to the trailing
@@ -502,9 +501,7 @@ export function Dock() {
   const hoveredIsLabeled =
     labeled &&
     focusedApp !== undefined &&
-    windows.some(
-      (w) => w.id === windowIdOf({ kind: "app", appId: focusedApp.id }),
-    );
+    windows.some((w) => w.id === windowIdOf({ kind: "app", appId: focusedApp.id }));
   const showLabel =
     focusedApp !== undefined &&
     (isBar || floatDist < MAG_DISTANCE * 0.55) &&

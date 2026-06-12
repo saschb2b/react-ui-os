@@ -54,6 +54,9 @@ The structural variants. This is where the OS spectrum gets honest.
 - `dockPosition`: `"top"`, `"bottom"`, `"left"`, `"right"`, `"hidden"`. All four edges, the way Windows moves its taskbar; flyouts and edge-hugging surfaces follow the chosen edge.
 - `dockStyle`: `"floating"` (macOS pill), `"bar"` (flush taskbar / GNOME panel).
 - `dockAlign`: `"center"` (macOS / Windows 11), `"start"` (GNOME / Windows 10), `"end"`. Bar docks only.
+- `dockSmallButtons`: the Windows "Show smaller taskbar buttons" control. `"always"` compacts the bar (48 to 32px on Windows), `"when-full"` shrinks only while the icon run would overflow, `"never"` (default) keeps full size.
+- `dockCombineButtons`: the Windows "Combine taskbar buttons and hide labels" control. `"never"` shows each open window as a separate labeled button (a vertical bar widens to fit); `"when-full"` keeps labels until the run overflows; `"always"` (default) stays icon-only.
+- `startMenuSize`, `startMenuPinned`, `startMenuRecent`, `startMenuRecentFiles`, `startMenuAllApps`, `startMenuProfile`: the Start personalization set (Settings > Personalization > Start). Read by the `"menu"` launcher only.
 - `launcher`: `"spotlight"` (macOS palette), `"grid"` (GNOME app grid), `"menu"` (Windows Start menu).
 - `menuBar`: `"top"` (system-wide menu), `"in-window"` (inside each title bar), `"none"`.
 - `menuBarClock`: `"right"` (macOS, in the status cluster), `"center"` (GNOME).
