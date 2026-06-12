@@ -2,16 +2,29 @@
   "name": "@react-ui-os/desktop",
   "version": "0.0.0",
   "private": true,
+  "description": "The react-ui-os desktop components: Desktop, windows, dock, menu bar, launcher, and the system surfaces.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saschb2b/react-ui-os.git",
+    "directory": "packages/desktop"
+  },
+  "homepage": "https://saschb2b.github.io/react-ui-os",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "files": [
@@ -25,14 +38,13 @@
     "test": "vitest run",
     "lint": "eslint src tests"
   },
-  "dependencies": {
-    "@react-ui-os/core": "workspace:*"
-  },
   "peerDependencies": {
+    "@react-ui-os/core": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@react-ui-os/core": "workspace:*",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",

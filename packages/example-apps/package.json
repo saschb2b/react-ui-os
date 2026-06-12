@@ -2,16 +2,29 @@
   "name": "@react-ui-os/example-apps",
   "version": "0.0.0",
   "private": true,
+  "description": "Ready-made example apps for react-ui-os: drop the registry into <Desktop apps> to populate a demo.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saschb2b/react-ui-os.git",
+    "directory": "packages/example-apps"
+  },
+  "homepage": "https://saschb2b.github.io/react-ui-os",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "files": [
@@ -26,15 +39,17 @@
     "lint": "eslint src tests"
   },
   "dependencies": {
-    "@react-ui-os/core": "workspace:*",
-    "@react-ui-os/desktop": "workspace:*",
     "@react-ui-os/icons": "workspace:*"
   },
   "peerDependencies": {
+    "@react-ui-os/core": "workspace:*",
+    "@react-ui-os/desktop": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@react-ui-os/core": "workspace:*",
+    "@react-ui-os/desktop": "workspace:*",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",

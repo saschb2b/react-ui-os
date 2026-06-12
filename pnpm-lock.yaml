@@ -229,11 +229,10 @@ importers:
         version: 6.0.3
 
   packages/desktop:
-    dependencies:
+    devDependencies:
       '@react-ui-os/core':
         specifier: workspace:*
         version: link:../core
-    devDependencies:
       '@types/react':
         specifier: ^19.0.0
         version: 19.2.15
@@ -255,16 +254,16 @@ importers:
 
   packages/example-apps:
     dependencies:
+      '@react-ui-os/icons':
+        specifier: workspace:*
+        version: link:../icons
+    devDependencies:
       '@react-ui-os/core':
         specifier: workspace:*
         version: link:../core
       '@react-ui-os/desktop':
         specifier: workspace:*
         version: link:../desktop
-      '@react-ui-os/icons':
-        specifier: workspace:*
-        version: link:../icons
-    devDependencies:
       '@types/react':
         specifier: ^19.0.0
         version: 19.2.15
@@ -297,11 +296,10 @@ importers:
         version: 6.0.3
 
   packages/theme-macos:
-    dependencies:
+    devDependencies:
       '@react-ui-os/core':
         specifier: workspace:*
         version: link:../core
-    devDependencies:
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
@@ -310,11 +308,10 @@ importers:
         version: 3.2.4(@types/debug@4.1.13)(@types/node@24.12.4)(lightningcss@1.32.0)(msw@2.14.6(@types/node@24.12.4)(typescript@6.0.3))(yaml@2.9.0)
 
   packages/theme-ubuntu:
-    dependencies:
+    devDependencies:
       '@react-ui-os/core':
         specifier: workspace:*
         version: link:../core
-    devDependencies:
       typescript:
         specifier: ^6.0.0
         version: 6.0.3
@@ -323,11 +320,10 @@ importers:
         version: 3.2.4(@types/debug@4.1.13)(@types/node@24.12.4)(lightningcss@1.32.0)(msw@2.14.6(@types/node@24.12.4)(typescript@6.0.3))(yaml@2.9.0)
 
   packages/theme-windows:
-    dependencies:
+    devDependencies:
       '@react-ui-os/core':
         specifier: workspace:*
         version: link:../core
-    devDependencies:
       typescript:
         specifier: ^6.0.0
         version: 6.0.3

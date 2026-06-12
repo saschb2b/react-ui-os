@@ -2,16 +2,29 @@
   "name": "@react-ui-os/theme-windows",
   "version": "0.0.0",
   "private": true,
+  "description": "Windows 11 theme for react-ui-os: caption buttons, taskbar, Start menu, Fluent shape and motion.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saschb2b/react-ui-os.git",
+    "directory": "packages/theme-windows"
+  },
+  "homepage": "https://saschb2b.github.io/react-ui-os",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "files": [
@@ -25,10 +38,11 @@
     "lint": "eslint src",
     "test": "vitest run"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@react-ui-os/core": "workspace:*"
   },
   "devDependencies": {
+    "@react-ui-os/core": "workspace:*",
     "typescript": "^6.0.0",
     "vitest": "^3.0.0"
   }

@@ -91,6 +91,10 @@ packages/
   theme-macos/                 # @react-ui-os/theme-macos (macOS clone)
   theme-windows/                 # @react-ui-os/theme-windows (Windows clone: caption buttons, taskbar)
   theme-ubuntu/                  # @react-ui-os/theme-ubuntu (Ubuntu/GNOME clone: top bar + left dock)
+  icons/                         # @react-ui-os/icons (license-vetted app icon components: line + fluent styles)
+  example-apps/                  # @react-ui-os/example-apps (ready-made demo app registry)
+  demo/                          # @react-ui-os/demo (internal source-only demo scene shared by playground + docs)
+  cli/                           # @react-ui-os/cli (copies registry apps into a consumer codebase)
 tooling/
   react-compiler-esbuild.mjs     # runs babel-plugin-react-compiler inside the tsup builds
 .github/workflows/
@@ -366,7 +370,8 @@ The current baseline is good; keep it. The point of these rules is to stop regre
 
 - Public API barrels live at the package's `src/index.ts`.
 - Type-only exports use `export type { … }`.
-- `"use client"` directive at the top of every file that uses hooks or DOM APIs.
+- `"use client"` directive at the top of every file that uses hooks or DOM APIs. esbuild strips the directive when bundling, so each tsup config restores it with `banner: { js: '"use client";' }` on every bundle that contains hooks or context (core splits its build so the pure `storage` and `settings` entries stay directive-free and server-importable).
+- Packaging: every published package ships dual ESM + CJS with per-condition types (`.d.ts` under `import`, `.d.cts` under `require`), `sideEffects: false`, and `description` / `repository` / `homepage` metadata. `@react-ui-os/core` is a peerDependency (plus a `workspace:*` devDependency) of desktop, the themes, and example-apps, never a regular dependency: the window-manager context and the module-level stores are singletons, and a duplicated core would split them.
 - Component files are `PascalCase.tsx`. Hook files, types, and pure utilities are `kebab-case.ts(x)`.
 - Tests live in `tests/` next to `src/`, mirroring the structure. Vitest with `environment: "node"` for pure logic.
 - SSR-safety: any `window` / `document` access must be guarded (`typeof window === "undefined"` check). The library should mount cleanly in Next.js, Remix, Astro islands, and Vite-SSR.

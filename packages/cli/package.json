@@ -2,6 +2,13 @@
   "name": "@react-ui-os/cli",
   "version": "0.0.0",
   "private": true,
+  "description": "CLI that copies react-ui-os apps from a registry into your codebase, so you own the files.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saschb2b/react-ui-os.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://saschb2b.github.io/react-ui-os",
   "type": "module",
   "bin": {
     "react-ui-os": "./dist/index.js"

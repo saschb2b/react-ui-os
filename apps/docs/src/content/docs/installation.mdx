@@ -86,12 +86,13 @@ That single component renders the full desktop. No other styles to import; the l
 
 ## SSR
 
-The library mounts client-side. In Next.js App Router, mark the consuming module with `"use client"`:
+The library mounts client-side. The bundles ship their `"use client"` directives, so importing the components in Next.js App Router needs no wrapper module. Your own modules still need the directive when they define app `content` components, because component functions cannot cross the server-to-client boundary as props:
 
 ```tsx title="app/page.tsx"
 "use client";
 
 import { Desktop } from "@react-ui-os/desktop";
+import { apps } from "./apps"; // defines content components, so this module is client code
 // ...
 ```
 
@@ -109,7 +110,7 @@ Server-side, the desktop renders nothing (every JSX surface that touches `window
 ## Troubleshooting
 
 **The dock appears but windows don't drag.**
-Your bundler may be stripping `"use client"` directives. Confirm React 19 and that your bundler honors the `package.json` `"exports"` field.
+Confirm React 19 and that your bundler resolves the `package.json` `"exports"` field (Vite, Next.js, and Webpack 5+ do; Webpack 4 does not).
 
 **Styles leak from a parent layout.**
 The library uses `position: fixed; inset: 0` on the desktop root. Make sure no parent forces `overflow: hidden` on the entire viewport before the desktop mounts.

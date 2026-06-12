@@ -9,5 +9,9 @@ export default defineConfig({
   sourcemap: true,
   external: ["react", "react-dom", "react/compiler-runtime", "@react-ui-os/core"],
   esbuildPlugins: [reactCompilerEsbuild()],
+  // esbuild drops "use client" when bundling; restore it so React Server
+  // Components consumers (Next.js App Router) can import the components
+  // without wrapping them in a client module.
+  banner: { js: '"use client";' },
   outDir: "dist",
 });

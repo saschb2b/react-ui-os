@@ -16,5 +16,8 @@ export default defineConfig({
     "@react-ui-os/desktop",
   ],
   esbuildPlugins: [reactCompilerEsbuild()],
+  // esbuild drops "use client" when bundling; restore it so React Server
+  // Components consumers can import the apps without a client wrapper.
+  banner: { js: '"use client";' },
   outDir: "dist",
 });

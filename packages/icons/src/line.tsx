@@ -80,8 +80,6 @@ export function ClockIcon({ size = 24 }: { size?: number }): JSX.Element {
   );
 }
 
-("use client");
-
 /** Lucide-style calendar glyph: a page with a header bar and two hanging rings. */
 export function CalendarIcon({ size = 24 }: { size?: number }) {
   return (
@@ -103,8 +101,6 @@ export function CalendarIcon({ size = 24 }: { size?: number }) {
     </svg>
   );
 }
-
-("use client");
 
 /** Lucide-style checklist glyph: two ticked rows plus a third line item. */
 export function RemindersIcon({ size = 24 }: { size?: number }) {
@@ -128,8 +124,6 @@ export function RemindersIcon({ size = 24 }: { size?: number }) {
     </svg>
   );
 }
-
-("use client");
 
 /**
  * Pencil glyph for the Sketch app, drawn in the Lucide register

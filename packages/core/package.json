@@ -2,34 +2,73 @@
   "name": "@react-ui-os/core",
   "version": "0.0.0",
   "private": true,
+  "description": "Pure logic and types for react-ui-os: the window manager, storage adapters, settings, and the notification store.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/saschb2b/react-ui-os.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://saschb2b.github.io/react-ui-os",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./window-manager": {
       "source": "./src/window-manager/index.ts",
-      "types": "./dist/window-manager/index.d.ts",
-      "import": "./dist/window-manager/index.js",
-      "require": "./dist/window-manager/index.cjs"
+      "import": {
+        "types": "./dist/window-manager/index.d.ts",
+        "default": "./dist/window-manager/index.js"
+      },
+      "require": {
+        "types": "./dist/window-manager/index.d.cts",
+        "default": "./dist/window-manager/index.cjs"
+      }
     },
     "./storage": {
       "source": "./src/storage/index.ts",
-      "types": "./dist/storage/index.d.ts",
-      "import": "./dist/storage/index.js",
-      "require": "./dist/storage/index.cjs"
+      "import": {
+        "types": "./dist/storage/index.d.ts",
+        "default": "./dist/storage/index.js"
+      },
+      "require": {
+        "types": "./dist/storage/index.d.cts",
+        "default": "./dist/storage/index.cjs"
+      }
     },
     "./settings": {
       "source": "./src/settings/index.ts",
-      "types": "./dist/settings/index.d.ts",
-      "import": "./dist/settings/index.js",
-      "require": "./dist/settings/index.cjs"
+      "import": {
+        "types": "./dist/settings/index.d.ts",
+        "default": "./dist/settings/index.js"
+      },
+      "require": {
+        "types": "./dist/settings/index.d.cts",
+        "default": "./dist/settings/index.cjs"
+      }
+    },
+    "./notifications": {
+      "source": "./src/notifications/index.ts",
+      "import": {
+        "types": "./dist/notifications/index.d.ts",
+        "default": "./dist/notifications/index.js"
+      },
+      "require": {
+        "types": "./dist/notifications/index.d.cts",
+        "default": "./dist/notifications/index.cjs"
+      }
     }
   },
   "files": [
