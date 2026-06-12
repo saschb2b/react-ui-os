@@ -1362,6 +1362,7 @@ function DockTile({
     restoreWindow,
   } = useWindowManager();
   const { unreadByApp } = useNotifications();
+  const { pressed, handlers } = usePress();
   const id = windowIdOf({ kind: "app", appId: app.id });
   const win = windows.find((w) => w.id === id);
   const isFocused = focusedWindow?.id === id;
@@ -1475,6 +1476,10 @@ function DockTile({
     ? theme.shape.small
     : Math.round(theme.shape.dockTileRadius * (size / base));
   const hoverBg = `${theme.palette.textPrimary}14`;
+  // Windows keeps the focused app's taskbar button under a persistent fill
+  // (beside the wider accent underline), so it reads as the active window even
+  // without hovering. Bar tiles only; the floating dock uses its dot instead.
+  const activeBg = bar && isFocused ? `${theme.palette.textPrimary}1f` : "transparent";
 
   return (
     <button
@@ -1484,11 +1489,12 @@ function DockTile({
       onContextMenu={handleContextMenu}
       aria-label={app.name}
       data-dock-app-id={app.id}
+      {...(bar ? handlers : {})}
       onMouseEnter={(e) => {
         if (bar) e.currentTarget.style.background = hoverBg;
       }}
       onMouseLeave={(e) => {
-        if (bar) e.currentTarget.style.background = "transparent";
+        if (bar) e.currentTarget.style.background = activeBg;
       }}
       style={{
         position: "relative",
@@ -1515,9 +1521,10 @@ function DockTile({
             }),
         border: "none",
         borderRadius: radius,
-        background:
-          bar || macosFullBleed
-            ? "transparent"
+        background: macosFullBleed
+          ? "transparent"
+          : bar
+            ? activeBg
             : `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
         boxShadow: bar
           ? "none"
@@ -1531,24 +1538,26 @@ function DockTile({
         transition: bar ? `background ${String(dur)}ms ease` : undefined,
       }}
     >
-      {macosFullBleed && Icon ? (
-        <Icon size={Math.round(size * 0.92)} />
-      ) : Art ? (
-        <Art size={Math.round(size * artScale)} />
-      ) : Icon ? (
-        <Icon size={Math.round(size * glyphScale)} />
-      ) : (
-        <span
-          style={{
-            fontFamily: "inherit",
-            fontWeight: 700,
-            fontSize: Math.round(size * (glyphScale - 0.1)),
-            textShadow: bar ? undefined : "0 1px 2px rgba(0,0,0,0.4)",
-          }}
-        >
-          {app.name.charAt(0).toUpperCase()}
-        </span>
-      )}
+      <span style={bar ? pressStyle(pressed, reducedMotion) : undefined}>
+        {macosFullBleed && Icon ? (
+          <Icon size={Math.round(size * 0.92)} />
+        ) : Art ? (
+          <Art size={Math.round(size * artScale)} />
+        ) : Icon ? (
+          <Icon size={Math.round(size * glyphScale)} />
+        ) : (
+          <span
+            style={{
+              fontFamily: "inherit",
+              fontWeight: 700,
+              fontSize: Math.round(size * (glyphScale - 0.1)),
+              textShadow: bar ? undefined : "0 1px 2px rgba(0,0,0,0.4)",
+            }}
+          >
+            {app.name.charAt(0).toUpperCase()}
+          </span>
+        )}
+      </span>
       {labeledButton ? (
         <span
           style={{
