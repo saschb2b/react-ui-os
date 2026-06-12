@@ -158,7 +158,9 @@ function parseRawRegistry(text: string, source: string): RawRegistry {
     }
     for (const key of ["id", "name", "export"] as const) {
       if (typeof app[key] !== "string") {
-        return fail(`app ${JSON.stringify(app.id ?? "?")} is missing a string "${key}"`);
+        return fail(
+          `app ${JSON.stringify(app.id ?? "?")} is missing a string "${key}"`,
+        );
       }
     }
     if (!Array.isArray(app.files)) {
@@ -377,7 +379,9 @@ function add(args: Args, registry: Registry): number {
       console.log(`  import { ${cyan(app.export)} } from "./${loc}";`);
     }
     console.log("");
-    console.log(`  <Desktop apps={[${added.map((a) => cyan(a.export)).join(", ")}]} />`);
+    console.log(
+      `  <Desktop apps={[${added.map((a) => cyan(a.export)).join(", ")}]} />`,
+    );
   }
 
   return failed ? 1 : 0;

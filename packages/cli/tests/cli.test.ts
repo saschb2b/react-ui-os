@@ -220,9 +220,9 @@ describe("third-party registries", () => {
       "utf8",
     );
     expect(await run(["add", "nested", "--registry", manifest, "--silent"])).toBe(0);
-    expect(
-      existsSync(join(dir, "os-apps", "nested", "components", "Panel.tsx")),
-    ).toBe(true);
+    expect(existsSync(join(dir, "os-apps", "nested", "components", "Panel.tsx"))).toBe(
+      true,
+    );
   });
 
   it("reports a clear error for a missing, non-JSON, or malformed registry", async () => {
