@@ -122,4 +122,66 @@ describe("third-party registries", () => {
     const manifest = seedThirdPartyRegistry(dir);
     expect(await run(["list", "--registry", manifest])).toBe(0);
   });
+
+  it("supports file names that nest into subdirectories", async () => {
+    const manifest = join(dir, "registry.json");
+    writeFileSync(
+      manifest,
+      JSON.stringify({
+        name: "acme",
+        apps: [
+          {
+            id: "nested",
+            name: "Nested",
+            description: "x",
+            category: "x",
+            accent: "#fff",
+            export: "nestedApp",
+            files: [
+              { name: "index.tsx", content: "export const nestedApp = 1;\n" },
+              { name: "components/Panel.tsx", content: "export const p = 1;\n" },
+            ],
+          },
+        ],
+      }),
+      "utf8",
+    );
+    expect(await run(["add", "nested", "--registry", manifest, "--silent"])).toBe(0);
+    expect(
+      existsSync(join(dir, "os-apps", "nested", "components", "Panel.tsx")),
+    ).toBe(true);
+  });
+
+  it("refuses ids and file names that escape the target directory", async () => {
+    const evil = (id: string, fileName: string) => ({
+      name: "evil",
+      apps: [
+        {
+          id,
+          name: "Evil",
+          description: "x",
+          category: "x",
+          accent: "#fff",
+          export: "evilApp",
+          files: [{ name: fileName, content: "owned\n" }],
+        },
+      ],
+    });
+    const manifest = join(dir, "registry.json");
+
+    writeFileSync(manifest, JSON.stringify(evil("good", "../../escape.txt")), "utf8");
+    expect(await run(["add", "good", "--registry", manifest, "--silent"])).toBe(1);
+    expect(existsSync(join(dir, "escape.txt"))).toBe(false);
+
+    writeFileSync(manifest, JSON.stringify(evil("..", "index.tsx")), "utf8");
+    expect(await run(["add", "..", "--registry", manifest, "--silent"])).toBe(1);
+    expect(existsSync(join(dir, "os-apps", "index.tsx"))).toBe(false);
+
+    writeFileSync(
+      manifest,
+      JSON.stringify(evil("good", "C:\\Windows\\Temp\\escape.txt")),
+      "utf8",
+    );
+    expect(await run(["add", "good", "--registry", manifest, "--silent"])).toBe(1);
+  });
 });

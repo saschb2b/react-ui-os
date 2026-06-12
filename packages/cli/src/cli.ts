@@ -159,6 +159,17 @@ function resolveBaseDir(args: Args): string {
 
 const toPosix = (p: string) => p.split(/[\\/]/).join("/");
 
+// App ids and file names from a registry become filesystem paths under the
+// target directory. A hostile registry must not be able to write outside it,
+// so reject absolute paths, drive-rooted paths, and ".." segments. File names
+// may nest into subdirectories; ids may not.
+const isSafeRelPath = (name: string) =>
+  name.length > 0 &&
+  !/^[a-zA-Z]:|^[\\/]/.test(name) &&
+  name.split(/[\\/]/).every((part) => part !== "" && part !== "." && part !== "..");
+
+const isSafeId = (id: string) => isSafeRelPath(id) && !/[\\/]/.test(id);
+
 function add(args: Args, registry: Registry): number {
   if (args.positionals.length === 0) {
     console.error(
@@ -183,6 +194,14 @@ function add(args: Args, registry: Registry): number {
       continue;
     }
 
+    if (!isSafeId(app.id) || app.files.some((f) => !isSafeRelPath(f.name))) {
+      console.error(
+        `${red("error")}: app ${bold(app.id)} contains an unsafe path; refusing to install it.`,
+      );
+      failed = true;
+      continue;
+    }
+
     const targetDir = join(cwd, baseDir, app.id);
     const conflicts = app.files
       .map((f) => join(targetDir, f.name))
@@ -197,8 +216,11 @@ function add(args: Args, registry: Registry): number {
     }
 
     mkdirSync(targetDir, { recursive: true });
-    for (const f of app.files)
-      writeFileSync(join(targetDir, f.name), f.content, "utf8");
+    for (const f of app.files) {
+      const target = join(targetDir, f.name);
+      mkdirSync(dirname(target), { recursive: true });
+      writeFileSync(target, f.content, "utf8");
+    }
     app.dependencies.forEach((d) => deps.add(d));
     added.push(app);
 
