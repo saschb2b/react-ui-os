@@ -455,7 +455,7 @@ function GridView({
 function LauncherTile({
   result,
   index,
-  selected,
+  selected = false,
   onHover,
   onActivate,
   size = 72,
@@ -463,9 +463,10 @@ function LauncherTile({
   plain = false,
 }: {
   result: LauncherResult;
-  index: number;
-  selected: boolean;
-  onHover: () => void;
+  /** Listbox option index. Omitted, the tile renders without option ARIA. */
+  index?: number;
+  selected?: boolean;
+  onHover?: () => void;
   onActivate: () => void;
   size?: number;
   optionId?: (index: number) => string;
@@ -490,10 +491,19 @@ function LauncherTile({
   const bare = plain && (Art ?? Icon ?? externalIcon) !== undefined;
   return (
     <div
-      id={optionId(index)}
-      role="option"
-      aria-selected={selected}
-      onMouseEnter={onHover}
+      id={index !== undefined ? optionId(index) : undefined}
+      role={index !== undefined ? "option" : undefined}
+      aria-selected={index !== undefined ? selected : undefined}
+      onMouseEnter={(e) => {
+        onHover?.();
+        // Outside a listbox there is no selection to highlight, so hover
+        // paints directly, the way the menu rows do.
+        if (index === undefined)
+          e.currentTarget.style.background = `${theme.palette.textPrimary}10`;
+      }}
+      onMouseLeave={(e) => {
+        if (index === undefined) e.currentTarget.style.background = "transparent";
+      }}
       onClick={onActivate}
       style={{
         width: "100%",
@@ -1008,21 +1018,12 @@ function MenuView({
           ) : null}
 
           {!searching && allAppsOn && allSorted.length > 0 ? (
-            <>
-              <div style={{ height: 6 }} />
-              <MenuSectionHeader label="All" />
-              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {allSorted.map((result) => (
-                  <MenuRow
-                    key={`all:${result.key}`}
-                    result={result}
-                    onActivate={() => {
-                      activate(result);
-                    }}
-                  />
-                ))}
-              </div>
-            </>
+            <MenuAllSection
+              items={allSorted}
+              onActivate={(result) => {
+                activate(result);
+              }}
+            />
           ) : null}
         </div>
 
@@ -1066,6 +1067,308 @@ function MenuView({
           <PowerButton onAction={close} />
         </div>
       </div>
+    </>
+  );
+}
+
+/* The All section of the redesigned Start: alphabetical app groups under
+ * letter headers, shown as a compact list or an icon grid, with the view
+ * choice persisted and an in-place alphabet picker for jumping (click any
+ * letter header). The Category view arrives with app category data.
+ * Source: https://kartikmehtablog.com/windows-11-25h2-new-start-menu/
+ */
+
+type StartAllView = "grid" | "list";
+const ALL_VIEW_KEY = "start-all-view";
+const ALL_ALPHABET = ["#", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"] as const;
+// Windows files apps whose names start outside A-Z under a leading "#".
+function letterOf(name: string): string {
+  const c = name.charAt(0).toUpperCase();
+  return c >= "A" && c <= "Z" ? c : "#";
+}
+
+function MenuAllSection({
+  items,
+  onActivate,
+}: {
+  items: LauncherResult[];
+  onActivate: (result: LauncherResult) => void;
+}) {
+  const theme = useTheme();
+  const { storage } = useDesktopContext();
+  const [view, setView] = useState<StartAllView>(() => {
+    const stored = storage.get<string>(ALL_VIEW_KEY);
+    return stored === "grid" || stored === "list" ? stored : "list";
+  });
+  const [viewMenuOpen, setViewMenuOpen] = useState(false);
+  const [jumpOpen, setJumpOpen] = useState(false);
+  const sectionRefs = useRef(new Map<string, HTMLElement>());
+  // The picker replaces the groups in place, so the jump target scrolls once
+  // the groups are mounted again.
+  const pendingJumpRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (jumpOpen || pendingJumpRef.current === null) return;
+    sectionRefs.current.get(pendingJumpRef.current)?.scrollIntoView({
+      block: "start",
+    });
+    pendingJumpRef.current = null;
+  }, [jumpOpen]);
+
+  const groups = ALL_ALPHABET.map((letter) => ({
+    letter,
+    items: items.filter((i) => letterOf(i.name) === letter),
+  })).filter((g) => g.items.length > 0);
+  const present = new Set(groups.map((g) => g.letter));
+
+  const chooseView = (next: StartAllView) => {
+    setView(next);
+    storage.set(ALL_VIEW_KEY, next);
+    setViewMenuOpen(false);
+  };
+  const hover = `${theme.palette.textPrimary}14`;
+
+  return (
+    <>
+      <div style={{ height: 6 }} />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <span
+          style={{ fontSize: 13, fontWeight: 600, color: theme.palette.textPrimary }}
+        >
+          All
+        </span>
+        <div style={{ position: "relative" }}>
+          <button
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded={viewMenuOpen}
+            aria-label="Change All apps view"
+            onClick={() => {
+              setViewMenuOpen((v) => !v);
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+            }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              border: "none",
+              background: "transparent",
+              color: theme.palette.textSecondary,
+              cursor: "pointer",
+              borderRadius: theme.shape.small,
+              padding: "4px 8px",
+              fontSize: 12,
+              fontFamily: "inherit",
+            }}
+          >
+            {view === "grid" ? "Grid" : "List"}
+            <svg width={10} height={10} viewBox="0 0 10 10" fill="none" aria-hidden>
+              <path
+                d="M2 3.5 5 6.5 8 3.5"
+                stroke="currentColor"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          {viewMenuOpen ? (
+            <>
+              <div
+                role="presentation"
+                onClick={() => {
+                  setViewMenuOpen(false);
+                }}
+                style={{ position: "fixed", inset: 0, zIndex: 1 }}
+              />
+              <div
+                role="menu"
+                aria-label="All apps view"
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "100%",
+                  zIndex: 2,
+                  minWidth: 120,
+                  padding: 4,
+                  background: theme.palette.surface,
+                  backdropFilter: theme.blur.surface,
+                  WebkitBackdropFilter: theme.blur.surface,
+                  border: `1px solid ${theme.palette.border}`,
+                  borderRadius: theme.shape.small,
+                  boxShadow: "0 12px 28px -10px rgba(0,0,0,0.5)",
+                }}
+              >
+                {(["grid", "list"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={view === v}
+                    onClick={() => {
+                      chooseView(v);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = hover;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      width: "100%",
+                      textAlign: "left",
+                      border: "none",
+                      background: "transparent",
+                      color: theme.palette.textPrimary,
+                      cursor: "pointer",
+                      borderRadius: theme.shape.small,
+                      padding: "6px 10px",
+                      fontSize: 12,
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    <span style={{ width: 12 }}>{view === v ? "✓" : ""}</span>
+                    {v === "grid" ? "Grid" : "List"}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </div>
+      </div>
+
+      {jumpOpen ? (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            gap: 4,
+            padding: "8px 0",
+          }}
+        >
+          {ALL_ALPHABET.map((letter) => (
+            <button
+              key={letter}
+              type="button"
+              disabled={!present.has(letter)}
+              onClick={() => {
+                pendingJumpRef.current = letter;
+                setJumpOpen(false);
+              }}
+              onMouseEnter={(e) => {
+                if (present.has(letter)) e.currentTarget.style.background = hover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
+              style={{
+                height: 40,
+                border: "none",
+                background: "transparent",
+                color: present.has(letter)
+                  ? theme.palette.accent
+                  : theme.palette.textSecondary,
+                opacity: present.has(letter) ? 1 : 0.45,
+                cursor: present.has(letter) ? "pointer" : "default",
+                borderRadius: theme.shape.small,
+                fontSize: 14,
+                fontWeight: 600,
+                fontFamily: "inherit",
+              }}
+            >
+              {letter}
+            </button>
+          ))}
+        </div>
+      ) : (
+        groups.map((group) => (
+          <div
+            key={group.letter}
+            ref={(el) => {
+              if (el) sectionRefs.current.set(group.letter, el);
+              else sectionRefs.current.delete(group.letter);
+            }}
+          >
+            <button
+              type="button"
+              aria-label={`Jump from ${group.letter}`}
+              onClick={() => {
+                setJumpOpen(true);
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = hover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
+              style={{
+                display: "block",
+                border: "none",
+                background: "transparent",
+                color: theme.palette.textPrimary,
+                cursor: "pointer",
+                borderRadius: theme.shape.small,
+                padding: "6px 8px",
+                margin: "2px 0",
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: "inherit",
+              }}
+            >
+              {group.letter}
+            </button>
+            {view === "grid" ? (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(6, 1fr)",
+                  gap: 4,
+                  justifyItems: "center",
+                  alignContent: "start",
+                }}
+              >
+                {group.items.map((result) => (
+                  <LauncherTile
+                    key={`all:${result.key}`}
+                    result={result}
+                    size={36}
+                    plain
+                    onActivate={() => {
+                      onActivate(result);
+                    }}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {group.items.map((result) => (
+                  <MenuRow
+                    key={`all:${result.key}`}
+                    result={result}
+                    onActivate={() => {
+                      onActivate(result);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ))
+      )}
     </>
   );
 }
