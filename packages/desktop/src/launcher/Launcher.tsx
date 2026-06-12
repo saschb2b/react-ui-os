@@ -1169,13 +1169,12 @@ function MenuAllSection({
   });
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
-  // The category flyout, centered over the Start panel (measured at open so
-  // a fixed-position card sits over the dialog wherever it is anchored).
-  const [flyout, setFlyout] = useState<{
-    category: string;
-    rect: { x: number; y: number; w: number; h: number };
-  } | null>(null);
-  const rootRef = useRef<HTMLDivElement | null>(null);
+  // The open category flyout, by name. It renders inside the Start dialog,
+  // whose backdrop-filter makes it the containing block for the flyout's
+  // fixed positioning, so the card centers on the dialog with plain
+  // percentages (no viewport measurement, which would double-count the
+  // dialog offset and push the card off-center).
+  const [flyout, setFlyout] = useState<string | null>(null);
   const sectionRefs = useRef(new Map<string, HTMLElement>());
   // The picker replaces the groups in place, so the jump target scrolls once
   // the groups are mounted again.
@@ -1206,19 +1205,8 @@ function MenuAllSection({
     })),
   ).map((g) => ({ name: g.name, items: g.items.map((i) => i.result) }));
   const flyoutItems = flyout
-    ? (categories.find((c) => c.name === flyout.category)?.items ?? [])
+    ? (categories.find((c) => c.name === flyout)?.items ?? [])
     : [];
-
-  const openFlyout = (category: string) => {
-    const dialog = rootRef.current?.closest('[role="dialog"]');
-    const r = dialog?.getBoundingClientRect();
-    setFlyout({
-      category,
-      rect: r
-        ? { x: r.x, y: r.y, w: r.width, h: r.height }
-        : { x: 0, y: 0, w: 600, h: 600 },
-    });
-  };
 
   const chooseView = (next: StartAllView) => {
     setView(next);
@@ -1231,7 +1219,6 @@ function MenuAllSection({
     <>
       <div style={{ height: 6 }} />
       <div
-        ref={rootRef}
         style={{
           display: "flex",
           alignItems: "center",
@@ -1371,7 +1358,7 @@ function MenuAllSection({
               key={cat.name}
               type="button"
               onClick={() => {
-                openFlyout(cat.name);
+                setFlyout(cat.name);
               }}
               onMouseEnter={(e) => {
                 const tile = e.currentTarget.firstElementChild as HTMLElement | null;
@@ -1446,16 +1433,27 @@ function MenuAllSection({
 
       {flyout ? (
         <>
+          {/* Dim and blur the Start panel behind the flyout, the way Windows
+              recedes Start when a category opens. inset:0 fills the dialog,
+              which is the containing block (its backdrop-filter establishes
+              one for these fixed children). */}
           <div
             role="presentation"
             onClick={() => {
               setFlyout(null);
             }}
-            style={{ position: "fixed", inset: 0, zIndex: 1401 }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 1401,
+              background: "rgba(0,0,0,0.35)",
+              backdropFilter: "blur(2px)",
+              WebkitBackdropFilter: "blur(2px)",
+            }}
           />
           <div
             role="dialog"
-            aria-label={flyout.category}
+            aria-label={flyout}
             onKeyDown={(e) => {
               if (e.key === "Escape") {
                 // Close just the flyout, not the Start menu around it.
@@ -1465,32 +1463,42 @@ function MenuAllSection({
             }}
             style={{
               position: "fixed",
-              left: flyout.rect.x + flyout.rect.w / 2,
-              top: flyout.rect.y + flyout.rect.h / 2,
+              left: "50%",
+              top: "50%",
               transform: "translate(-50%, -50%)",
-              width: Math.round(flyout.rect.w * 0.82),
-              maxHeight: Math.round(flyout.rect.h * 0.72),
+              width: "min(86%, 620px)",
+              maxHeight: "78%",
               zIndex: 1402,
               display: "flex",
               flexDirection: "column",
-              gap: 6,
-              padding: "12px 16px 16px",
+              gap: 16,
+              padding: "28px 28px 24px",
               background: theme.palette.surface,
               backdropFilter: theme.blur.spotlight,
               WebkitBackdropFilter: theme.blur.spotlight,
               border: `1px solid ${theme.palette.border}`,
-              borderRadius: theme.shape.windowRadius,
+              borderRadius: theme.shape.windowRadius + 4,
               color: theme.palette.textPrimary,
-              boxShadow: "0 24px 60px -16px rgba(0,0,0,0.6)",
+              boxShadow: "0 32px 70px -18px rgba(0,0,0,0.7)",
             }}
           >
-            <span style={{ fontSize: 13, fontWeight: 600 }}>{flyout.category}</span>
+            <h2
+              style={{
+                margin: 0,
+                textAlign: "center",
+                fontSize: 22,
+                fontWeight: 600,
+                fontFamily: "inherit",
+              }}
+            >
+              {flyout}
+            </h2>
             <div
               style={{
                 overflowY: "auto",
                 display: "grid",
                 gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 4,
+                gap: 8,
                 justifyItems: "center",
                 alignContent: "start",
               }}
@@ -1499,7 +1507,7 @@ function MenuAllSection({
                 <LauncherTile
                   key={`cat:${result.key}`}
                   result={result}
-                  size={40}
+                  size={48}
                   plain
                   onActivate={() => {
                     setFlyout(null);
