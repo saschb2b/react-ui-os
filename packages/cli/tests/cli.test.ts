@@ -125,6 +125,43 @@ describe("run (built-in registry)", () => {
     expect(out).toContain("bun add @react-ui-os/core");
   });
 
+  it("only lists dependencies the project is missing", async () => {
+    writeFileSync(
+      join(dir, "package.json"),
+      JSON.stringify({
+        dependencies: { "@react-ui-os/core": "*", "@react-ui-os/desktop": "*" },
+      }),
+      "utf8",
+    );
+    expect(await run(["add", "notes"])).toBe(0);
+    const out = vi
+      .mocked(console.log)
+      .mock.calls.map((c) => String(c[0]))
+      .join("\n");
+    expect(out).toContain("@react-ui-os/icons");
+    expect(out).not.toContain("install @react-ui-os/core");
+
+    vi.mocked(console.log).mockClear();
+    writeFileSync(
+      join(dir, "package.json"),
+      JSON.stringify({
+        dependencies: {
+          "@react-ui-os/core": "*",
+          "@react-ui-os/desktop": "*",
+          "@react-ui-os/icons": "*",
+        },
+      }),
+      "utf8",
+    );
+    expect(await run(["add", "calculator"])).toBe(0);
+    const out2 = vi
+      .mocked(console.log)
+      .mock.calls.map((c) => String(c[0]))
+      .join("\n");
+    expect(out2).toContain("already installed");
+    expect(out2).not.toContain("Install dependencies");
+  });
+
   it("prints a copy-pasteable named-import register snippet", async () => {
     expect(await run(["add", "notes"])).toBe(0);
     const out = vi

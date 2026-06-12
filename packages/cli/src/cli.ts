@@ -219,6 +219,23 @@ function resolveBaseDir(args: Args): string {
   return existsSync(join(process.cwd(), "src")) ? join("src", "os-apps") : "os-apps";
 }
 
+// Dependencies the project already declares, so the install hint only lists
+// what is actually missing.
+function installedDeps(cwd: string): Set<string> {
+  try {
+    const pkgJson = JSON.parse(readFileSync(join(cwd, "package.json"), "utf8")) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    return new Set([
+      ...Object.keys(pkgJson.dependencies ?? {}),
+      ...Object.keys(pkgJson.devDependencies ?? {}),
+    ]);
+  } catch {
+    return new Set();
+  }
+}
+
 // Match the install hint to the project's tooling: the packageManager field
 // wins, then the lockfile, then the npm default.
 function detectInstallCommand(cwd: string): string {
@@ -367,10 +384,15 @@ function add(args: Args, registry: Registry): number {
   }
 
   if (added.length > 0 && !args.silent) {
-    if (deps.size > 0) {
+    const installed = installedDeps(cwd);
+    const missing = [...deps].filter((d) => !installed.has(d));
+    if (missing.length > 0) {
       console.log("");
       console.log(bold("Install dependencies:"));
-      console.log(`  ${detectInstallCommand(cwd)} ${[...deps].join(" ")}`);
+      console.log(`  ${detectInstallCommand(cwd)} ${missing.join(" ")}`);
+    } else if (deps.size > 0) {
+      console.log("");
+      console.log(dim("All dependencies are already installed."));
     }
     console.log("");
     console.log(bold("Register with the desktop:"));
