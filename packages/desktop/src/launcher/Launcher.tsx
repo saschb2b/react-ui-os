@@ -1353,15 +1353,17 @@ function MenuAllSection({
       </div>
 
       {view === "category" && !jumpOpen ? (
-        // Category folders, the Android-folder pattern Windows adopted: a 2x2
-        // of the category's first icons over its name; clicking opens a
-        // flyout with the full category.
+        // Category folder cards, the Android-folder pattern Windows adopted: a
+        // large rounded tile holding a 2x2 of the category's first app icons at
+        // real size, the category name centered below, ~3 cards per row.
+        // Clicking a card opens its flyout.
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 4,
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 12,
             alignContent: "start",
+            paddingTop: 4,
           }}
         >
           {categories.map((cat) => (
@@ -1372,58 +1374,64 @@ function MenuAllSection({
                 openFlyout(cat.name);
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = hover;
+                const tile = e.currentTarget.firstElementChild as HTMLElement | null;
+                if (tile) tile.style.background = `${theme.palette.textPrimary}1a`;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
+                const tile = e.currentTarget.firstElementChild as HTMLElement | null;
+                if (tile) tile.style.background = `${theme.palette.textPrimary}0d`;
               }}
               style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 8,
-                padding: "12px 6px",
+                padding: 0,
                 border: "none",
                 background: "transparent",
                 color: theme.palette.textPrimary,
                 cursor: "pointer",
-                borderRadius: theme.shape.small,
                 fontFamily: "inherit",
-                transition: "background 100ms ease",
               }}
             >
               <span
                 aria-hidden
                 style={{
+                  width: "100%",
+                  boxSizing: "border-box",
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
-                  gap: 3,
-                  padding: 5,
-                  borderRadius: theme.shape.small + 2,
+                  gridTemplateRows: "1fr 1fr",
+                  gap: 16,
+                  padding: 22,
+                  minHeight: 152,
+                  placeItems: "center",
+                  borderRadius: theme.shape.windowRadius + 2,
                   background: `${theme.palette.textPrimary}0d`,
                   border: `1px solid ${theme.palette.border}`,
+                  transition: "background 120ms ease",
                 }}
               >
                 {cat.items.slice(0, 4).map((item) => (
                   <span
                     key={item.key}
                     style={{
-                      width: 16,
-                      height: 16,
+                      width: 36,
+                      height: 36,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       overflow: "hidden",
                     }}
                   >
-                    <ResultMiniIcon result={item} size={16} />
+                    <ResultMiniIcon result={item} size={36} />
                   </span>
                 ))}
               </span>
               <span
                 style={{
                   maxWidth: "100%",
-                  fontSize: 12,
+                  fontSize: 13,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
