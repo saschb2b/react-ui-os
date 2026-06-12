@@ -41,6 +41,26 @@ describe("run (built-in registry)", () => {
     expect(await run(["add", "bogus"])).toBe(1);
   });
 
+  it("suggests the closest id on a typo", async () => {
+    expect(await run(["add", "nots"])).toBe(1);
+    const err = vi
+      .mocked(console.error)
+      .mock.calls.map((c) => String(c[0]))
+      .join("\n");
+    expect(err).toContain("Did you mean");
+    expect(err).toContain("notes");
+  });
+
+  it("suggests the closest command on a typo", async () => {
+    expect(await run(["ad", "notes"])).toBe(1);
+    const err = vi
+      .mocked(console.error)
+      .mock.calls.map((c) => String(c[0]))
+      .join("\n");
+    expect(err).toContain("Did you mean");
+    expect(err).toContain("add");
+  });
+
   it("fails when no app is named", async () => {
     expect(await run(["add"])).toBe(1);
   });

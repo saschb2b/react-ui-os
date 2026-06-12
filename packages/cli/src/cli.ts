@@ -170,6 +170,39 @@ const isSafeRelPath = (name: string) =>
 
 const isSafeId = (id: string) => isSafeRelPath(id) && !/[\\/]/.test(id);
 
+// Levenshtein distance; ids and commands are short, so the quadratic cost is
+// irrelevant. Single-row rolling variant.
+function editDistance(a: string, b: string): number {
+  const row: number[] = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    let diag = row[0] ?? 0;
+    row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const above = row[j] ?? 0;
+      const left = row[j - 1] ?? 0;
+      row[j] = Math.min(above + 1, left + 1, diag + (a[i - 1] === b[j - 1] ? 0 : 1));
+      diag = above;
+    }
+  }
+  return row[b.length] ?? 0;
+}
+
+// Closest candidate to a typo, for "did you mean" hints. Only suggests a
+// near-miss; anything further than two edits (or a third of the input, for
+// longer names) is likely unrelated.
+function closest(input: string, candidates: string[]): string | undefined {
+  let best: string | undefined;
+  let bestDist = Infinity;
+  for (const c of candidates) {
+    const d = editDistance(input.toLowerCase(), c.toLowerCase());
+    if (d < bestDist) {
+      bestDist = d;
+      best = c;
+    }
+  }
+  return bestDist <= Math.max(2, Math.floor(input.length / 3)) ? best : undefined;
+}
+
 function add(args: Args, registry: Registry): number {
   if (args.positionals.length === 0) {
     console.error(
@@ -187,8 +220,12 @@ function add(args: Args, registry: Registry): number {
   for (const id of args.positionals) {
     const app = registry.apps.find((a) => a.id === id);
     if (!app) {
+      const hint = closest(
+        id,
+        registry.apps.map((a) => a.id),
+      );
       console.error(
-        `${red("error")}: unknown app ${bold(id)}. Run ${bold("react-ui-os list")} to see what is available.`,
+        `${red("error")}: unknown app ${bold(id)}.${hint ? ` Did you mean ${bold(hint)}?` : ""} Run ${bold("react-ui-os list")} to see what is available.`,
       );
       failed = true;
       continue;
@@ -355,11 +392,13 @@ export async function run(argv: string[]): Promise<number> {
         return list(await resolveRegistry(args));
       case "build":
         return build(args);
-      default:
+      default: {
+        const hint = closest(args.command, ["add", "list", "build"]);
         console.error(
-          `${red("error")}: unknown command ${bold(args.command)}. Run ${bold("react-ui-os --help")}.`,
+          `${red("error")}: unknown command ${bold(args.command)}.${hint ? ` Did you mean ${bold(hint)}?` : ""} Run ${bold("react-ui-os --help")}.`,
         );
         return 1;
+      }
     }
   } catch (err) {
     console.error(
