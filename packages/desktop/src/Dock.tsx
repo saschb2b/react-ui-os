@@ -24,6 +24,7 @@ import {
   SPOTLIGHT_OPEN_EVENT,
 } from "./events";
 import { listStatusItems, subscribeStatusItems, type StatusItem } from "./status-items";
+import { getLauncherOpen, subscribeLauncherOpen } from "./launcher/launcher-open-store";
 import { requestSettingsSection } from "./settings-nav";
 import { nextCascadeIndex, pickInitialBounds } from "./util/initial-bounds";
 import {
@@ -66,6 +67,51 @@ const SMOOTH_TAU = 0.05;
 // Width of the Windows "Show desktop" corner sliver. Windows 11 keeps it a thin
 // strip past the clock; a click toggles minimize-all.
 const SHOW_DESKTOP_WIDTH = 12;
+
+// Taskbar buttons shrink slightly while held and ease back on release, the
+// WinUI PointerDownThemeAnimation (the pointer-down "shrink to indicate
+// pressed", ~100ms). The magnitude is the size-relative tilt: a small icon
+// has to press to ~0.86 to read as pressed at all.
+// Source: https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.animation.pointerdownthemeanimation
+const PRESS_SCALE = 0.86;
+const PRESS_MS = 100;
+
+/**
+ * Pointer-press state for a taskbar button: true between pointer-down and
+ * release (or the pointer leaving / the gesture cancelling). Drives the
+ * press-in scale on the button's icon, the Windows tap feedback.
+ */
+function usePress(): {
+  pressed: boolean;
+  handlers: Pick<
+    React.DOMAttributes<HTMLElement>,
+    "onPointerDown" | "onPointerUp" | "onPointerLeave" | "onPointerCancel"
+  >;
+} {
+  const [pressed, setPressed] = useState(false);
+  const down = useCallback(() => setPressed(true), []);
+  const up = useCallback(() => setPressed(false), []);
+  return {
+    pressed,
+    handlers: {
+      onPointerDown: down,
+      onPointerUp: up,
+      onPointerLeave: up,
+      onPointerCancel: up,
+    },
+  };
+}
+
+/** The press-in transform for a taskbar icon, reduced-motion aware. */
+function pressStyle(pressed: boolean, reducedMotion: boolean): CSSProperties {
+  return {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transform: pressed ? `scale(${String(PRESS_SCALE)})` : "scale(1)",
+    transition: reducedMotion ? undefined : `transform ${String(PRESS_MS)}ms ease-out`,
+  };
+}
 
 // Long-axis estimate of the tray (clock plus a few status items), used only to
 // decide the "when taskbar is full" small-button threshold; being off by a few
@@ -771,7 +817,18 @@ function StartButton({
   iconScale?: number;
 }) {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
+  // The Start button stays highlighted while its launcher (the Start menu /
+  // Spotlight / app grid) is open, the Windows behavior; otherwise plain with
+  // a hover wash. Active reads stronger than hover.
+  const launcherOpen = useSyncExternalStore(
+    subscribeLauncherOpen,
+    getLauncherOpen,
+    () => false,
+  );
   const hover = `${theme.palette.textPrimary}14`;
+  const active = `${theme.palette.textPrimary}1f`;
+  const { pressed, handlers } = usePress();
   // Real Ubuntu / Windows make the launcher a full dock item, the same size as
   // the app tiles, so size the button and its glyph to match the run.
   const glyph = Math.round(tile * (iconScale ?? theme.chrome.dockIconScale ?? 0.5));
@@ -779,14 +836,16 @@ function StartButton({
     <button
       type="button"
       aria-label="Open launcher"
+      aria-expanded={launcherOpen}
       onClick={() => {
         window.dispatchEvent(new CustomEvent(SPOTLIGHT_OPEN_EVENT));
       }}
+      {...handlers}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = hover;
+        if (!launcherOpen) e.currentTarget.style.background = hover;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = "transparent";
+        e.currentTarget.style.background = launcherOpen ? active : "transparent";
       }}
       style={{
         ...(inline
@@ -807,39 +866,41 @@ function StartButton({
         alignItems: "center",
         justifyContent: "center",
         border: "none",
-        background: "transparent",
+        background: launcherOpen ? active : "transparent",
         borderRadius: theme.shape.small,
         cursor: "pointer",
         color: theme.palette.accent,
         transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
       }}
     >
-      {theme.chrome.launcherIconSrc ? (
-        // A consumer-supplied symbolic icon (e.g. Ubuntu's real Show
-        // Applications glyph): mask it so the monochrome art takes the chrome
-        // foreground color, the way GTK recolors symbolic icons.
-        <span
-          aria-hidden
-          style={{
-            width: glyph,
-            height: glyph,
-            backgroundColor: theme.palette.textPrimary,
-            maskImage: `url("${theme.chrome.launcherIconSrc}")`,
-            WebkitMaskImage: `url("${theme.chrome.launcherIconSrc}")`,
-            maskRepeat: "no-repeat",
-            WebkitMaskRepeat: "no-repeat",
-            maskPosition: "center",
-            WebkitMaskPosition: "center",
-            maskSize: "contain",
-            WebkitMaskSize: "contain",
-          }}
-        />
-      ) : (
-        <LauncherGlyph
-          icon={theme.chrome.launcherIcon ?? launcherGlyphFor(theme.chrome.launcher)}
-          size={glyph}
-        />
-      )}
+      <span style={pressStyle(pressed, reducedMotion)}>
+        {theme.chrome.launcherIconSrc ? (
+          // A consumer-supplied symbolic icon (e.g. Ubuntu's real Show
+          // Applications glyph): mask it so the monochrome art takes the chrome
+          // foreground color, the way GTK recolors symbolic icons.
+          <span
+            aria-hidden
+            style={{
+              width: glyph,
+              height: glyph,
+              backgroundColor: theme.palette.textPrimary,
+              maskImage: `url("${theme.chrome.launcherIconSrc}")`,
+              WebkitMaskImage: `url("${theme.chrome.launcherIconSrc}")`,
+              maskRepeat: "no-repeat",
+              WebkitMaskRepeat: "no-repeat",
+              maskPosition: "center",
+              WebkitMaskPosition: "center",
+              maskSize: "contain",
+              WebkitMaskSize: "contain",
+            }}
+          />
+        ) : (
+          <LauncherGlyph
+            icon={theme.chrome.launcherIcon ?? launcherGlyphFor(theme.chrome.launcher)}
+            size={glyph}
+          />
+        )}
+      </span>
     </button>
   );
 }
@@ -959,7 +1020,9 @@ function TaskViewButton({
   iconScale?: number;
 }) {
   const theme = useTheme();
+  const reducedMotion = useReducedMotion();
   const hover = `${theme.palette.textPrimary}14`;
+  const { pressed, handlers } = usePress();
   const glyph = Math.round(tile * (iconScale ?? theme.chrome.dockIconScale ?? 0.5));
   return (
     <button
@@ -968,6 +1031,7 @@ function TaskViewButton({
       onClick={() => {
         window.dispatchEvent(new CustomEvent(MISSION_CONTROL_TOGGLE_EVENT));
       }}
+      {...handlers}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = hover;
       }}
@@ -992,27 +1056,29 @@ function TaskViewButton({
         transition: `background ${String(theme.motion.dockHoverDurationMs)}ms ease`,
       }}
     >
-      <svg width={glyph} height={glyph} viewBox="0 0 18 18" fill="none" aria-hidden>
-        <rect
-          x="4.5"
-          y="2.5"
-          width="11"
-          height="8"
-          rx="1.5"
-          stroke="currentColor"
-          strokeWidth="1.3"
-        />
-        <rect
-          x="2.5"
-          y="6.5"
-          width="9"
-          height="8"
-          rx="1.5"
-          fill={theme.palette.surface}
-          stroke="currentColor"
-          strokeWidth="1.3"
-        />
-      </svg>
+      <span style={pressStyle(pressed, reducedMotion)}>
+        <svg width={glyph} height={glyph} viewBox="0 0 18 18" fill="none" aria-hidden>
+          <rect
+            x="4.5"
+            y="2.5"
+            width="11"
+            height="8"
+            rx="1.5"
+            stroke="currentColor"
+            strokeWidth="1.3"
+          />
+          <rect
+            x="2.5"
+            y="6.5"
+            width="9"
+            height="8"
+            rx="1.5"
+            fill={theme.palette.surface}
+            stroke="currentColor"
+            strokeWidth="1.3"
+          />
+        </svg>
+      </span>
     </button>
   );
 }

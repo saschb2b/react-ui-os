@@ -22,6 +22,7 @@ import {
   type SystemWindowDef,
 } from "../system-windows";
 import { listSpotlightSources, subscribeSpotlightSources } from "../spotlight-sources";
+import { setLauncherOpen } from "./launcher-open-store";
 
 // `process.env.NODE_ENV` is the bundler-agnostic dev/prod switch: bundlers
 // replace this exact expression at build time and tree-shake the warning
@@ -128,6 +129,16 @@ export function useLauncher(): LauncherState {
       }, 0);
     }
   }, []);
+
+  // Mirror the open state into the module store so the dock's launcher button
+  // can highlight itself while this launcher is showing, however it was opened
+  // or closed (click, Cmd/Ctrl+K, Esc, backdrop).
+  useEffect(() => {
+    setLauncherOpen(open);
+    return () => {
+      setLauncherOpen(false);
+    };
+  }, [open]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
