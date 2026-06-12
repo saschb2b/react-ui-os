@@ -79,6 +79,22 @@ describe("run (built-in registry)", () => {
     expect(await run(["add", "notes", "--silent", "--force"])).toBe(0);
   });
 
+  it("shows app details with info", async () => {
+    expect(await run(["info", "notes"])).toBe(0);
+    const out = vi
+      .mocked(console.log)
+      .mock.calls.map((c) => String(c[0]))
+      .join("\n");
+    expect(out).toContain("Notes");
+    expect(out).toContain("notesApp");
+    expect(out).toContain("index.tsx");
+    expect(out).toContain("@react-ui-os/core");
+  });
+
+  it("fails info on an unknown app", async () => {
+    expect(await run(["info", "bogus"])).toBe(1);
+  });
+
   it("honors --dir", async () => {
     expect(await run(["add", "clock", "--dir", "widgets", "--silent"])).toBe(0);
     expect(existsSync(join(dir, "widgets", "clock", "index.tsx"))).toBe(true);

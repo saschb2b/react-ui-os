@@ -285,6 +285,25 @@ function closest(input: string, candidates: string[]): string | undefined {
   return bestDist <= Math.max(2, Math.floor(input.length / 3)) ? best : undefined;
 }
 
+// Shared by add and info: resolve an id or print the unknown-app error with a
+// near-miss hint.
+function lookupApp(registry: Registry, id: string): App | undefined {
+  const app = registry.apps.find((a) => a.id === id);
+  if (!app) {
+    const hint = closest(
+      id,
+      registry.apps.map((a) => a.id),
+    );
+    console.error(
+      `${red("error")}: unknown app ${bold(id)}.${hint ? ` Did you mean ${bold(hint)}?` : ""} Run ${bold("react-ui-os list")} to see what is available.`,
+    );
+  }
+  return app;
+}
+
+const formatSize = (bytes: number) =>
+  bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} kB`;
+
 function add(args: Args, registry: Registry): number {
   if (args.positionals.length === 0) {
     console.error(
@@ -300,15 +319,8 @@ function add(args: Args, registry: Registry): number {
   let failed = false;
 
   for (const id of args.positionals) {
-    const app = registry.apps.find((a) => a.id === id);
+    const app = lookupApp(registry, id);
     if (!app) {
-      const hint = closest(
-        id,
-        registry.apps.map((a) => a.id),
-      );
-      console.error(
-        `${red("error")}: unknown app ${bold(id)}.${hint ? ` Did you mean ${bold(hint)}?` : ""} Run ${bold("react-ui-os list")} to see what is available.`,
-      );
       failed = true;
       continue;
     }
@@ -371,6 +383,44 @@ function add(args: Args, registry: Registry): number {
   return failed ? 1 : 0;
 }
 
+// What you get before you copy it: description, export, dependencies, and the
+// files with their sizes.
+function info(args: Args, registry: Registry): number {
+  if (args.positionals.length === 0) {
+    console.error(
+      `${red("error")}: name at least one app, e.g. ${bold("react-ui-os info notes")}`,
+    );
+    return 1;
+  }
+  let failed = false;
+  for (const id of args.positionals) {
+    const app = lookupApp(registry, id);
+    if (!app) {
+      failed = true;
+      continue;
+    }
+    console.log(`${bold(app.name)} ${dim(`(${app.id})`)}`);
+    if (app.description) console.log(`  ${app.description}`);
+    console.log("");
+    if (app.category) console.log(`  ${dim("category")}      ${app.category}`);
+    console.log(`  ${dim("export")}        ${cyan(app.export)}`);
+    if (app.dependencies.length > 0) {
+      console.log(`  ${dim("dependencies")}  ${app.dependencies.join(", ")}`);
+    }
+    console.log(
+      `  ${dim("files")}         ${app.files.length} (${formatSize(
+        app.files.reduce((sum, f) => sum + f.content.length, 0),
+      )})`,
+    );
+    for (const f of app.files) {
+      console.log(`    ${f.name} ${dim(formatSize(f.content.length))}`);
+    }
+    console.log("");
+    console.log(`${dim("Install it with")} ${bold(`react-ui-os add ${app.id}`)}`);
+  }
+  return failed ? 1 : 0;
+}
+
 function list(registry: Registry): number {
   if (registry.apps.length === 0) {
     console.log("No apps in this registry.");
@@ -428,6 +478,7 @@ ${bold("Usage")}
 ${bold("Commands")}
   add <id...>     Copy one or more apps into your project
   list            List the available apps
+  info <id...>    Show an app's files and dependencies before adding it
   build [file]    Inline a registry.json into a self-contained file to host
 
 ${bold("Options")}
@@ -474,10 +525,12 @@ export async function run(argv: string[]): Promise<number> {
       case "list":
       case "ls":
         return list(await resolveRegistry(args));
+      case "info":
+        return info(args, await resolveRegistry(args));
       case "build":
         return build(args);
       default: {
-        const hint = closest(args.command, ["add", "list", "build"]);
+        const hint = closest(args.command, ["add", "list", "info", "build"]);
         console.error(
           `${red("error")}: unknown command ${bold(args.command)}.${hint ? ` Did you mean ${bold(hint)}?` : ""} Run ${bold("react-ui-os --help")}.`,
         );
