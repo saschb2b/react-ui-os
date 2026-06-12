@@ -32,9 +32,9 @@ interface Registry {
 interface RawApp {
   id: string;
   name: string;
-  description: string;
-  category: string;
-  accent: string;
+  description?: string;
+  category?: string;
+  accent?: string;
   export: string;
   dependencies?: string[];
   dir?: string;
@@ -107,9 +107,9 @@ function normalizeRegistry(raw: RawRegistry, baseDir: string | null): Registry {
   const apps = raw.apps.map((app) => ({
     id: app.id,
     name: app.name,
-    description: app.description,
-    category: app.category,
-    accent: app.accent,
+    description: app.description ?? "",
+    category: app.category ?? "",
+    accent: app.accent ?? "",
     export: app.export,
     dependencies: app.dependencies ?? [],
     files: app.files.map((file) => {
@@ -131,18 +131,78 @@ function normalizeRegistry(raw: RawRegistry, baseDir: string | null): Registry {
   return { name: raw.name, homepage: raw.homepage, apps };
 }
 
+const FETCH_TIMEOUT_MS = 15_000;
+
+// Parse and shape-check registry JSON so a typo'd URL or a malformed file
+// fails with a message naming the source and the problem, not a stack trace
+// from deep inside normalize.
+function parseRawRegistry(text: string, source: string): RawRegistry {
+  const fail = (why: string): never => {
+    throw new Error(`registry at ${source} is not valid: ${why}`);
+  };
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    return fail("not JSON");
+  }
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return fail("expected a JSON object");
+  }
+  const reg = value as Partial<RawRegistry>;
+  if (typeof reg.name !== "string") return fail('missing a string "name"');
+  if (!Array.isArray(reg.apps)) return fail('missing an "apps" array');
+  for (const app of reg.apps as Array<Partial<RawApp> | null>) {
+    if (typeof app !== "object" || app === null) {
+      return fail("every apps[] entry must be an object");
+    }
+    for (const key of ["id", "name", "export"] as const) {
+      if (typeof app[key] !== "string") {
+        return fail(`app ${JSON.stringify(app.id ?? "?")} is missing a string "${key}"`);
+      }
+    }
+    if (!Array.isArray(app.files)) {
+      return fail(`app "${app.id}" is missing a "files" array`);
+    }
+  }
+  return reg as RawRegistry;
+}
+
+function readRegistryFile(source: string): string {
+  const path = resolve(source);
+  if (!existsSync(path)) {
+    throw new Error(`registry file not found: ${source}`);
+  }
+  return readFileSync(path, "utf8");
+}
+
 async function loadRegistry(source: string): Promise<Registry> {
   let text: string;
   if (isUrl(source)) {
-    const res = await globalThis.fetch(source);
+    let res: Response;
+    try {
+      res = await globalThis.fetch(source, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+    } catch (err) {
+      const why =
+        err instanceof Error && err.name === "TimeoutError"
+          ? `timed out after ${FETCH_TIMEOUT_MS / 1000}s`
+          : err instanceof Error && err.cause instanceof Error
+            ? err.cause.message
+            : err instanceof Error
+              ? err.message
+              : String(err);
+      throw new Error(`could not fetch registry from ${source} (${why})`);
+    }
     if (!res.ok) {
       throw new Error(`could not fetch registry from ${source} (${res.status})`);
     }
     text = await res.text();
   } else {
-    text = readFileSync(resolve(source), "utf8");
+    text = readRegistryFile(source);
   }
-  const raw = JSON.parse(text) as RawRegistry;
+  const raw = parseRawRegistry(text, source);
   return normalizeRegistry(raw, isUrl(source) ? null : dirname(resolve(source)));
 }
 
@@ -293,9 +353,11 @@ function add(args: Args, registry: Registry): number {
   }
 
   if (added.length > 0 && !args.silent) {
-    console.log("");
-    console.log(bold("Install dependencies:"));
-    console.log(`  ${detectInstallCommand(cwd)} ${[...deps].join(" ")}`);
+    if (deps.size > 0) {
+      console.log("");
+      console.log(bold("Install dependencies:"));
+      console.log(`  ${detectInstallCommand(cwd)} ${[...deps].join(" ")}`);
+    }
     console.log("");
     console.log(bold("Register with the desktop:"));
     for (const app of added) {
@@ -333,7 +395,7 @@ function build(args: Args): number {
   const out = args.out ?? join("dist", "registry.json");
   let registry: Registry;
   try {
-    const raw = JSON.parse(readFileSync(resolve(input), "utf8")) as RawRegistry;
+    const raw = parseRawRegistry(readRegistryFile(input), input);
     registry = normalizeRegistry(raw, dirname(resolve(input)));
   } catch (err) {
     console.error(

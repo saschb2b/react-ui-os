@@ -209,6 +209,52 @@ describe("third-party registries", () => {
     ).toBe(true);
   });
 
+  it("reports a clear error for a missing, non-JSON, or malformed registry", async () => {
+    const errors = () =>
+      vi
+        .mocked(console.error)
+        .mock.calls.map((c) => String(c[0]))
+        .join("\n");
+
+    expect(await run(["list", "--registry", join(dir, "nope.json")])).toBe(1);
+    expect(errors()).toContain("registry file not found");
+
+    const bad = join(dir, "bad.json");
+    writeFileSync(bad, "<html>not json</html>", "utf8");
+    expect(await run(["list", "--registry", bad])).toBe(1);
+    expect(errors()).toContain("not JSON");
+
+    writeFileSync(bad, JSON.stringify({ name: "x" }), "utf8");
+    expect(await run(["list", "--registry", bad])).toBe(1);
+    expect(errors()).toContain('missing an "apps" array');
+
+    writeFileSync(bad, JSON.stringify({ name: "x", apps: [{ id: "a" }] }), "utf8");
+    expect(await run(["list", "--registry", bad])).toBe(1);
+    expect(errors()).toContain('missing a string "name"');
+  });
+
+  it("maps fetch failures and timeouts to readable errors", async () => {
+    const errors = () =>
+      vi
+        .mocked(console.error)
+        .mock.calls.map((c) => String(c[0]))
+        .join("\n");
+
+    vi.stubGlobal("fetch", () =>
+      Promise.resolve({ ok: false, status: 404 } as Response),
+    );
+    expect(await run(["list", "--registry", "https://acme.test/r.json"])).toBe(1);
+    expect(errors()).toContain("(404)");
+
+    const timeout = new Error("aborted");
+    timeout.name = "TimeoutError";
+    vi.stubGlobal("fetch", () => Promise.reject(timeout));
+    expect(await run(["list", "--registry", "https://acme.test/r.json"])).toBe(1);
+    expect(errors()).toContain("timed out after 15s");
+
+    vi.unstubAllGlobals();
+  });
+
   it("refuses ids and file names that escape the target directory", async () => {
     const evil = (id: string, fileName: string) => ({
       name: "evil",

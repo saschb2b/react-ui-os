@@ -37,6 +37,8 @@ export default [
         process: "readonly",
         Event: "readonly",
         CustomEvent: "readonly",
+        Response: "readonly",
+        AbortSignal: "readonly",
         StorageEvent: "readonly",
         KeyboardEvent: "readonly",
         MouseEvent: "readonly",
