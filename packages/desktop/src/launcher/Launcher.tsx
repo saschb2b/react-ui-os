@@ -577,9 +577,15 @@ const MENU_LISTBOX_ID = "rui-launcher-menu";
 // large scales the width with the extra columns and takes the classic height.
 // Sources: https://www.neowin.net/guides/how-to-resize-the-start-menu-in-windows-11/ ;
 // https://www.windowscentral.com/microsoft/windows-11/whats-in-the-new-start-menu-on-windows-11-for-versions-25h2-and-24h2
+// The redesigned Start is a tall panel: ~640px wide at six columns, ~820px at
+// eight, and tall enough to fill most of the screen height (the widely noted
+// "huge" new Start). The height fields are ceilings the panel grows up to; the
+// actual height tracks a fraction of the available space (see height below).
+// Sources: https://www.neowin.net/guides/how-to-resize-the-start-menu-in-windows-11/ ;
+// https://www.pcworld.com/article/3003808/windows-11s-newly-revamped-start-menu-design-is-annoyingly-large.html
 const MENU_SIZES = {
-  small: { width: 600, height: 600, columns: 6 },
-  large: { width: 800, height: 720, columns: 8 },
+  small: { width: 640, height: 820, columns: 6 },
+  large: { width: 820, height: 1000, columns: 8 },
 } as const;
 // The Recent region (Windows 11's renamed Recommended) is a 2-column grid of
 // six slots; up to four go to recently used apps, files fill the rest.
@@ -765,16 +771,19 @@ function MenuView({
     close();
   };
 
-  // Raise Start from its launcher button, not a fixed corner: Windows 11 opens
-  // the menu above the Start button (so it tracks a centered or left-aligned
-  // taskbar) rather than centering a modal the way Spotlight does. The panel
-  // follows the taskbar's edge: "when the taskbar is on the top, Start opens
-  // from the top" (Windows Insider, May 2026:
-  // https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/).
-  // Read the button's live rect and clamp the panel into the viewport.
+  // Raise Start from the taskbar edge, the way Windows 11 does ("when the
+  // taskbar is on the top, Start opens from the top"). Along the bar's long
+  // axis the panel follows the taskbar alignment, not the Start button:
+  // a centered taskbar opens Start centered on the screen, a left-aligned
+  // (Windows 10) taskbar anchors it to the left edge. The Start button is the
+  // leftmost of a centered cluster, so centering on the button would sit the
+  // panel left of where Windows puts it.
+  // Sources: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/ ;
+  // https://www.dell.com/support/kbdoc/en-us/000192071/how-to-change-the-windows-11-taskbar-alignment
   const reservation = getDockReservation(theme);
   const gap = 8;
   const dockPosition = theme.chrome.dockPosition;
+  const align = theme.chrome.dockAlign ?? "center";
   const vw = typeof window === "undefined" ? 1280 : window.innerWidth;
   const vh = typeof window === "undefined" ? 800 : window.innerHeight;
   const btn =
@@ -784,6 +793,18 @@ function MenuView({
           .querySelector('[data-rui-dock] [aria-label="Open launcher"]')
           ?.getBoundingClientRect() ?? null);
   const width = Math.min(menuSize.width, vw - 2 * gap);
+  // Horizontal placement along a top/bottom bar by taskbar alignment, clamped
+  // into the viewport. Start (Windows 10) hugs the left, center sits on the
+  // screen center, end hugs the right.
+  const horizontalLeft = () => {
+    const raw =
+      align === "start"
+        ? reservation.left + gap
+        : align === "end"
+          ? vw - reservation.right - width - gap
+          : (vw - width) / 2;
+    return Math.max(gap, Math.min(raw, vw - width - gap));
+  };
   let anchor: CSSProperties;
   let menuOrigin: string;
   let available: number;
@@ -797,25 +818,28 @@ function MenuView({
     menuOrigin = dockPosition === "left" ? "top left" : "top right";
     available = vh - top - gap;
   } else if (dockPosition === "top") {
-    // Below the top taskbar (and the menu bar when one is shown), horizontally
-    // centered on the launcher button.
-    const centerX = btn ? btn.left + btn.width / 2 : vw / 2;
-    const left = Math.max(gap, Math.min(centerX - width / 2, vw - width - gap));
+    const left = horizontalLeft();
     const top = getMenuBarHeight(theme) + reservation.top + gap;
     anchor = { left, top };
-    menuOrigin = `${String(Math.round(centerX - left))}px 0px`;
+    // Rise from the bottom edge of the panel toward the screen, pivoting over
+    // the Start button when it sits under the panel, else the panel center.
+    const pivotX = btn ? Math.round(btn.left + btn.width / 2 - left) : width / 2;
+    menuOrigin = `${String(Math.max(0, Math.min(pivotX, width)))}px 0px`;
     available = vh - top - gap;
   } else {
-    // Above the bottom taskbar, horizontally centered on the launcher button.
-    const centerX = btn ? btn.left + btn.width / 2 : vw / 2;
-    const left = Math.max(gap, Math.min(centerX - width / 2, vw - width - gap));
+    const left = horizontalLeft();
     anchor = { left, bottom: reservation.bottom + gap };
-    menuOrigin = `${String(Math.round(centerX - left))}px 100%`;
+    const pivotX = btn ? Math.round(btn.left + btn.width / 2 - left) : width / 2;
+    menuOrigin = `${String(Math.max(0, Math.min(pivotX, width)))}px 100%`;
     available = vh - reservation.bottom - 2 * gap;
   }
-  // A tall, fixed panel like the Windows 11 menu (which keeps its size and lets
-  // the pinned grid breathe), clamped to the viewport on short screens.
-  const height = Math.min(menuSize.height, available);
+  // The redesigned Start is tall: it fills most of the screen height (~90% on
+  // a typical display) rather than the old compact panel, so the size's height
+  // is a ceiling that the panel takes up to, but it grows toward most of the
+  // available height first. Small keeps a more compact register.
+  // Source: https://www.pcworld.com/article/3003808/windows-11s-newly-revamped-start-menu-design-is-annoyingly-large.html
+  const heightFill = sizeKey === "large" ? 0.9 : 0.78;
+  const height = Math.min(menuSize.height, Math.round(available * heightFill));
 
   // The Windows pinned tile: a bare 32px app icon over a hover highlight,
   // arranged in the section's 6- or 8-column grid.
