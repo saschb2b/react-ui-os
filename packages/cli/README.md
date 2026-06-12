@@ -6,12 +6,15 @@ files and can edit them after install.
 
 ```bash
 npx @react-ui-os/cli list
+npx @react-ui-os/cli info notes
 npx @react-ui-os/cli add notes
 ```
 
 `add` copies an app's files into `src/os-apps/<id>/` (or `os-apps/<id>/` when
-the project has no `src` directory; override with `--dir`), then prints the npm
-dependencies to install and how to register the app with `<Desktop>`.
+the project has no `src` directory; override with `--dir`), then prints the
+install command for the missing dependencies (matched to your package manager)
+and a ready-to-paste register snippet. `info` shows an app's description,
+dependencies, and files with sizes before you copy anything.
 
 The built-in apps are inlined into the CLI, so it runs with no network and no
 config. The app list is the repo-root `registry.json`.
@@ -32,3 +35,8 @@ npx @react-ui-os/cli list --registry https://you.example/registry.json
 A local `registry.json` works with `--registry ./registry.json` directly (it
 reads sources from each entry's `dir`). Remote registries must be the built,
 inlined form, since the CLI cannot read your repository over HTTP.
+
+File names in a registry may nest into subdirectories
+(`"files": ["index.tsx", "components/Panel.tsx"]`). Paths that would escape
+the install directory (absolute, drive-rooted, or containing `..`) are
+rejected, so a hostile registry cannot write outside `os-apps/<id>/`.
