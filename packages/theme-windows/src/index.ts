@@ -125,7 +125,7 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
       // Start menu personalization defaults, the May 2026 Insider controls
       // (Settings > Personalization > Start). Explicit so the Settings
       // toggles reflect the effective state.
-      startMenuSize: "small",
+      startMenuSize: "auto",
       startMenuPinned: true,
       startMenuRecent: true,
       startMenuRecentFiles: true,
@@ -288,8 +288,9 @@ export function createWindowsTheme(options: WindowsThemeOptions = {}): OsTheme {
         kind: "select",
         section: "Start",
         label: "Start menu size",
-        description: "The small 6-column grid or the large 8-column one.",
+        description: "Automatic, the small 6-column grid, or the large 8-column one.",
         options: [
+          { value: "auto", label: "Automatic" },
           { value: "small", label: "Small" },
           { value: "large", label: "Large" },
         ],

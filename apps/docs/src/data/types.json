@@ -504,9 +504,9 @@
         },
         {
           "name": "startMenuSize",
-          "type": "\"small\" | \"large\"",
+          "type": "\"auto\" | \"small\" | \"large\"",
           "optional": true,
-          "description": "Start menu size, the May 2026 Insider \"Small or Large\" choice (Settings >\nPersonalization > Start). Small is the 6-column grid, large the 8-column\none of the redesigned Windows 11 Start. Optional, defaults to \"small\".\nRead by the `\"menu\"` launcher only.\nSource: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/"
+          "description": "Start menu size (Settings > Personalization > Start). \"small\" is the\n6-column grid, \"large\" the 8-column one of the redesigned Windows 11\nStart, and \"auto\" (the Windows default) picks between them from the\nviewport: large on a roomy screen, small on a narrow one. Optional,\ndefaults to \"auto\". Read by the `\"menu\"` launcher only.\nSources: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/ ;\nhttps://www.thurrott.com/windows/windows-11/336873/hands-on-the-new-windows-11-start-menu"
         },
         {
           "name": "startMenuPinned",

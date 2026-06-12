@@ -343,13 +343,15 @@ export interface OsThemeChrome {
    */
   iconStyle?: string;
   /**
-   * Start menu size, the May 2026 Insider "Small or Large" choice (Settings >
-   * Personalization > Start). Small is the 6-column grid, large the 8-column
-   * one of the redesigned Windows 11 Start. Optional, defaults to "small".
-   * Read by the `"menu"` launcher only.
-   * Source: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/
+   * Start menu size (Settings > Personalization > Start). "small" is the
+   * 6-column grid, "large" the 8-column one of the redesigned Windows 11
+   * Start, and "auto" (the Windows default) picks between them from the
+   * viewport: large on a roomy screen, small on a narrow one. Optional,
+   * defaults to "auto". Read by the `"menu"` launcher only.
+   * Sources: https://blogs.windows.com/windows-insider/2026/05/15/improving-windows-quality-making-taskbar-and-start-more-personal/ ;
+   * https://www.thurrott.com/windows/windows-11/336873/hands-on-the-new-windows-11-start-menu
    */
-  startMenuSize?: "small" | "large";
+  startMenuSize?: "auto" | "small" | "large";
   /**
    * Show the Start menu's Pinned section. When off, the menu opens straight
    * into the All apps list (when that is shown). Optional, defaults to true.

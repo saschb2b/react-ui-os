@@ -624,7 +624,18 @@ function MenuView({
   const recentOn = theme.chrome.startMenuRecent ?? true;
   const recentFilesOn = theme.chrome.startMenuRecentFiles ?? true;
   const profileOn = theme.chrome.startMenuProfile ?? true;
-  const menuSize = MENU_SIZES[theme.chrome.startMenuSize ?? "small"];
+  // "auto" (the Windows default) takes the large 8-column panel when the
+  // viewport is wide enough to seat it with margins, else small. The
+  // threshold is the large width plus its open gaps.
+  const sizePref = theme.chrome.startMenuSize ?? "auto";
+  const vwForSize = typeof window === "undefined" ? 1280 : window.innerWidth;
+  const sizeKey =
+    sizePref === "auto"
+      ? vwForSize >= MENU_SIZES.large.width + 48
+        ? "large"
+        : "small"
+      : sizePref;
+  const menuSize = MENU_SIZES[sizeKey];
   // Two rows of pins until "Show all"; the explicit toggle persists the way
   // Windows remembers the expansion across opens. Arrowing past the visible
   // rows expands for the session without persisting.
