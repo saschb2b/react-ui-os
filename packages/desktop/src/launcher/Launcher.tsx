@@ -1524,25 +1524,30 @@ function MenuAllSection({
             <div
               style={{
                 overflowY: "auto",
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
+                // A centered wrap (not a fixed 4-column grid) so a short
+                // category centers its row under the heading instead of
+                // left-packing, the Windows flyout layout. Each tile gets a
+                // fixed cell width so columns still line up.
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
                 gap: 8,
-                justifyItems: "center",
                 alignContent: "start",
               }}
             >
               {flyoutItems.map((result) => (
-                <LauncherTile
-                  key={`cat:${result.key}`}
-                  result={result}
-                  size={48}
-                  plain
-                  onActivate={() => {
-                    flyoutTriggerRef.current = null;
-                    setFlyout(null);
-                    onActivate(result);
-                  }}
-                />
+                <div key={`cat:${result.key}`} style={{ width: 116, flexShrink: 0 }}>
+                  <LauncherTile
+                    result={result}
+                    size={48}
+                    plain
+                    onActivate={() => {
+                      flyoutTriggerRef.current = null;
+                      setFlyout(null);
+                      onActivate(result);
+                    }}
+                  />
+                </div>
               ))}
             </div>
           </div>
