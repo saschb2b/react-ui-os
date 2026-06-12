@@ -117,30 +117,38 @@ const isUrl = (s: string) => /^https?:\/\//i.test(s);
 // to read bare-basename files from; null when the source is remote (a hosted
 // registry has no readable file tree, so it must already be inlined).
 function normalizeRegistry(raw: RawRegistry, baseDir: string | null): Registry {
-  const apps = raw.apps.map((app) => ({
-    id: app.id,
-    name: app.name,
-    description: app.description ?? "",
-    category: app.category ?? "",
-    accent: app.accent ?? "",
-    export: app.export,
-    dependencies: app.dependencies ?? [],
-    files: app.files.map((file) => {
-      if (typeof file === "object" && typeof file.content === "string") {
-        return { name: file.name, content: file.content };
-      }
-      if (baseDir === null) {
-        throw new Error(
-          `app "${app.id}" lists files without content. Build the registry first with: react-ui-os build`,
-        );
-      }
-      const name = String(file);
-      return {
-        name,
-        content: readFileSync(join(baseDir, app.dir ?? "", name), "utf8"),
-      };
-    }),
-  }));
+  const apps = raw.apps.map((app) => {
+    if (!isSafeId(app.id)) {
+      throw new Error(`app id "${app.id}" is not a valid id (no separators, no "..")`);
+    }
+    return {
+      id: app.id,
+      name: app.name,
+      description: app.description ?? "",
+      category: app.category ?? "",
+      accent: app.accent ?? "",
+      export: app.export,
+      dependencies: app.dependencies ?? [],
+      files: app.files.map((file) => {
+        const name = typeof file === "object" ? file.name : String(file);
+        if (!isSafeRelPath(name)) {
+          throw new Error(`app "${app.id}" file "${name}" escapes the app folder`);
+        }
+        if (typeof file === "object" && typeof file.content === "string") {
+          return { name, content: file.content };
+        }
+        if (baseDir === null) {
+          throw new Error(
+            `app "${app.id}" lists files without content. Build the registry first with: react-ui-os build`,
+          );
+        }
+        return {
+          name,
+          content: readFileSync(join(baseDir, app.dir ?? "", name), "utf8"),
+        };
+      }),
+    };
+  });
   return { name: raw.name, homepage: raw.homepage, apps };
 }
 

@@ -321,6 +321,34 @@ describe("third-party registries", () => {
     vi.unstubAllGlobals();
   });
 
+  it("refuses to build a registry whose file names escape the app folder", async () => {
+    const manifest = join(dir, "registry.json");
+    writeFileSync(
+      manifest,
+      JSON.stringify({
+        name: "acme",
+        apps: [
+          {
+            id: "evil",
+            name: "Evil",
+            export: "evilApp",
+            dir: "apps/evil",
+            files: ["../../secrets.txt"],
+          },
+        ],
+      }),
+      "utf8",
+    );
+    const out = join(dir, "out", "registry.json");
+    expect(await run(["build", manifest, "--out", out, "--silent"])).toBe(1);
+    expect(existsSync(out)).toBe(false);
+    const err = vi
+      .mocked(console.error)
+      .mock.calls.map((c) => String(c[0]))
+      .join("\n");
+    expect(err).toContain("escapes the app folder");
+  });
+
   it("refuses ids and file names that escape the target directory", async () => {
     const evil = (id: string, fileName: string) => ({
       name: "evil",
