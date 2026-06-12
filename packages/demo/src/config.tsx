@@ -59,28 +59,75 @@ export function pngIcon(src: string): ComponentType<{ size?: number }> {
   };
 }
 
+// Probe result per src, shared across every LocalIcon instance: "loaded" once
+// the real image has decoded, "failed" once it 404s. The local pack is
+// gitignored, so on a clean checkout every src fails; caching that means the
+// menu (which renders each app icon in several places at once, and remounts on
+// every open) does the 404 once, not on every tile and every open.
+const localIconStatus = new Map<string, "loaded" | "failed">();
+
 /**
- * An icon from a local-only (gitignored) pack, with a fallback for when the file
- * is absent, so a clean checkout or the docs deploy degrades gracefully.
+ * An icon from a local-only (gitignored) pack, with a fallback for when the
+ * file is absent, so a clean checkout or the docs deploy degrades gracefully.
+ *
+ * The fallback shows immediately and the real image loads behind it, swapping
+ * in only once it has decoded; a missing pack therefore never flashes a blank
+ * tile, just the fallback glyph. The load result is cached per src so the
+ * burst of identical icons the launcher renders, and every later open, render
+ * the right thing at once instead of re-fetching.
  */
 export function localIcon(
   src: string,
   Fallback?: ComponentType<{ size?: number }>,
 ): ComponentType<{ size?: number }> {
   return function LocalIcon({ size = 24 }: { size?: number }) {
-    const [failed, setFailed] = useState(false);
-    if (failed && Fallback) return <Fallback size={size} />;
-    return (
+    const [status, setStatus] = useState<"loading" | "loaded" | "failed">(
+      () => localIconStatus.get(src) ?? "loading",
+    );
+
+    // Known missing: just the fallback, no <img>, no request.
+    if (status === "failed") {
+      return Fallback ? <Fallback size={size} /> : null;
+    }
+
+    const img = (
       <img
         src={src}
         width={size}
         height={size}
         alt=""
-        style={{ display: failed ? "none" : "block" }}
-        onError={() => {
-          setFailed(true);
+        decoding="async"
+        onLoad={() => {
+          localIconStatus.set(src, "loaded");
+          setStatus("loaded");
         }}
+        onError={() => {
+          localIconStatus.set(src, "failed");
+          setStatus("failed");
+        }}
+        style={{ display: "block" }}
       />
+    );
+
+    // Cached as loaded: the browser has it, so render it straight (instant).
+    if (status === "loaded") return img;
+
+    // First probe: show the fallback glyph with the loading image stacked
+    // invisibly over it, so there is never a blank gap. The image reveals
+    // itself by switching to the "loaded" branch above once it decodes; if it
+    // 404s instead, the "failed" branch keeps the fallback.
+    return (
+      <span
+        style={{
+          position: "relative",
+          display: "inline-flex",
+          width: size,
+          height: size,
+        }}
+      >
+        {Fallback ? <Fallback size={size} /> : null}
+        <span style={{ position: "absolute", inset: 0, opacity: 0 }}>{img}</span>
+      </span>
     );
   };
 }
