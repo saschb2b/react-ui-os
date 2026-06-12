@@ -126,6 +126,8 @@ export const clockApp: App = {
   accent: ACCENT,
   icon: ClockIcon,
   icons: { fluent: ClockFluentIcon },
+  // Where Windows files it in the Start Category view.
+  category: "Utilities & Tools",
   defaultBounds: { w: 380, h: 520 },
   content: ClockContent,
 };

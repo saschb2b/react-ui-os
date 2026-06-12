@@ -40,6 +40,8 @@ export type LauncherResult =
       tagline?: string;
       accent?: string;
       icon?: ReactNode;
+      /** Start Category-view group, from `App.category`. */
+      category?: string;
       app: App;
     }
   | {
@@ -49,6 +51,8 @@ export type LauncherResult =
       tagline?: string;
       accent?: string;
       icon?: ReactNode;
+      /** Start Category-view group, from `SystemWindowDef.category`. */
+      category?: string;
       systemId: string;
       def: SystemWindowDef;
     }
@@ -174,6 +178,7 @@ export function useLauncher(): LauncherState {
       name: app.name,
       tagline: app.tagline,
       accent: app.accent,
+      category: app.category,
       app,
     }));
     const systemResults: LauncherResult[] = listSystemWindows().map((sys) => ({
@@ -182,6 +187,7 @@ export function useLauncher(): LauncherState {
       name: resolveSystemWindowName(sys),
       tagline: sys.tagline,
       accent: sys.accent,
+      category: sys.category,
       systemId: sys.systemId,
       def: sys,
     }));

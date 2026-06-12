@@ -454,6 +454,8 @@ export const notesApp: App = {
   accent: "#f59e0b",
   icon: NotesIcon,
   icons: { fluent: NotesFluentIcon },
+  // Where Windows files it in the Start Category view.
+  category: "Productivity",
   defaultBounds: { w: 680, h: 460 },
   content: NotesContent,
 };

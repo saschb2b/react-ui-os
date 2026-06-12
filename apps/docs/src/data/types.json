@@ -56,6 +56,12 @@
           "description": "Default window bounds when first opened. Theme has the fallback."
         },
         {
+          "name": "category",
+          "type": "string",
+          "optional": true,
+          "description": "Category the app files under in the Start menu's Category view. Windows\ngroups All apps into eight fixed categories (Productivity, Utilities &\nTools, Creativity, Games, Entertainment, Accessibility, Information &\nReading, Other); a category renders only once at least three apps carry\nit, everything else lands under Other. Optional; uncategorized apps go\nto Other.\nSource: https://www.windowslatest.com/2025/06/18/you-cannot-create-new-categories-in-new-windows-11-start-menu/"
+        },
+        {
           "name": "content",
           "type": "ComponentType<AppContentProps>",
           "optional": false,

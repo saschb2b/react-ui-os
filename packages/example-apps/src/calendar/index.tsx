@@ -14,6 +14,8 @@ export const calendarApp: App = {
   accent: "#ef4444",
   icon: CalendarIcon,
   icons: { fluent: CalendarFluentIcon },
+  // Where Windows files it in the Start Category view.
+  category: "Productivity",
   defaultBounds: { w: 720, h: 600 },
   content: Content,
 };

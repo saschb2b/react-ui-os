@@ -1071,20 +1071,50 @@ function MenuView({
   );
 }
 
-/* The All section of the redesigned Start: alphabetical app groups under
- * letter headers, shown as a compact list or an icon grid, with the view
- * choice persisted and an in-place alphabet picker for jumping (click any
- * letter header). The Category view arrives with app category data.
- * Source: https://kartikmehtablog.com/windows-11-25h2-new-start-menu/
+/* The All section of the redesigned Start, in its three views: Category
+ * (default, folder cards that open a flyout of the category's apps), Grid
+ * (alphabetical icon groups), and List (the classic compact rows). Letter
+ * headers open an in-place alphabet picker for jumping, the view choice
+ * persists, and a category forms only once at least three entries carry it;
+ * everything else files under Other.
+ * Sources: https://kartikmehtablog.com/windows-11-25h2-new-start-menu/ ;
+ * https://www.windowslatest.com/2025/06/18/you-cannot-create-new-categories-in-new-windows-11-start-menu/
  */
 
-type StartAllView = "grid" | "list";
+type StartAllView = "category" | "grid" | "list";
 const ALL_VIEW_KEY = "start-all-view";
+const ALL_VIEWS = ["category", "grid", "list"] as const;
+const ALL_VIEW_LABELS: Record<StartAllView, string> = {
+  category: "Category",
+  grid: "Grid",
+  list: "List",
+};
+const MIN_CATEGORY_APPS = 3;
 const ALL_ALPHABET = ["#", ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"] as const;
 // Windows files apps whose names start outside A-Z under a leading "#".
 function letterOf(name: string): string {
   const c = name.charAt(0).toUpperCase();
   return c >= "A" && c <= "Z" ? c : "#";
+}
+
+/** The bare icon of a result (no squircle), for category-card minis. */
+function ResultMiniIcon({ result, size }: { result: LauncherResult; size: number }) {
+  const theme = useTheme();
+  const Art = result.kind === "app" ? result.app.iconArt : undefined;
+  const Icon =
+    result.kind === "app"
+      ? resolveAppIcon(result.app, theme)
+      : result.kind === "system"
+        ? resolveAppIcon(result.def, theme)
+        : undefined;
+  if (Art) return <Art size={size} />;
+  if (Icon) return <Icon size={size} />;
+  if (result.kind === "external" && result.icon) return <>{result.icon}</>;
+  return (
+    <span style={{ fontWeight: 700, fontSize: Math.round(size * 0.8) }}>
+      {result.name.charAt(0).toUpperCase()}
+    </span>
+  );
 }
 
 function MenuAllSection({
@@ -1098,10 +1128,19 @@ function MenuAllSection({
   const { storage } = useDesktopContext();
   const [view, setView] = useState<StartAllView>(() => {
     const stored = storage.get<string>(ALL_VIEW_KEY);
-    return stored === "grid" || stored === "list" ? stored : "list";
+    return (ALL_VIEWS as readonly string[]).includes(stored ?? "")
+      ? (stored as StartAllView)
+      : "category";
   });
   const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
+  // The category flyout, centered over the Start panel (measured at open so
+  // a fixed-position card sits over the dialog wherever it is anchored).
+  const [flyout, setFlyout] = useState<{
+    category: string;
+    rect: { x: number; y: number; w: number; h: number };
+  } | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const sectionRefs = useRef(new Map<string, HTMLElement>());
   // The picker replaces the groups in place, so the jump target scrolls once
   // the groups are mounted again.
@@ -1120,6 +1159,45 @@ function MenuAllSection({
   })).filter((g) => g.items.length > 0);
   const present = new Set(groups.map((g) => g.letter));
 
+  // Category grouping: a named category renders only with three or more
+  // entries, everything else folds into Other (last). Items arrive sorted, so
+  // each category stays alphabetical.
+  const byCategory = new Map<string, LauncherResult[]>();
+  for (const item of items) {
+    const name = (item.kind !== "external" ? item.category : undefined) ?? "Other";
+    const list = byCategory.get(name) ?? [];
+    list.push(item);
+    byCategory.set(name, list);
+  }
+  const categories: Array<{ name: string; items: LauncherResult[] }> = [];
+  const other: LauncherResult[] = [];
+  for (const [name, list] of byCategory) {
+    if (name !== "Other" && list.length >= MIN_CATEGORY_APPS) {
+      categories.push({ name, items: list });
+    } else {
+      other.push(...list);
+    }
+  }
+  categories.sort((a, b) => a.name.localeCompare(b.name));
+  if (other.length > 0) {
+    other.sort((a, b) => a.name.localeCompare(b.name));
+    categories.push({ name: "Other", items: other });
+  }
+  const flyoutItems = flyout
+    ? (categories.find((c) => c.name === flyout.category)?.items ?? [])
+    : [];
+
+  const openFlyout = (category: string) => {
+    const dialog = rootRef.current?.closest('[role="dialog"]');
+    const r = dialog?.getBoundingClientRect();
+    setFlyout({
+      category,
+      rect: r
+        ? { x: r.x, y: r.y, w: r.width, h: r.height }
+        : { x: 0, y: 0, w: 600, h: 600 },
+    });
+  };
+
   const chooseView = (next: StartAllView) => {
     setView(next);
     storage.set(ALL_VIEW_KEY, next);
@@ -1131,6 +1209,7 @@ function MenuAllSection({
     <>
       <div style={{ height: 6 }} />
       <div
+        ref={rootRef}
         style={{
           display: "flex",
           alignItems: "center",
@@ -1172,7 +1251,7 @@ function MenuAllSection({
               fontFamily: "inherit",
             }}
           >
-            {view === "grid" ? "Grid" : "List"}
+            {ALL_VIEW_LABELS[view]}
             <svg width={10} height={10} viewBox="0 0 10 10" fill="none" aria-hidden>
               <path
                 d="M2 3.5 5 6.5 8 3.5"
@@ -1210,7 +1289,7 @@ function MenuAllSection({
                   boxShadow: "0 12px 28px -10px rgba(0,0,0,0.5)",
                 }}
               >
-                {(["grid", "list"] as const).map((v) => (
+                {ALL_VIEWS.map((v) => (
                   <button
                     key={v}
                     type="button"
@@ -1242,7 +1321,7 @@ function MenuAllSection({
                     }}
                   >
                     <span style={{ width: 12 }}>{view === v ? "✓" : ""}</span>
-                    {v === "grid" ? "Grid" : "List"}
+                    {ALL_VIEW_LABELS[v]}
                   </button>
                 ))}
               </div>
@@ -1251,7 +1330,159 @@ function MenuAllSection({
         </div>
       </div>
 
-      {jumpOpen ? (
+      {view === "category" && !jumpOpen ? (
+        // Category folders, the Android-folder pattern Windows adopted: a 2x2
+        // of the category's first icons over its name; clicking opens a
+        // flyout with the full category.
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 4,
+            alignContent: "start",
+          }}
+        >
+          {categories.map((cat) => (
+            <button
+              key={cat.name}
+              type="button"
+              onClick={() => {
+                openFlyout(cat.name);
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = hover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "transparent";
+              }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 8,
+                padding: "12px 6px",
+                border: "none",
+                background: "transparent",
+                color: theme.palette.textPrimary,
+                cursor: "pointer",
+                borderRadius: theme.shape.small,
+                fontFamily: "inherit",
+                transition: "background 100ms ease",
+              }}
+            >
+              <span
+                aria-hidden
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: 3,
+                  padding: 5,
+                  borderRadius: theme.shape.small + 2,
+                  background: `${theme.palette.textPrimary}0d`,
+                  border: `1px solid ${theme.palette.border}`,
+                }}
+              >
+                {cat.items.slice(0, 4).map((item) => (
+                  <span
+                    key={item.key}
+                    style={{
+                      width: 16,
+                      height: 16,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <ResultMiniIcon result={item} size={16} />
+                  </span>
+                ))}
+              </span>
+              <span
+                style={{
+                  maxWidth: "100%",
+                  fontSize: 12,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {cat.name}
+              </span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {flyout ? (
+        <>
+          <div
+            role="presentation"
+            onClick={() => {
+              setFlyout(null);
+            }}
+            style={{ position: "fixed", inset: 0, zIndex: 1401 }}
+          />
+          <div
+            role="dialog"
+            aria-label={flyout.category}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                // Close just the flyout, not the Start menu around it.
+                e.stopPropagation();
+                setFlyout(null);
+              }
+            }}
+            style={{
+              position: "fixed",
+              left: flyout.rect.x + flyout.rect.w / 2,
+              top: flyout.rect.y + flyout.rect.h / 2,
+              transform: "translate(-50%, -50%)",
+              width: Math.round(flyout.rect.w * 0.82),
+              maxHeight: Math.round(flyout.rect.h * 0.72),
+              zIndex: 1402,
+              display: "flex",
+              flexDirection: "column",
+              gap: 6,
+              padding: "12px 16px 16px",
+              background: theme.palette.surface,
+              backdropFilter: theme.blur.spotlight,
+              WebkitBackdropFilter: theme.blur.spotlight,
+              border: `1px solid ${theme.palette.border}`,
+              borderRadius: theme.shape.windowRadius,
+              color: theme.palette.textPrimary,
+              boxShadow: "0 24px 60px -16px rgba(0,0,0,0.6)",
+            }}
+          >
+            <span style={{ fontSize: 13, fontWeight: 600 }}>{flyout.category}</span>
+            <div
+              style={{
+                overflowY: "auto",
+                display: "grid",
+                gridTemplateColumns: "repeat(4, 1fr)",
+                gap: 4,
+                justifyItems: "center",
+                alignContent: "start",
+              }}
+            >
+              {flyoutItems.map((result) => (
+                <LauncherTile
+                  key={`cat:${result.key}`}
+                  result={result}
+                  size={40}
+                  plain
+                  onActivate={() => {
+                    setFlyout(null);
+                    onActivate(result);
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {view === "category" ? null : jumpOpen ? (
         <div
           style={{
             display: "grid",

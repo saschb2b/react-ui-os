@@ -10,6 +10,8 @@ export const terminalApp: App = {
   accent: "#06b6d4",
   icon: TerminalIcon,
   icons: { fluent: TerminalFluentIcon },
+  // Where Windows files it in the Start Category view.
+  category: "Productivity",
   // macOS Terminal opens at 80x24 characters; this is a roughly equivalent
   // landscape window for the monospace surface.
   defaultBounds: { w: 640, h: 420 },

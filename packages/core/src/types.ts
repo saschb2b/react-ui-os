@@ -38,6 +38,16 @@ export interface App {
   iconArt?: ComponentType<{ size?: number }>;
   /** Default window bounds when first opened. Theme has the fallback. */
   defaultBounds?: { w: number; h: number };
+  /**
+   * Category the app files under in the Start menu's Category view. Windows
+   * groups All apps into eight fixed categories (Productivity, Utilities &
+   * Tools, Creativity, Games, Entertainment, Accessibility, Information &
+   * Reading, Other); a category renders only once at least three apps carry
+   * it, everything else lands under Other. Optional; uncategorized apps go
+   * to Other.
+   * Source: https://www.windowslatest.com/2025/06/18/you-cannot-create-new-categories-in-new-windows-11-start-menu/
+   */
+  category?: string;
   /** The window's body. */
   content: ComponentType<AppContentProps>;
 }

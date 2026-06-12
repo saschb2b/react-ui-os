@@ -10,6 +10,8 @@ export const calculatorApp: App = {
   accent: "#22c55e",
   icon: CalculatorIcon,
   icons: { fluent: CalculatorFluentIcon },
+  // Where Windows files it in the Start Category view.
+  category: "Utilities & Tools",
   // macOS Calculator basic mode is tall and narrow.
   defaultBounds: { w: 300, h: 440 },
   content: CalculatorContent,

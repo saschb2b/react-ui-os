@@ -14,6 +14,8 @@ export const remindersApp: App = {
   accent: "#fb7185",
   icon: RemindersIcon,
   icons: { fluent: RemindersFluentIcon },
+  // Where Windows files it in the Start Category view.
+  category: "Productivity",
   defaultBounds: { w: 520, h: 560 },
   content: Content,
 };

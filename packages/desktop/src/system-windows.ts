@@ -25,6 +25,11 @@ export interface SystemWindowDef {
   tagline?: string;
   /** Accent color used by the top-edge highlight. */
   accent?: string;
+  /**
+   * Category in the Start menu's Category view, like `App.category`.
+   * Optional; uncategorized windows file under Other.
+   */
+  category?: string;
   /** Default window bounds when first opened. */
   defaultBounds: { w: number; h: number };
   /** Window body component. Receives the optional args alongside focus. */
@@ -67,6 +72,8 @@ export const systemWindows: Record<string, SystemWindowDef> = {
     name: "Settings",
     tagline: "Tweak the theme",
     accent: "#8a8a93",
+    // Where Windows files its Settings app in the Start Category view.
+    category: "Utilities & Tools",
     defaultBounds: { w: 660, h: 540 },
     content: Settings,
     icon: SettingsIcon,

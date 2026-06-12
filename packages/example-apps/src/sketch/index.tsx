@@ -10,6 +10,8 @@ export const sketchApp: App = {
   accent: "#a855f7",
   icon: SketchIcon,
   icons: { fluent: SketchFluentIcon },
+  // Where Windows files it in the Start Category view.
+  category: "Creativity",
   defaultBounds: { w: 720, h: 540 },
   content: SketchContent,
 };
