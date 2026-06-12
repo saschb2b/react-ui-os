@@ -63,6 +63,18 @@ describe("run (built-in registry)", () => {
     expect(await run(["add", "clock", "--dir", "widgets", "--silent"])).toBe(0);
     expect(existsSync(join(dir, "widgets", "clock", "index.tsx"))).toBe(true);
   });
+
+  it("prints a copy-pasteable named-import register snippet", async () => {
+    expect(await run(["add", "notes"])).toBe(0);
+    const out = vi
+      .mocked(console.log)
+      .mock.calls.map((c) => String(c[0]))
+      .join("\n")
+      // eslint-disable-next-line no-control-regex
+      .replace(/\[\d+m/g, "");
+    expect(out).toContain('import { notesApp } from "./os-apps/notes";');
+    expect(out).toContain("<Desktop apps={[notesApp]} />");
+  });
 });
 
 // A third-party registry: an authoring registry.json plus its app source. The

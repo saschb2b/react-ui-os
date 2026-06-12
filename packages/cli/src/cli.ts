@@ -241,10 +241,10 @@ function add(args: Args, registry: Registry): number {
     console.log(bold("Register with the desktop:"));
     for (const app of added) {
       const loc = toPosix(join(baseDir, app.id));
-      console.log(
-        `  ${app.name}: import ${cyan(app.export)} from ${dim(loc)}, then add it to ${dim("<Desktop apps={[...]} />")}`,
-      );
+      console.log(`  import { ${cyan(app.export)} } from "./${loc}";`);
     }
+    console.log("");
+    console.log(`  <Desktop apps={[${added.map((a) => cyan(a.export)).join(", ")}]} />`);
   }
 
   return failed ? 1 : 0;
