@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { notify, useWindowManager } from "@react-ui-os/core";
-import { useApps, useTheme } from "../desktop-context";
+import { useApps, useDesktopContext, useTheme } from "../desktop-context";
 import { resolveAppIcon } from "../util/app-icon";
 import { SpacesBar } from "../spaces-bar";
 import { getDockReservation, getMenuBarHeight } from "../util/layout";
@@ -460,6 +460,7 @@ function LauncherTile({
   onActivate,
   size = 72,
   optionId = gridOptionId,
+  plain = false,
 }: {
   result: LauncherResult;
   index: number;
@@ -468,6 +469,12 @@ function LauncherTile({
   onActivate: () => void;
   size?: number;
   optionId?: (index: number) => string;
+  /**
+   * Render the icon bare instead of on the accent squircle, the Windows 11
+   * pinned-tile look (a plain app icon over a hover highlight). Falls back to
+   * the squircle monogram when the result has no icon at all.
+   */
+  plain?: boolean;
 }) {
   const theme = useTheme();
   const accent = result.accent ?? theme.palette.accent;
@@ -480,6 +487,7 @@ function LauncherTile({
         : undefined;
   const externalIcon = result.kind === "external" ? result.icon : undefined;
   const tile = size;
+  const bare = plain && (Art ?? Icon ?? externalIcon) !== undefined;
   return (
     <div
       id={optionId(index)}
@@ -494,7 +502,7 @@ function LauncherTile({
         alignItems: "center",
         gap: 8,
         padding: "12px 6px",
-        borderRadius: theme.shape.windowRadius,
+        borderRadius: plain ? theme.shape.small : theme.shape.windowRadius,
         cursor: "pointer",
         background: selected ? `${theme.palette.textPrimary}1f` : "transparent",
         transition: "background 100ms ease",
@@ -504,20 +512,25 @@ function LauncherTile({
         style={{
           width: tile,
           height: tile,
-          borderRadius: theme.shape.dockTileRadius,
-          background: `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 6px rgba(0,0,0,0.35)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#fff",
           flexShrink: 0,
+          ...(bare
+            ? { color: theme.palette.textPrimary }
+            : {
+                borderRadius: theme.shape.dockTileRadius,
+                background: `linear-gradient(180deg, ${accent} 0%, ${accent}c0 100%)`,
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 6px rgba(0,0,0,0.35)",
+                color: "#fff",
+              }),
         }}
       >
         {Art ? (
-          <Art size={Math.round(tile * 0.7)} />
+          <Art size={Math.round(tile * (bare ? 0.8 : 0.7))} />
         ) : Icon ? (
-          <Icon size={Math.round(tile * 0.46)} />
+          <Icon size={Math.round(tile * (bare ? 0.8 : 0.46))} />
         ) : externalIcon ? (
           externalIcon
         ) : (
@@ -561,15 +574,23 @@ const MENU_SIZES = {
 // six slots; up to four go to recently used apps, files fill the rest.
 const RECENT_SLOTS = 6;
 const RECENT_APP_SLOTS = 4;
+// The redesigned Start shows two rows of pins before "Show all" expands the
+// rest, and remembers the expansion across opens.
+// Source: https://kartikmehtablog.com/windows-11-25h2-new-start-menu/
+const PINNED_DEFAULT_ROWS = 2;
+const PINS_EXPANDED_KEY = "start-pins-expanded";
 function menuOptionId(index: number): string {
   return `rui-launcher-menu-option-${String(index)}`;
 }
 
 /**
- * Windows Start menu: a panel anchored just past the dock launcher, with a
- * search field above a grid of app tiles. Filters as you type; arrow keys move
- * a visual selection across the grid. Anchored and animated from the dock edge
- * (bottom-left for a bottom taskbar, beside a left dock).
+ * Windows Start menu: a panel anchored just past the dock launcher, rebuilt
+ * on the 25H2 redesigned Start's single scrollable surface: a search field
+ * over the Pinned grid (two rows until "Show all", remembered across opens),
+ * the Recent region, and the All apps section at the bottom. Filters as you
+ * type; arrow keys move a visual selection across the pinned grid. Anchored
+ * and animated from the dock edge.
+ * Source: https://www.windowscentral.com/microsoft/windows-11/whats-in-the-new-start-menu-on-windows-11-for-versions-25h2-and-24h2
  */
 function MenuView({
   launcher,
@@ -580,6 +601,7 @@ function MenuView({
 }) {
   const theme = useTheme();
   const apps = useApps();
+  const { storage } = useDesktopContext();
   const { state, openWindow, windows } = useWindowManager();
   const { query, setQuery, results, selectedIndex, setSelectedIndex } = launcher;
   const { moveSelection, activate, activateSelected, close } = launcher;
@@ -593,8 +615,16 @@ function MenuView({
   const recentFilesOn = theme.chrome.startMenuRecentFiles ?? true;
   const profileOn = theme.chrome.startMenuProfile ?? true;
   const menuSize = MENU_SIZES[theme.chrome.startMenuSize ?? "small"];
-  // With Pinned hidden the menu opens straight into the All apps list.
-  const [showAllApps, setShowAllApps] = useState(!pinnedOn && allAppsOn);
+  // Two rows of pins until "Show all"; the explicit toggle persists the way
+  // Windows remembers the expansion across opens. Arrowing past the visible
+  // rows expands for the session without persisting.
+  const [showAllPins, setShowAllPins] = useState<boolean>(
+    () => storage.get<boolean>(PINS_EXPANDED_KEY) ?? false,
+  );
+  const togglePins = (next: boolean) => {
+    setShowAllPins(next);
+    storage.set(PINS_EXPANDED_KEY, next);
+  };
 
   useEffect(() => {
     const id = window.setTimeout(() => {
@@ -606,10 +636,20 @@ function MenuView({
   }, []);
 
   const searching = query.trim().length > 0;
-  // The listbox is a grid in the pinned / search views and a single column in
-  // the All apps list, so vertical arrows step by the right amount.
-  const cols = showAllApps ? 1 : menuSize.columns;
-  const showListbox = searching || showAllApps || pinnedOn;
+  const cols = menuSize.columns;
+  const defaultPins = cols * PINNED_DEFAULT_ROWS;
+  const gridCount =
+    searching || showAllPins ? results.length : Math.min(results.length, defaultPins);
+  // The combobox listbox is the search-results grid while typing, otherwise
+  // the pinned grid; Enter must not launch a selection neither shows.
+  const showListbox = searching || pinnedOn;
+  // Keep the keyboard usable over a collapsed grid: moving the selection past
+  // the visible rows expands the pins for this open only.
+  useEffect(() => {
+    if (!searching && !showAllPins && pinnedOn && selectedIndex >= gridCount) {
+      setShowAllPins(true);
+    }
+  }, [searching, showAllPins, pinnedOn, selectedIndex, gridCount]);
   const onKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     switch (e.key) {
       case "ArrowRight":
@@ -630,14 +670,11 @@ function MenuView({
         break;
       case "Enter":
         e.preventDefault();
-        // No activation while the list is hidden (every section toggled off),
-        // or Enter would launch an invisible selection.
         if (showListbox) activateSelected();
         break;
       case "Escape":
         e.preventDefault();
-        if (showAllApps && pinnedOn) setShowAllApps(false);
-        else close();
+        close();
         break;
       default:
         break;
@@ -758,21 +795,19 @@ function MenuView({
   // the pinned grid breathe), clamped to the viewport on short screens.
   const height = Math.min(menuSize.height, available);
 
+  // The Windows pinned tile: a bare 32px app icon over a hover highlight,
+  // arranged in the section's 6- or 8-column grid.
   const listbox = (
     <div
       id={MENU_LISTBOX_ID}
       role="listbox"
-      aria-label={showAllApps ? "All apps" : "Apps"}
+      aria-label={searching ? "Results" : "Pinned"}
       style={{
-        ...(showAllApps
-          ? { display: "flex", flexDirection: "column", gap: 2 }
-          : {
-              display: "grid",
-              gridTemplateColumns: `repeat(${String(menuSize.columns)}, 1fr)`,
-              gap: 4,
-              justifyItems: "center",
-              alignContent: "start",
-            }),
+        display: "grid",
+        gridTemplateColumns: `repeat(${String(cols)}, 1fr)`,
+        gap: 4,
+        justifyItems: "center",
+        alignContent: "start",
       }}
     >
       {results.length === 0 ? (
@@ -787,29 +822,14 @@ function MenuView({
         >
           {searching ? `No matches for "${query.trim()}".` : "No apps."}
         </div>
-      ) : showAllApps ? (
-        results.map((result, i) => (
-          <MenuRow
-            key={result.key}
-            result={result}
-            index={i}
-            optionId={menuOptionId}
-            selected={i === selectedIndex}
-            onHover={() => {
-              setSelectedIndex(i);
-            }}
-            onActivate={() => {
-              activate(result);
-            }}
-          />
-        ))
       ) : (
-        results.map((result, i) => (
+        results.slice(0, gridCount).map((result, i) => (
           <LauncherTile
             key={result.key}
             result={result}
             index={i}
             size={40}
+            plain
             optionId={menuOptionId}
             selected={i === selectedIndex}
             onHover={() => {
@@ -823,6 +843,11 @@ function MenuView({
       )}
     </div>
   );
+
+  // The All section closes the scrollable page, every entry A to Z. The
+  // redesigned Start defaults to its Category view; without category data the
+  // list view is the honest register here.
+  const allSorted = [...results].sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <>
@@ -896,9 +921,6 @@ function MenuView({
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              // Searching returns to the grid; with Pinned hidden the All
-              // apps list is the resting view, so stay there instead.
-              if (pinnedOn) setShowAllApps(false);
             }}
             placeholder="Search for apps, settings, and documents"
             style={{
@@ -928,39 +950,39 @@ function MenuView({
             gap: 6,
           }}
         >
-          {showListbox ? (
+          {searching ? (
+            <>
+              <MenuSectionHeader label="Results" />
+              {listbox}
+            </>
+          ) : pinnedOn ? (
             <>
               <MenuSectionHeader
-                label={searching ? "Results" : showAllApps ? "All apps" : "Pinned"}
+                label="Pinned"
                 action={
-                  searching
-                    ? undefined
-                    : showAllApps
-                      ? // Without a Pinned section there is nothing to go back to.
-                        pinnedOn
-                        ? {
-                            label: "Back",
-                            onClick: () => {
-                              setShowAllApps(false);
-                            },
-                            back: true,
-                          }
-                        : undefined
-                      : allAppsOn
-                        ? {
-                            label: "All apps",
-                            onClick: () => {
-                              setShowAllApps(true);
-                            },
-                          }
-                        : undefined
+                  results.length > defaultPins
+                    ? showAllPins
+                      ? {
+                          label: "Show less",
+                          onClick: () => {
+                            togglePins(false);
+                          },
+                          back: true,
+                        }
+                      : {
+                          label: "Show all",
+                          onClick: () => {
+                            togglePins(true);
+                          },
+                        }
+                    : undefined
                 }
               />
               {listbox}
             </>
           ) : null}
 
-          {!searching && !showAllApps && recentRows.length > 0 ? (
+          {!searching && recentRows.length > 0 ? (
             <>
               <div style={{ height: 6 }} />
               <MenuSectionHeader label="Recent" />
@@ -976,6 +998,24 @@ function MenuView({
                     key={key}
                     result={result}
                     subtitle={subtitle}
+                    onActivate={() => {
+                      activate(result);
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          ) : null}
+
+          {!searching && allAppsOn && allSorted.length > 0 ? (
+            <>
+              <div style={{ height: 6 }} />
+              <MenuSectionHeader label="All" />
+              <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {allSorted.map((result) => (
+                  <MenuRow
+                    key={`all:${result.key}`}
+                    result={result}
                     onActivate={() => {
                       activate(result);
                     }}
