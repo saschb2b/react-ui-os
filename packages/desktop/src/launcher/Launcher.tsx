@@ -1161,6 +1161,7 @@ function MenuAllSection({
 }) {
   const theme = useTheme();
   const { storage } = useDesktopContext();
+  const reducedMotion = useReducedMotion();
   const [view, setView] = useState<StartAllView>(() => {
     const stored = storage.get<string>(ALL_VIEW_KEY);
     return (ALL_VIEWS as readonly string[]).includes(stored ?? "")
@@ -1449,6 +1450,9 @@ function MenuAllSection({
               background: "rgba(0,0,0,0.35)",
               backdropFilter: "blur(2px)",
               WebkitBackdropFilter: "blur(2px)",
+              animation: reducedMotion
+                ? undefined
+                : `rui-fade-in ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
             }}
           />
           <div
@@ -1480,6 +1484,12 @@ function MenuAllSection({
               borderRadius: theme.shape.windowRadius + 4,
               color: theme.palette.textPrimary,
               boxShadow: "0 32px 70px -18px rgba(0,0,0,0.7)",
+              // Scale-and-fade in from center, the Windows flyout entrance. The
+              // keyframe animates `scale`, which composes with the centering
+              // translate rather than replacing it.
+              animation: reducedMotion
+                ? undefined
+                : `rui-window-open ${String(theme.motion.windowOpenDurationMs)}ms ${theme.motion.windowOpenEasing} both`,
             }}
           >
             <h2
