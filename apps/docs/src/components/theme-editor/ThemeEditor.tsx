@@ -57,11 +57,9 @@ function loadPreset(choice: PresetChoice): OsTheme {
 // preset.
 const STORAGE_KEY = "rui-os:theme-editor";
 
-function readStoredTheme(): OsTheme | null {
-  if (typeof window === "undefined") return null;
+function parseTheme(raw: string | null): OsTheme | null {
+  if (!raw) return null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
     const parsed = JSON.parse(raw) as OsTheme;
     if (typeof parsed.id !== "string" || typeof parsed.palette?.accent !== "string") {
       return null;
@@ -70,6 +68,51 @@ function readStoredTheme(): OsTheme | null {
   } catch {
     return null;
   }
+}
+
+function readStoredTheme(): OsTheme | null {
+  if (typeof window === "undefined") return null;
+  return parseTheme(window.localStorage.getItem(STORAGE_KEY));
+}
+
+// A share link carries the whole theme in the URL hash (#theme=<base64 JSON>),
+// so a clicked-together look can be sent to a teammate. An incoming link wins
+// over the local draft; the hash is then cleared so later edits go to the
+// draft as usual. base64 keeps the JSON's quotes and spaces URL-safe.
+function readSharedTheme(): OsTheme | null {
+  if (typeof window === "undefined") return null;
+  const match = window.location.hash.match(/^#theme=(.+)$/);
+  if (!match?.[1]) return null;
+  try {
+    return parseTheme(
+      new TextDecoder().decode(
+        Uint8Array.from(window.atob(match[1]), (c) => c.charCodeAt(0)),
+      ),
+    );
+  } catch {
+    return null;
+  }
+}
+
+function shareUrl(theme: OsTheme): string {
+  const json = JSON.stringify(theme);
+  const base64 = window.btoa(String.fromCharCode(...new TextEncoder().encode(json)));
+  const url = new URL(window.location.href);
+  url.hash = `theme=${base64}`;
+  return url.toString();
+}
+
+// Captured once at module load (the page is client:only, so this runs in the
+// browser before React mounts). The hash is then cleared so the link's
+// recipient edits a normal draft from there on and a reload keeps their copy
+// rather than resetting to the link. Deferred a tick: a replaceState issued
+// while the navigation is still committing is undone when the browser
+// finalizes the history entry.
+const incomingSharedTheme = readSharedTheme();
+if (incomingSharedTheme && typeof window !== "undefined") {
+  window.setTimeout(() => {
+    window.history.replaceState(null, "", window.location.pathname);
+  }, 0);
 }
 
 // The preview wallpaper and launcher glyph are docs-site assets. They make no
@@ -122,14 +165,22 @@ const panelButton = {
  */
 export default function ThemeEditor() {
   const [theme, setTheme] = useState<OsTheme>(
-    () => readStoredTheme() ?? loadPreset("macos"),
+    () => incomingSharedTheme ?? readStoredTheme() ?? loadPreset("macos"),
   );
   const [open, setOpen] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [shared, setShared] = useState(false);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(theme));
   }, [theme]);
+
+  const copyShareLink = () => {
+    void navigator.clipboard.writeText(shareUrl(theme)).then(() => {
+      setShared(true);
+      window.setTimeout(() => setShared(false), 1600);
+    });
+  };
 
   const set = (path: string, value: unknown) =>
     setTheme((t) => setPath(t, path, value));
@@ -603,6 +654,14 @@ export default function ThemeEditor() {
             </button>
             <button type="button" onClick={downloadFile} style={panelButton}>
               Download
+            </button>
+            <button
+              type="button"
+              onClick={copyShareLink}
+              style={panelButton}
+              title="Copy a link that opens the editor with this theme"
+            >
+              {shared ? "Copied" : "Share"}
             </button>
           </footer>
         </aside>

@@ -41,6 +41,8 @@ export default [
         AbortSignal: "readonly",
         Blob: "readonly",
         URL: "readonly",
+        TextEncoder: "readonly",
+        TextDecoder: "readonly",
         StorageEvent: "readonly",
         KeyboardEvent: "readonly",
         MouseEvent: "readonly",
