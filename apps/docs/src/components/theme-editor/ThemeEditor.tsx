@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { OsTheme } from "@react-ui-os/core";
 import { setPath } from "@react-ui-os/core";
 import { Desktop } from "@react-ui-os/desktop";
@@ -40,6 +40,26 @@ function loadPreset(choice: DemoThemeChoice): OsTheme {
   delete customizable["appearance"];
   delete customizable["wallpaper.src"];
   return { ...theme, appearance: undefined, appearances: undefined, customizable };
+}
+
+// A work-in-progress theme survives a reload. OsTheme is plain data, so a
+// JSON round-trip is lossless; anything unparseable falls back to the macOS
+// preset.
+const STORAGE_KEY = "rui-os:theme-editor";
+
+function readStoredTheme(): OsTheme | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as OsTheme;
+    if (typeof parsed.id !== "string" || typeof parsed.palette?.accent !== "string") {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
 }
 
 // The preview wallpaper and launcher glyph are docs-site assets. They make no
@@ -91,9 +111,15 @@ const panelButton = {
  * the export button prints the object as a ready-to-paste theme file.
  */
 export default function ThemeEditor() {
-  const [theme, setTheme] = useState<OsTheme>(() => loadPreset("macos"));
+  const [theme, setTheme] = useState<OsTheme>(
+    () => readStoredTheme() ?? loadPreset("macos"),
+  );
   const [open, setOpen] = useState(true);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(theme));
+  }, [theme]);
 
   const set = (path: string, value: unknown) =>
     setTheme((t) => setPath(t, path, value));
