@@ -6,11 +6,25 @@ hero:
   tagline: A real desktop OS in one React component.
 ---
 
-import ThemeGallery from "~/components/ThemeGallery.astro";
+import LandingNav from "~/components/LandingNav.astro";
+import Highlights from "~/components/Highlights.astro";
+import LandingSection from "~/components/LandingSection.astro";
+import ThemeShowcase from "~/components/ThemeShowcase.astro";
+import FeatureGrid from "~/components/FeatureGrid.astro";
+import CtaBand from "~/components/CtaBand.astro";
 
-## Everything above, from one tag
+<LandingNav />
 
-The wallpaper, the dock, the draggable and resizable windows, Spotlight, Settings, the per-platform chrome it cycles through: all of it is one component.
+<Highlights />
+
+<LandingSection
+  id="one-object"
+  eyebrow="The contract"
+  title="You register apps. The library composes the system."
+  sub="An app is one object. Register it and it appears in the dock, the menu bar, Spotlight, and the keyboard shortcuts at once, with nothing else to wire."
+  link="Five minutes to a desktop"
+  linkHref="/quickstart/"
+>
 
 ```tsx
 import { Desktop } from "@react-ui-os/desktop";
@@ -21,53 +35,45 @@ const apps = [{ id: "notes", name: "Notes", content: () => <h1>Hello, desktop.</
 <Desktop apps={apps} theme={macosTheme} />;
 ```
 
-Register one app object and it lights up the dock, the menu bar, Spotlight, and the keyboard shortcuts at once. You describe the apps; the library composes the system.
+</LandingSection>
 
-## Faithful to each platform, not approximated
+<ThemeShowcase />
 
-The same apps and window manager run under every theme, but each one is its platform, not a coat of paint.
+<LandingSection
+  id="your-theme"
+  eyebrow="Make it yours"
+  title="The clones are reference themes, not the ceiling."
+  sub="A theme is one plain-data object: palette, shape, motion, blur, wallpaper, chrome. Put the dock on the left, drop the menu bar, round the windows, pick your accent. Start from a shipped theme and change what you disagree with, or click one together on a live desktop and copy the file out."
+  cta="Open the theme editor"
+  ctaHref="/theme-editor/"
+  link="Writing a theme"
+  linkHref="/themes/writing/"
+/>
 
-- **macOS** has the traffic lights, the genie minimize, the floating dock with cursor magnification, and Tahoe's Liquid Glass.
-- **Windows** has the caption buttons, the flush taskbar, and the Start menu.
-- **Ubuntu** has the Yaru dock, the Circle of Friends launcher, and the centered clock.
-
-Motion timings, corner radii, and chrome dimensions are taken from the real platforms, cited in the code, not tuned by feel. Open any one full-screen:
-
-<ThemeGallery />
-
-## Or make it yours
-
-The clones are not privileged: a theme is one plain-data object (palette, shape, motion, blur, wallpaper, chrome), and your own gets the same levers. Put the dock on the left, drop the menu bar, round the windows, pick your accent. Start from a shipped theme and change what you disagree with, or click one together on a live desktop and copy the file out.
-
-```ts
-export const acmeTheme: OsTheme = {
-  id: "acme",
-  palette: { accent: "#5cb6b9" /* … */ },
-  chrome: { windowControls: "minimal", dockPosition: "left", menuBar: "none" },
-  // …
-};
-```
-
-[Open the theme editor](/theme-editor/) to build one by clicking, or read [Writing a theme](/themes/writing/).
-
-## A real desktop, not a mockup
-
-The apps actually work. Notes persist across reloads, the calculator computes, the terminal runs commands. Windows drag at 60fps, resize from any edge, snap to halves and quarters, and minimize with the genie. Spotlight finds apps, settings, and files. It behaves like an OS because it is one, held in React state.
-
-## Build your own
-
-A portfolio that boots like a Mac. An internal console that feels like a real desktop. A product demo, an onboarding sandbox, a teaching tool. You write an app as a single object, or start from a prebuilt one in the App Store and edit the source in your codebase.
+<LandingSection
+  id="apps"
+  eyebrow="App Store"
+  title="Install an app, own the files."
+  sub="Apps are not bundled into the library. The CLI copies an app's source into your codebase, so you can edit everything after install. Notes, Calculator, Clock, Calendar, Reminders, Sketch, and Terminal are in the registry today; host your own registry to publish more."
+  cta="Browse the App Store"
+  ctaHref="/app-store/"
+  link="Publish your own"
+  linkHref="/app-store/publish/"
+>
 
 ```bash
 npx @react-ui-os/cli add notes
 ```
 
-[Browse the App Store](/app-store/) or [publish your own](/app-store/publish/).
+</LandingSection>
 
-## Get started
+<LandingSection
+  id="everything"
+  eyebrow="Also in the box"
+  title="The rest of an OS."
+  sub="A desktop is more than windows. These ship wired together and reachable from the same App registry."
+>
+  <FeatureGrid />
+</LandingSection>
 
-```bash
-npm install @react-ui-os/desktop @react-ui-os/theme-macos
-```
-
-Drop in the one tag above and you have a desktop. The [Quickstart](/quickstart/) takes it from there.
+<CtaBand />

@@ -1,12 +1,12 @@
 ---
 /**
- * Landing hero (overrides Starlight's default Hero on the splash page). A
- * demo-dominant two-column layout: a compact pitch on the left, and the live
- * desktop as the wide centerpiece on the right. The OS switcher is a segmented
- * control built into the window's title bar (the in-canvas one is hidden via
- * ?embed=1), so there is one control and it reads as part of the product. The
- * desktop cycles macOS / Windows / Ubuntu on its own; clicking a segment or
- * hovering the window pins the current look.
+ * Landing hero (overrides Starlight's default Hero on the splash page).
+ * Modeled on the Apple OS product pages: a centered stack of eyebrow, a
+ * giant headline, one gray subhead, and a pill CTA row, with the product
+ * shot full-width underneath. Ours is better than a screenshot: the live
+ * desktop, cycling macOS / Windows / Ubuntu, with the OS switcher built
+ * into the window's title bar. Clicking a segment or hovering the window
+ * pins the current look.
  */
 const base = import.meta.env.BASE_URL.endsWith("/")
   ? import.meta.env.BASE_URL
@@ -21,20 +21,17 @@ const oses = [
 ---
 
 <section class="lh">
-  <div class="lh__pitch">
-    <p class="lh__kicker">React 19 component library</p>
-    <h1 class="lh__title">A real desktop OS, in one component.</h1>
-    <p class="lh__tagline">
-      Clone macOS, Windows, or Ubuntu down to the chrome, fill it with your own apps, and
-      ship it to the browser. The desktop here is the whole library, running live.
-    </p>
-    <div class="lh__actions">
-      <a class="lh__cta" href={`${base}quickstart/`}>Quickstart →</a>
-      <div class="lh__links">
-        <a href={`${base}introduction/`}>Read the docs</a>
-        <a href="https://github.com/saschb2b/react-ui-os">GitHub</a>
-      </div>
-    </div>
+  <p class="lh__eyebrow">react-ui-os</p>
+  <h1 class="lh__title">A real desktop OS,<br /> in one React component.</h1>
+  <p class="lh__tagline">
+    macOS, Windows, and Ubuntu, cloned down to the chrome. Fill it with your apps and
+    ship it to the browser.
+  </p>
+  <div class="lh__actions">
+    <a class="lh__cta" href={`${base}quickstart/`}>Get started</a>
+    <a class="lh__alt" href={`${base}playground`} target="_blank" rel="noreferrer"
+      >Open the playground ↗</a
+    >
   </div>
 
   <figure class="lh__window">
@@ -62,108 +59,99 @@ const oses = [
     <iframe class="lh__frame" src={src} title="react-ui-os live desktop" loading="eager"
     ></iframe>
   </figure>
+  <p class="lh__below">
+    This is the library running live, not a video. Drag a window, press Cmd-K, switch
+    the OS.
+  </p>
 </section>
 
 <style>
   .lh {
-    display: grid;
-    grid-template-columns: minmax(0, 0.66fr) minmax(0, 1.7fr);
-    gap: 2.5rem;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    width: min(1480px, calc(100vw - 80px));
-    margin: 0.5rem 50% 2.75rem;
+    text-align: center;
+    width: min(1480px, calc(100vw - 48px));
+    margin: 1.5rem 50% 1rem;
     transform: translateX(-50%);
-  }
-  @media (max-width: 1100px) {
-    .lh {
-      width: calc(100% + 32px);
-      margin-left: -16px;
-      transform: none;
-    }
   }
   @media (max-width: 920px) {
     .lh {
-      grid-template-columns: 1fr;
-      gap: 1.75rem;
       width: 100%;
       margin-left: 0;
+      transform: none;
     }
   }
 
-  .lh__kicker {
-    margin: 0 0 0.6rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+  .lh__eyebrow {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
     color: var(--sl-color-accent);
   }
   .lh__title {
-    margin: 0 0 1rem;
-    font-size: clamp(2.1rem, 1.4rem + 2.6vw, 3.3rem);
-    line-height: 1.05;
-    letter-spacing: -0.025em;
+    margin: 0 0 1.1rem;
+    font-size: clamp(2.6rem, 1.6rem + 4.6vw, 5rem);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
     font-weight: 700;
   }
   .lh__tagline {
-    margin: 0 0 1.75rem;
-    font-size: 1.08rem;
-    line-height: 1.55;
+    margin: 0 0 1.6rem;
+    font-size: clamp(1.05rem, 0.95rem + 0.5vw, 1.35rem);
+    line-height: 1.5;
     color: var(--sl-color-gray-2);
-    max-width: 42ch;
+    max-width: 52ch;
   }
 
   .lh__actions {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
   }
   .lh__cta {
     display: inline-flex;
     align-items: center;
     border-radius: 999px;
-    padding: 0.7rem 1.6rem;
-    font-size: 1rem;
+    padding: 0.75rem 1.7rem;
+    font-size: 1.02rem;
     font-weight: 600;
     text-decoration: none;
     background: var(--sl-color-accent);
     color: var(--sl-color-black);
-    transition: transform 120ms ease;
   }
   .lh__cta:hover {
-    transform: translateY(-2px);
+    background: var(--sl-color-accent-high);
   }
-  .lh__links {
-    display: flex;
-    gap: 1.25rem;
-    font-size: 0.92rem;
-  }
-  .lh__links a {
-    color: var(--sl-color-gray-2);
+  .lh__alt {
+    font-size: 1.02rem;
+    font-weight: 500;
+    color: var(--sl-color-accent);
     text-decoration: none;
   }
-  .lh__links a:hover {
-    color: var(--sl-color-white);
+  .lh__alt:hover {
     text-decoration: underline;
   }
 
-  /* The live desktop, the dominant element. */
+  /* The live desktop, the product shot. */
   .lh__window {
     margin: 0;
-    border-radius: 14px;
+    width: 100%;
+    border-radius: 18px;
     border: 1px solid var(--sl-color-gray-5);
     overflow: hidden;
     background: var(--sl-color-black);
-    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 60px 120px -40px rgba(0, 0, 0, 0.8);
     isolation: isolate;
   }
   .lh__bar {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    min-height: 42px;
-    padding: 0 0.85rem;
+    min-height: 44px;
+    padding: 0 0.95rem;
     background: var(--sl-color-gray-6);
     border-bottom: 1px solid var(--sl-color-gray-5);
   }
@@ -202,12 +190,12 @@ const oses = [
     border: 0;
     cursor: pointer;
     font: inherit;
-    font-size: 0.76rem;
+    font-size: 0.78rem;
     font-weight: 600;
     color: var(--sl-color-gray-2);
     background: transparent;
     border-radius: 999px;
-    padding: 0.28rem 0.85rem;
+    padding: 0.3rem 0.9rem;
     transition:
       background 150ms ease,
       color 150ms ease;
@@ -238,14 +226,15 @@ const oses = [
   .lh__frame {
     display: block;
     width: 100%;
-    height: 640px;
+    height: clamp(440px, 58vw, 720px);
     border: 0;
     background: var(--sl-color-black);
   }
-  @media (max-width: 920px) {
-    .lh__frame {
-      height: 460px;
-    }
+
+  .lh__below {
+    margin: 1rem 0 0;
+    font-size: 0.88rem;
+    color: var(--sl-color-gray-3);
   }
 </style>
 

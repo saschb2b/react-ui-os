@@ -1,0 +1,122 @@
+---
+/**
+ * One landing band in the register of the Apple OS pages: a colored eyebrow,
+ * a large tight headline, an optional gray subhead, the section's content,
+ * and an optional action row (one filled pill plus one text link). Sections
+ * break out of the prose column to a shared 1240px rail.
+ */
+interface Props {
+  id?: string;
+  eyebrow: string;
+  title: string;
+  sub?: string;
+  cta?: string;
+  ctaHref?: string;
+  link?: string;
+  linkHref?: string;
+}
+const { id, eyebrow, title, sub, cta, ctaHref, link, linkHref } = Astro.props;
+
+const base = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+const withBase = (href: string) =>
+  /^https?:\/\//.test(href) ? href : `${base}${href.replace(/^\//, "")}`;
+---
+
+<section class="ls" id={id}>
+  <header class="ls__head">
+    <p class="ls__eyebrow">{eyebrow}</p>
+    <h2 class="ls__title">{title}</h2>
+    {sub && <p class="ls__sub">{sub}</p>}
+  </header>
+  <slot />
+  {
+    (cta || link) && (
+      <p class="ls__actions">
+        {cta && ctaHref && (
+          <a class="ls__cta" href={withBase(ctaHref)}>
+            {cta}
+          </a>
+        )}
+        {link && linkHref && (
+          <a class="ls__link" href={withBase(linkHref)}>
+            {link} →
+          </a>
+        )}
+      </p>
+    )
+  }
+</section>
+
+<style>
+  .ls {
+    width: min(1240px, calc(100vw - 48px));
+    margin: 5.5rem 50% 0;
+    transform: translateX(-50%);
+    text-align: left;
+  }
+  @media (max-width: 920px) {
+    .ls {
+      width: 100%;
+      margin-left: 0;
+      transform: none;
+    }
+  }
+
+  .ls__head {
+    max-width: 56rem;
+    margin-bottom: 2.25rem;
+  }
+  .ls__eyebrow {
+    margin: 0 0 0.65rem;
+    font-size: 1.02rem;
+    font-weight: 650;
+    color: var(--sl-color-accent);
+  }
+  .ls__title {
+    margin: 0;
+    font-size: clamp(2rem, 1.2rem + 3.2vw, 3.5rem);
+    line-height: 1.07;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+    color: var(--sl-color-white);
+  }
+  .ls__sub {
+    margin: 1.1rem 0 0;
+    font-size: clamp(1.02rem, 0.95rem + 0.4vw, 1.25rem);
+    line-height: 1.55;
+    color: var(--sl-color-gray-2);
+    max-width: 58ch;
+  }
+
+  .ls__actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 2rem 0 0;
+  }
+  .ls__cta {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.65rem 1.5rem;
+    font-size: 0.98rem;
+    font-weight: 600;
+    text-decoration: none;
+    background: var(--sl-color-accent);
+    color: var(--sl-color-black);
+  }
+  .ls__cta:hover {
+    background: var(--sl-color-accent-high);
+  }
+  .ls__link {
+    font-size: 0.98rem;
+    font-weight: 500;
+    color: var(--sl-color-accent);
+    text-decoration: none;
+  }
+  .ls__link:hover {
+    text-decoration: underline;
+  }
+</style>

@@ -1,0 +1,88 @@
+---
+/**
+ * The Apple-style feature column grid: short bold-lead paragraphs, several
+ * per row, for everything that does not get its own band.
+ */
+const base = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+
+const features = [
+  {
+    lead: "Workspaces.",
+    text: "Three spaces by default, Ctrl+Alt+arrows to switch, windows keep their state across the move.",
+    href: "components/workspaces/",
+  },
+  {
+    lead: "Mission Control.",
+    text: "F3 tiles every open window in a grid of cards; click one to focus it.",
+    href: "components/missioncontrol/",
+  },
+  {
+    lead: "App switcher.",
+    text: "Cmd-Tab cycles running apps in most-recently-used order, the Mac convention.",
+    href: "components/appswitcher/",
+  },
+  {
+    lead: "Window snapping.",
+    text: "Drag to an edge for halves and quarters with a live preview, or use the keyboard chords.",
+    href: "components/snapping/",
+  },
+  {
+    lead: "File explorer.",
+    text: "A Finder-style surface with list and icon views, selection, and keyboard navigation.",
+    href: "components/fileexplorer/",
+  },
+  {
+    lead: "Context menus.",
+    text: "Right-click the desktop, the dock, or a title bar; openContextMenu() from anywhere.",
+    href: "components/contextmenu/",
+  },
+  {
+    lead: "Quick Settings.",
+    text: "The GNOME system menu as a popover; registerQuickSetting() adds your tiles.",
+    href: "components/quicksettings/",
+  },
+  {
+    lead: "Swappable storage.",
+    text: "localStorage by default; pass an adapter for server-backed or cross-device sync.",
+    href: "api/storageadapter/",
+  },
+];
+---
+
+<ul class="fg">
+  {
+    features.map((f) => (
+      <li>
+        <a href={`${base}${f.href}`}>
+          <strong>{f.lead}</strong> {f.text}
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .fg {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.4rem 2.25rem;
+  }
+  .fg a {
+    display: block;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+  }
+  .fg strong {
+    color: var(--sl-color-white);
+  }
+  .fg a:hover strong {
+    color: var(--sl-color-accent);
+  }
+</style>

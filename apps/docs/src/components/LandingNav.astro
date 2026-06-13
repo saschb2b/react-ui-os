@@ -1,0 +1,67 @@
+---
+/**
+ * Sticky pill nav for the landing's sections, the Apple OS-page pattern: a
+ * centered row of rounded anchor pills that rides just under the site
+ * header. Pure anchors; the page is one tall scroll.
+ */
+const links = [
+  { href: "#highlights", label: "Highlights" },
+  { href: "#one-object", label: "One object" },
+  { href: "#themes", label: "Themes" },
+  { href: "#your-theme", label: "Make it yours" },
+  { href: "#apps", label: "Apps" },
+  { href: "#install", label: "Get started" },
+];
+---
+
+<nav class="ln" aria-label="Page sections">
+  <div class="ln__row">
+    {links.map((l) => <a href={l.href}>{l.label}</a>)}
+  </div>
+</nav>
+
+<style>
+  .ln {
+    position: sticky;
+    top: calc(var(--sl-nav-height, 4rem) + 0.4rem);
+    z-index: 20;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 1.25rem 0 0;
+    pointer-events: none;
+  }
+  .ln__row {
+    pointer-events: auto;
+    display: flex;
+    gap: 0.3rem;
+    max-width: calc(100vw - 24px);
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0.3rem;
+    border-radius: 999px;
+    border: 1px solid var(--sl-color-gray-5);
+    background: color-mix(in srgb, var(--sl-color-black) 72%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+  }
+  .ln__row::-webkit-scrollbar {
+    display: none;
+  }
+  .ln__row a {
+    flex: none;
+    border-radius: 999px;
+    padding: 0.42rem 1rem;
+    font-size: 0.84rem;
+    font-weight: 550;
+    text-decoration: none;
+    color: var(--sl-color-gray-2);
+    transition:
+      background 150ms ease,
+      color 150ms ease;
+  }
+  .ln__row a:hover {
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+  }
+</style>

@@ -1,0 +1,133 @@
+---
+/**
+ * The Themes band: three large product shots stacked the way the Apple pages
+ * present full-width screenshots, each with a bold-lead caption and a deep
+ * link that opens the playground full-screen in that look.
+ */
+import { Image } from "astro:assets";
+import LandingSection from "./LandingSection.astro";
+import macosShot from "../assets/themes-macos.jpg";
+import windowsShot from "../assets/themes-windows.jpg";
+import ubuntuShot from "../assets/themes-ubuntu.jpg";
+
+const base = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+
+const themes = [
+  {
+    id: "macos",
+    img: macosShot,
+    alt: "The macOS theme: a window with traffic-light controls and a floating dock over the Tahoe wallpaper",
+    lead: "macOS.",
+    text: "Traffic lights, the floating dock with the fisheye, a translucent menu bar, Tahoe's Liquid Glass.",
+  },
+  {
+    id: "windows",
+    img: windowsShot,
+    alt: "The Windows theme: caption-button windows and a bottom taskbar with a Start launcher and a clock",
+    lead: "Windows.",
+    text: "Caption buttons, the flush taskbar, the Start menu, Fluent motion. No fisheye, because Windows has none.",
+  },
+  {
+    id: "ubuntu",
+    img: ubuntuShot,
+    alt: "The Ubuntu theme: a top bar with a centered clock, a left dock, and the Quick Settings popover",
+    lead: "Ubuntu.",
+    text: "Yaru, a left dock flush to the edge, the centered clock, round symbolic window controls, Quick Settings.",
+  },
+];
+---
+
+<LandingSection
+  id="themes"
+  eyebrow="Themes"
+  title="Each one is its platform, not a coat of paint."
+  sub="The same apps and window manager run under every theme. Motion timings, corner radii, and chrome dimensions come from the real platforms, cited in the code, not tuned by feel."
+>
+  <div class="ts">
+    {
+      themes.map((theme) => (
+        <figure class="ts__shot">
+          <a
+            href={`${base}playground?theme=${theme.id}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Image
+              src={theme.img}
+              alt={theme.alt}
+              widths={[900, 1600]}
+              sizes="(max-width: 920px) 96vw, 1240px"
+              quality={82}
+              loading="lazy"
+            />
+          </a>
+          <figcaption>
+            <span>
+              <strong>{theme.lead}</strong> {theme.text}
+            </span>
+            <a
+              class="ts__open"
+              href={`${base}playground?theme=${theme.id}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open full-screen ↗
+            </a>
+          </figcaption>
+        </figure>
+      ))
+    }
+  </div>
+</LandingSection>
+
+<style>
+  .ts {
+    display: flex;
+    flex-direction: column;
+    gap: 2.75rem;
+  }
+  .ts__shot {
+    margin: 0;
+  }
+  .ts__shot a {
+    display: block;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid var(--sl-color-gray-5);
+  }
+  .ts__shot :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .ts__shot figcaption {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1.5rem;
+    padding: 0.9rem 0.35rem 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--sl-color-gray-2);
+  }
+  .ts__shot figcaption strong {
+    color: var(--sl-color-white);
+  }
+  .ts__open {
+    flex: none;
+    font-size: 0.84rem;
+    color: var(--sl-color-accent);
+    text-decoration: none;
+  }
+  .ts__open:hover {
+    text-decoration: underline;
+  }
+  @media (max-width: 620px) {
+    .ts__shot figcaption {
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+  }
+</style>
