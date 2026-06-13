@@ -232,6 +232,26 @@ export default function ThemeEditor() {
           </div>
 
           <div style={{ flex: 1, overflowY: "auto", padding: "0 12px" }}>
+            <p
+              style={{
+                margin: "0 0 10px",
+                fontSize: 11,
+                lineHeight: 1.5,
+                color: panelMuted,
+              }}
+            >
+              The editor edits one appearance. For a separate light and dark look, add
+              an <code>appearances</code> block to the exported file; see{" "}
+              <a
+                href="../themes/overview/#light-and-dark-appearance"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: panelText }}
+              >
+                Light and dark appearance
+              </a>
+              .
+            </p>
             <Section title="Identity" defaultOpen>
               <TextField
                 label="id (storage key and file name)"
