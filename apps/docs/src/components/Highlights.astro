@@ -13,7 +13,7 @@ import notificationsShot from "../assets/notifications.png";
 const cards = [
   {
     img: heroShot,
-    alt: "A macOS-style desktop with an open window, dock, and menu bar",
+    alt: "A macOS-style desktop with two windows snapped side by side over the dock and menu bar",
     lead: "A window manager, for real.",
     text: "Drag at 60 fps, resize from any edge, snap to halves and quarters, minimize with the genie. Window state lives in React; your routes can watch it.",
   },
@@ -25,7 +25,7 @@ const cards = [
   },
   {
     img: settingsShot,
-    alt: "The Settings window with accent, parallax, and radius controls",
+    alt: "The Settings window with wallpaper, accent, and window radius controls",
     lead: "Settings, on Cmd-,.",
     text: "A theme declares which tokens end users may tweak; the panel renders itself and preferences persist through the storage adapter. No code on your side.",
   },
@@ -179,6 +179,12 @@ const cards = [
     align-items: center;
     gap: 0.6rem;
     margin-top: 1rem;
+  }
+  /* Starlight's content-flow spacing adds margin-top to sibling elements
+     inside sl-markdown-content, which pushed the second button down into a
+     diagonal. Zero the margins explicitly. */
+  .hl__controls > .hl__btn {
+    margin: 0;
   }
   .hl__btn {
     flex: none;

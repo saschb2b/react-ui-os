@@ -62,6 +62,16 @@ header.header.rui-at-top {
   box-shadow: 0 6px 24px -16px transparent;
 }
 
+/* The landing's full-bleed bands and the highlights carousel break out of the
+   content column with 100vw-based widths. 100vw includes the scrollbar, so on
+   browsers with classic (non-overlay) scrollbars those boxes poke past the
+   client area and create a horizontal page scroll. Clip the page's horizontal
+   axis on hero (splash) pages; the carousel scrolls on its own axis inside. */
+html[data-has-hero],
+html[data-has-hero] body {
+  overflow-x: clip;
+}
+
 /* The wordmark, tightened to match the hero's confident type. */
 .site-title {
   font-weight: 700;

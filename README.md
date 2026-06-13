@@ -34,14 +34,14 @@ That single tag produces the wallpaper, dock, draggable resizable windows, focus
 <table>
   <tr>
     <td width="50%"><img src=".github/assets/spotlight.png" alt="Spotlight palette listing apps and system windows"><br><b>Spotlight (Cmd-K)</b><br>Apps, system windows, and any source you register, searchable from one palette.</td>
-    <td width="50%"><img src=".github/assets/settings.png" alt="Settings window with accent, parallax, and radius controls"><br><b>Settings (Cmd-,)</b><br>End users tweak whatever a theme marks <code>customizable</code>. No code on your side.</td>
+    <td width="50%"><img src=".github/assets/settings.png" alt="Settings window with wallpaper, accent, and window radius controls"><br><b>Settings (Cmd-,)</b><br>End users tweak whatever a theme marks <code>customizable</code>. No code on your side.</td>
   </tr>
   <tr>
     <td width="50%"><img src=".github/assets/notifications.png" alt="Notification toast stack in the top-right corner"><br><b>Notifications</b><br>Call <code>notify(...)</code> from anywhere. Toasts, dock badges, and a Notification Center, all wired.</td>
     <td width="50%"><img src=".github/assets/themes-macos.jpg" alt="macOS theme: a window with traffic lights and a floating dock over the macOS Tahoe wallpaper"><br><b>The macOS clone</b><br>Traffic lights, a floating dock with a fisheye, a translucent menu bar, the Tahoe wallpaper.</td>
   </tr>
   <tr>
-    <td width="50%"><img src=".github/assets/themes-windows.jpg" alt="Windows theme: a caption-button window and a bottom taskbar with a Start launcher and a clock on a Windows 11 wallpaper"><br><b>The Windows clone</b><br>Caption buttons, a flush taskbar with a Start launcher and a clock, no fisheye.</td>
+    <td width="50%"><img src=".github/assets/themes-windows.jpg" alt="Windows theme: a dark caption-button window and a bottom taskbar with a Start launcher and a clock on a dark Windows 11 wallpaper"><br><b>The Windows clone</b><br>Caption buttons, a flush taskbar with a Start launcher and a clock, no fisheye.</td>
     <td width="50%"><img src=".github/assets/themes-ubuntu.jpg" alt="Ubuntu theme: a window with GNOME controls, a top bar with a centered clock, a left dock, and a Quick Settings popover"><br><b>The Ubuntu clone</b><br>Yaru dark, a top bar with a centered clock, a left dock, GNOME window controls, a Quick Settings popover.</td>
   </tr>
 </table>
