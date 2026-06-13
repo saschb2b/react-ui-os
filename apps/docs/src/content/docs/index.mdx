@@ -35,6 +35,21 @@ Motion timings, corner radii, and chrome dimensions are taken from the real plat
 
 <ThemeGallery />
 
+## Or make it yours
+
+The clones are not privileged: a theme is one plain-data object (palette, shape, motion, blur, wallpaper, chrome), and your own gets the same levers. Put the dock on the left, drop the menu bar, round the windows, pick your accent. Start from a shipped theme and change what you disagree with, or click one together on a live desktop and copy the file out.
+
+```ts
+export const acmeTheme: OsTheme = {
+  id: "acme",
+  palette: { accent: "#5cb6b9" /* … */ },
+  chrome: { windowControls: "minimal", dockPosition: "left", menuBar: "none" },
+  // …
+};
+```
+
+[Open the theme editor](/theme-editor/) to build one by clicking, or read [Writing a theme](/themes/writing/).
+
 ## A real desktop, not a mockup
 
 The apps actually work. Notes persist across reloads, the calculator computes, the terminal runs commands. Windows drag at 60fps, resize from any edge, snap to halves and quarters, and minimize with the genie. Spotlight finds apps, settings, and files. It behaves like an OS because it is one, held in React state.
