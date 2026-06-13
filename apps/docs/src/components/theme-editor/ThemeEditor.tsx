@@ -7,6 +7,7 @@ import {
   demoWallpapers,
   type DemoThemeChoice,
 } from "@react-ui-os/demo";
+import { createMacosTheme } from "@react-ui-os/theme-macos";
 import { docsApps } from "../playground/apps";
 import {
   ColorField,
@@ -25,17 +26,26 @@ const ASSET_BASE = import.meta.env.BASE_URL.endsWith("/")
   ? import.meta.env.BASE_URL
   : `${import.meta.env.BASE_URL}/`;
 
-const PRESETS: Array<{ id: DemoThemeChoice; label: string }> = [
+type PresetChoice = DemoThemeChoice | "skeleton";
+
+const PRESETS: Array<{ id: PresetChoice; label: string }> = [
   { id: "macos", label: "macOS" },
   { id: "windows", label: "Windows" },
   { id: "ubuntu", label: "Ubuntu" },
+  { id: "skeleton", label: "Skeleton" },
 ];
 
 // The editor edits one appearance: the preset's light/dark variants and their
 // Settings switch are dropped so every control changes what is on screen.
 // (Add an `appearances` block by hand for a dual-look theme; see the docs.)
-function loadPreset(choice: DemoThemeChoice): OsTheme {
-  const theme = buildDemoTheme(choice, ASSET_BASE);
+function loadPreset(choice: PresetChoice): OsTheme {
+  // The unbranded baseline for building a new look from scratch, rather than
+  // un-theming a platform clone: the macOS skeleton with no wallpaper and a
+  // fresh identity.
+  const theme =
+    choice === "skeleton"
+      ? { ...createMacosTheme(), id: "my-theme", name: "My theme" }
+      : buildDemoTheme(choice, ASSET_BASE);
   const customizable = { ...theme.customizable };
   delete customizable["appearance"];
   delete customizable["wallpaper.src"];
