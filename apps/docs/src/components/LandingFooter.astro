@@ -1,0 +1,295 @@
+---
+/**
+ * The landing footer. Not the stock link-columns-and-social-row: a colophon,
+ * a giant wordmark cropped by the page edge, and then the page ends the way
+ * the product does, in a system bar. The strip carries the project facts
+ * (license, status) plus a live clock and a session uptime counter, the same
+ * register as the desktop's own menu bar. Everything stays on neutral
+ * surfaces; accent appears only on hover, per DESIGN.md.
+ */
+const base = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+
+const groups = [
+  {
+    label: "Explore",
+    links: [
+      { label: "Quickstart", href: `${base}quickstart/` },
+      { label: "Components", href: `${base}components/desktop/` },
+      { label: "Themes", href: `${base}themes/overview/` },
+      { label: "Theme editor", href: `${base}theme-editor/` },
+      { label: "App Store", href: `${base}app-store/` },
+      { label: "Playground", href: `${base}playground` },
+    ],
+  },
+  {
+    label: "Project",
+    links: [
+      { label: "GitHub", href: "https://github.com/saschb2b/react-ui-os" },
+      { label: "Changelog", href: `${base}changelog/` },
+      { label: "Architecture", href: `${base}architecture/patterns/` },
+      {
+        label: "License (MIT)",
+        href: "https://github.com/saschb2b/react-ui-os/blob/main/LICENSE",
+      },
+    ],
+  },
+  {
+    label: "Support",
+    links: [
+      {
+        label: "Report an issue",
+        href: "https://github.com/saschb2b/react-ui-os/issues",
+      },
+      {
+        label: "Publish an app",
+        href: `${base}app-store/publish/`,
+      },
+      { label: "Sponsor", href: "https://buymeacoffee.com/qohreuukw" },
+    ],
+  },
+];
+---
+
+<footer class="lf">
+  <div class="lf__colophon">
+    <div class="lf__lede">
+      <svg
+        class="lf__glyph"
+        width="28"
+        height="28"
+        viewBox="0 0 28 28"
+        fill="none"
+        aria-hidden="true"
+      >
+        <rect
+          x="1.5"
+          y="3.5"
+          width="25"
+          height="21"
+          rx="4"
+          stroke="currentColor"
+          stroke-width="1.5"></rect>
+        <path d="M1.5 9.5h25" stroke="currentColor" stroke-width="1.5"></path>
+        <circle cx="6" cy="6.6" r="1.1" fill="currentColor"></circle>
+        <circle cx="9.6" cy="6.6" r="1.1" fill="currentColor"></circle>
+      </svg>
+      <p>
+        An operating system's worth of UI, shipped as React components. Apps are data,
+        themes are token bags, the library does the composition.
+      </p>
+    </div>
+    {
+      groups.map((group) => (
+        <nav class="lf__group" aria-label={group.label}>
+          <p class="lf__label">{group.label}</p>
+          <ul>
+            {group.links.map((link) => (
+              <li>
+                <a href={link.href}>{link.label}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ))
+    }
+  </div>
+
+  <div class="lf__markwrap" aria-hidden="true">
+    <div class="lf__mark">react-ui-os</div>
+  </div>
+
+  <div class="lf__bar">
+    <div class="lf__bar-left">
+      <span class="lf__bar-brand">react-ui-os</span>
+      <span class="lf__bar-dim">© 2026 Sascha Becker</span>
+    </div>
+    <div class="lf__bar-right">
+      <a
+        class="lf__bar-link"
+        href="https://github.com/saschb2b/react-ui-os"
+        aria-label="GitHub repository"
+      >
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path
+            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+          ></path>
+        </svg>
+      </a>
+      <span class="lf__bar-dim">MIT</span>
+      <span class="lf__bar-dim">pre-1.0</span>
+      <span class="lf__bar-dim" data-uptime title="Time since this page loaded">
+        up 0:00
+      </span>
+      <span class="lf__bar-clock" data-clock>--:--</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .lf {
+    width: 100vw;
+    margin: 0 50%;
+    transform: translateX(-50%);
+    border-top: 1px solid var(--sl-color-gray-5);
+    /* Starlight's content frame adds its own bottom padding; pull the strip
+       down so the bar is the true last pixel row of the page. */
+    margin-bottom: calc(-1 * var(--sl-content-pad-x, 1.5rem));
+  }
+
+  /* ── Colophon ─────────────────────────────────────────── */
+  .lf__colophon {
+    width: min(1240px, calc(100vw - 48px));
+    margin: 0 auto;
+    padding: 3.5rem 0 1rem;
+    display: grid;
+    grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(130px, 1fr));
+    gap: 2.5rem;
+  }
+  @media (max-width: 860px) {
+    .lf__colophon {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 480px) {
+    .lf__colophon {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+  }
+
+  .lf__lede {
+    color: var(--sl-color-gray-3);
+  }
+  .lf__glyph {
+    color: var(--sl-color-gray-2);
+    margin-bottom: 0.8rem;
+  }
+  .lf__lede p {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    max-width: 34ch;
+  }
+
+  .lf__label {
+    margin: 0 0 0.8rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-4);
+  }
+  .lf__group ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .lf__group a {
+    font-size: 0.92rem;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+  }
+  .lf__group a:hover {
+    color: var(--sl-color-accent);
+  }
+
+  /* ── The wordmark, cropped by the system bar ──────────── */
+  .lf__markwrap {
+    overflow: hidden;
+    user-select: none;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+  }
+  .lf__mark {
+    font-size: clamp(4.5rem, 16.5vw, 15rem);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    white-space: nowrap;
+    /* Sits just above the page background, read as texture, not copy. */
+    color: color-mix(in srgb, var(--sl-color-white) 7%, var(--sl-color-black));
+    /* Sink the descender line under the bar so the glyphs read as cropped
+       by the bottom of the screen. */
+    margin-bottom: -0.26em;
+  }
+
+  /* ── The system bar: the page ends the way the product does ── */
+  .lf__bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 44px;
+    padding: 0 max(calc(50vw - 620px), 24px);
+    border-top: 1px solid var(--sl-color-gray-5);
+    background: color-mix(in srgb, var(--sl-color-black) 80%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    font-size: 0.8rem;
+  }
+  .lf__bar-left,
+  .lf__bar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    white-space: nowrap;
+  }
+  .lf__bar-brand {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--sl-color-white);
+  }
+  .lf__bar-dim {
+    color: var(--sl-color-gray-3);
+  }
+  .lf__bar-link {
+    display: inline-flex;
+    color: var(--sl-color-gray-2);
+  }
+  .lf__bar-link:hover {
+    color: var(--sl-color-accent);
+  }
+  .lf__bar-clock {
+    color: var(--sl-color-gray-1);
+    font-variant-numeric: tabular-nums;
+  }
+  [data-uptime] {
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 560px) {
+    .lf__bar-dim:not([data-uptime]) {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // The product's menu bar carries a live clock; the page signs off the same
+  // way. Uptime counts from page load, the OS joke made honest.
+  const clock = document.querySelector("[data-clock]");
+  const uptime = document.querySelector("[data-uptime]");
+  const start = Date.now();
+
+  function tick() {
+    if (clock) {
+      clock.textContent = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    if (uptime) {
+      const s = Math.floor((Date.now() - start) / 1000);
+      const m = Math.floor(s / 60);
+      uptime.textContent = `up ${m}:${String(s % 60).padStart(2, "0")}`;
+    }
+  }
+  tick();
+  setInterval(tick, 1000);
+</script>

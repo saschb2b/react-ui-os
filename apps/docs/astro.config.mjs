@@ -151,11 +151,14 @@ export default defineConfig({
         },
       ],
       components: {
-        // The landing (the only splash page) renders a custom two-column hero
-        // with the live, auto-cycling desktop as its centerpiece. Overriding
-        // Hero lets it own the hero slot, so the splash template does not also
-        // print its default title block above it.
+        // The landing (the only splash page) renders a custom hero with the
+        // live, auto-cycling desktop as its centerpiece. Overriding Hero lets
+        // it own the hero slot, so the splash template does not also print
+        // its default title block above it.
         Hero: "./src/components/LandingHero.astro",
+        // Splash pages get the colophon + system-bar footer; docs pages keep
+        // the default footer (pagination, edit links). See SiteFooter.astro.
+        Footer: "./src/components/SiteFooter.astro",
       },
     }),
     react(),

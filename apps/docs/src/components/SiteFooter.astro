@@ -1,0 +1,13 @@
+---
+/**
+ * Footer override. The splash page (the landing) gets the custom colophon
+ * plus system-bar footer; every docs page keeps Starlight's default footer
+ * with its pagination and edit links.
+ */
+import Default from "@astrojs/starlight/components/Footer.astro";
+import LandingFooter from "./LandingFooter.astro";
+
+const isSplash = Astro.locals.starlightRoute.entry.data.template === "splash";
+---
+
+{isSplash ? <LandingFooter /> : <Default />}
