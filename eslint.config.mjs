@@ -39,6 +39,8 @@ export default [
         CustomEvent: "readonly",
         Response: "readonly",
         AbortSignal: "readonly",
+        Blob: "readonly",
+        URL: "readonly",
         StorageEvent: "readonly",
         KeyboardEvent: "readonly",
         MouseEvent: "readonly",

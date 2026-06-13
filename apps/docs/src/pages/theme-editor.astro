@@ -1,0 +1,38 @@
+---
+import ThemeEditor from "~/components/theme-editor/ThemeEditor";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Theme editor · react-ui-os</title>
+    <meta
+      name="description"
+      content="Click together your own react-ui-os theme on a live desktop and copy the generated theme file into your project."
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #0a0c1a;
+        color: #f1f3f8;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    {/*
+      client:only (no SSR), same reasoning as the playground page: the desktop
+      sizes its chrome to the viewport, which the server cannot know.
+    */}
+    <ThemeEditor client:only="react" />
+  </body>
+</html>

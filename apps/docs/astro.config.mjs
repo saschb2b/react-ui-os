@@ -121,7 +121,10 @@ export default defineConfig({
         },
         {
           label: "Themes",
-          items: [{ autogenerate: { directory: "themes" } }],
+          items: [
+            { autogenerate: { directory: "themes" } },
+            { label: "Theme editor", link: "/theme-editor/" },
+          ],
         },
         {
           label: "Architecture",
