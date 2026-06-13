@@ -91,7 +91,7 @@ const notes: App = {
 ```
 
 - **Apps** are data. One object reaches four surfaces. ([docs](https://saschb2b.github.io/react-ui-os/quickstart/))
-- **Themes** are token bags. `palette`, `shape`, `motion`, `blur`, `wallpaper`, and a `chrome` lever that moves the dock, hides the menu bar, or swaps the window controls. The library knows the metaphor; the theme dresses it. ([docs](https://saschb2b.github.io/react-ui-os/themes/overview/))
+- **Themes** are token bags. `palette`, `shape`, `motion`, `blur`, `wallpaper`, and a `chrome` lever that moves the dock, hides the menu bar, or swaps the window controls. The library knows the metaphor; the theme dresses it. The three clones are reference themes, not the ceiling: write your own as one object, or click one together in the [theme editor](https://saschb2b.github.io/react-ui-os/theme-editor/) and copy the file out. ([docs](https://saschb2b.github.io/react-ui-os/themes/overview/))
 - **Storage** is swappable. Defaults to `localStorage`; pass your own adapter for server-backed or cross-device sync. ([docs](https://saschb2b.github.io/react-ui-os/api/storageadapter/))
 
 The same primitives are reachable at three depths: `<Desktop>` for the full composition, `<DesktopProvider>` plus the surfaces you want, or the hooks (`useWindowManager`, `useTheme`, `useSettings`) to drive it from outside. The 80% case is one tag. The [docs](https://saschb2b.github.io/react-ui-os/) cover the rest.
@@ -121,6 +121,8 @@ react-ui-os/
     desktop/                     # @react-ui-os/desktop (components)
     cli/                         # @react-ui-os/cli (installs apps from the registry)
     example-apps/                # @react-ui-os/example-apps (the registry's seed apps)
+    icons/                       # @react-ui-os/icons (license-vetted app icon components)
+    demo/                        # @react-ui-os/demo (shared playground/docs demo scene)
     theme-macos/               # @react-ui-os/theme-macos (macOS)
     theme-windows/               # @react-ui-os/theme-windows (Windows)
     theme-ubuntu/                # @react-ui-os/theme-ubuntu (Ubuntu)
